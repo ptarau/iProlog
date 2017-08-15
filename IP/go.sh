@@ -1,4 +1,4 @@
-echo go.sh <name_of_prog> assumed in dir ./progs
+#echo go.sh <name_of_prog> assumed in dir ./progs
 export TARGET="out/production/IP"
 rm -r -f $TARGET/iProlog
 javac -O -d "$TARGET" src/iProlog/*.java
