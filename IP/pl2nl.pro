@@ -8,7 +8,8 @@ go2:-pl2nl('progs/sud4x.pl'),shell('cat progs/sud4x.pl.nl').
 pl(F):-
  concat_atom(['progs/',F,'.pl'],PL),
  pl2nl(PL),
- jpl_call('Main',run,[PL],_R).
+ % jpl_call('iProlog.Main',run,[PL],_R),
+ writeln(done).
 
 
 pl2nl(PL):-
