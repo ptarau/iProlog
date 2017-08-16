@@ -988,8 +988,9 @@ class Engine {
       if (null == A) {
         break;
       }
-      //Prog.println("[" + ctr + "] " + "*** ANSWER=" + showTerm(A));
+      if(ctr<5) Prog.println("[" + ctr + "] " + "*** ANSWER=" + showTerm(A));
     }
+    if(ctr>5) Prog.println("...");
     Prog.println("TOTAL ANSWERS=" + ctr);
   }
 
