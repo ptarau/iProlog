@@ -5,10 +5,8 @@ assumes SWI-Prolog 7.x for compiling from .pl to .pl.nl files
 
 ##usage:
 
-* go add
-* 
+* go.sh add
 * go.sh perms
-
 * go.sh queens
 
 or
