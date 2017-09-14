@@ -759,7 +759,7 @@ class Engine {
   /**
    * makes, if needed, registers associated to top goal of a Spine
    * these registers will be reused when matching with candidate clauses
-   * note that regs contains dereferenced cells - this is done once for
+   * note that xs contains dereferenced cells - this is done once for
    * each goal's toplevel subterms
    */
   final private void makeIndexArgs(final Spine G, final int goal) {
@@ -814,7 +814,7 @@ class Engine {
   /**
    * tests if the head of a clause, not yet copied to the heap
    * for execution could possibly match the current goal, an
-   * abstraction of which has been place in regs
+   * abstraction of which has been place in xs
    */
   private final boolean match(final int[] xs, final Clause C0) {
     for (int i = 0; i < MAXIND; i++) {
