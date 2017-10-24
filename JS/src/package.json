@@ -1,0 +1,26 @@
+{
+  "name": "iprologjs",
+  "version": "1.0.0",
+  "description": "iprolog in java script",
+  "main": "Toks.js",
+  "dependencies": {
+    "end-of-stream": "^1.4.0",
+    "tokenizer": "^1.1.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jdurko/iProlog/"
+  },
+  "keywords": [
+    "prolog",
+    "masochism",
+    "depression",
+    "programming"
+  ],
+  "author": "Zachary Eisenhauer, Justin Durko, Justin Greco, Thomas Lee",
+  "license": "MIT"
+}
