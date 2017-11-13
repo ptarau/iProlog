@@ -1,7 +1,7 @@
 
 
 // Should this extend something? What does StreamTokenizer do?
-var Toks = class Toks {
+// var Toks = class Toks {
 
   IF = "if";
   AND = "and";
@@ -23,17 +23,16 @@ var Toks = class Toks {
   */
   function makeToks(s, fromFile){
 	  
-	// Read s from a file
-	s = require('fs');
-	s.readFile('/' + fromFile, 'utf8', function(err,data){
-    if(err){
-      return console.log(err);
-      }
-      else{
-        console.log(data);
-      }
-  });
-	
+    // Read s from a file
+    s = require('fs');
+    s.readFile('/' + fromFile, 'utf8', function(err,data){
+      if(err){
+        return console.log(err);
+        }
+        else{
+          console.log(data);
+        }
+    });
     
     var T = new Toks(s);
     return T;
@@ -81,6 +80,7 @@ var Toks = class Toks {
     t.addRule(/^\|$/, 'ordinary');
     t.addRule(/^}$/, 'ordinary');
     t.addRule(/^~$/, 'ordinary');
+    t.addRule(/^%$/, 'ordinary');
 
     t.addRule(/^a$/, 'wordchars');
     t.addRule(/^b$/, 'wordchars');
@@ -151,6 +151,9 @@ var Toks = class Toks {
     t.addRule(/^\/\/$/, 'comment');
     t.addRule(/^\*$/, 'comment');
     t.addRule(/^*\/$/, 'comment');
+
+    //slashStarComments(true)
+    //slashSlashComments(true)
 	  
   }
 
@@ -158,6 +161,97 @@ var Toks = class Toks {
     var t = "";
     
     var eos = require('end-of-stream');
+
+    // try {
+    //   c = nextToken();
+    //   while (Character.isWhitespace(c) && c != TT_EOF) {
+    //     c = nextToken();
+    //   }
+    // } catch (final IOException e) {
+    //   return "*** tokenizer error:" + t;
+    // }
+
+    // switch (c) {
+    //   case TT_WORD: {
+    //     final char first = sval.charAt(0);
+    //     if (Character.isUpperCase(first) || '_' == first) {
+    //       t = "v:" + sval;
+    //     } else {
+    //       try {
+    //         final int n = Integer.parseInt(sval);
+    //         if (Math.abs(n) < 1 << 28) {
+    //           t = "n:" + sval;
+    //         } else {
+    //           t = "c:" + sval;
+    //         }
+    //       } catch (final Exception e) {
+    //         t = "c:" + sval;
+    //       }
+    //     }
+    //   }
+    //   break;
+
+    //   case StreamTokenizer.TT_EOF: {
+    //     t = null;
+    //   }
+    //   break;
+
+    //   default: {
+    //     t = "" + (char) c;
+    //   }
+
+    // }
+    // return t;
     
   }
-}
+
+  function toSentences(s, fromFile){
+    var Wsss = {};
+    var Wss = {};
+    var Ws = [];
+    var w = "";
+
+    toks = makeToks(s, fromFile);
+    t = "";
+    while(null != (t = toks.getWord())){
+      if(DOT == t){
+        Wss.push(Ws);
+        Wsss.push(Wss);
+        Wss = {};
+        ws = [];
+      }
+      else if((("c:") + IF) == t){
+        Wss.add(Ws);
+        Ws = [];
+      }
+      else if((("c:") + AND) == t){
+        Wss.push(Ws);
+        Ws = [];
+      }
+      else if((("c:") + HOLDS) == t){
+        w = Ws[0];
+        Ws.splice(0, 0, "h: " + w.substring(2));
+      }
+      else if((("c:") + LISTS) == t){
+        w = Ws[0];
+        Ws.splice(0,0, "l:" + w.substring(2));
+      }
+      else if((("c:") + IS) == t){
+        w = Ws[0];
+        Ws.splice(0,0,"f:" + w.substring(2));
+      }
+      else{
+        Ws.push(t);
+      }
+    }
+    return Wsss;
+  }
+
+  function toString(Wsss){
+    console.log(Wsss);
+  }
+
+  function main(){
+    toSentences("prog.nl", true);
+  }
+
