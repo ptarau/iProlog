@@ -39,13 +39,13 @@
   }
 
   /*
-  *
   * TODO: research the functions used in this method
   *
   * @param R - The read in string from makeToks
   */
   function Toks(s){
     var Tokenizer = require('tokenizer');
+    var mycallback;
     var t = new Tokenizer(mycallback);
 
     t.addRule(/^.$/, 'ordinary');
@@ -58,8 +58,8 @@
     t.addRule(/^'$/, 'ordinary');
     t.addRule(/^\($/, 'ordinary');
     t.addRule(/^\)$/, 'ordinary');
-    t.addRule(/^*$/, 'ordinary');
-    t.addRule(/^+$/, 'ordinary');
+    t.addRule(/^\*$/, 'ordinary');
+    t.addRule(/^\+$/, 'ordinary');
     t.addRule(/^,$/, 'ordinary');
     t.addRule(/^-$/, 'ordinary');
     t.addRule(/^\/$/, 'ordinary');
@@ -68,7 +68,7 @@
     t.addRule(/^<$/, 'ordinary');
     t.addRule(/^=$/, 'ordinary');
     t.addRule(/^>$/, 'ordinary');
-    t.addRule(/^?$/, 'ordinary');
+    t.addRule(/^\?$/, 'ordinary');
     t.addRule(/^@$/, 'ordinary');
     t.addRule(/^\[$/, 'ordinary');
     t.addRule(/^\\$/, 'ordinary');
@@ -149,8 +149,8 @@
    
    
     t.addRule(/^\/\/$/, 'comment');
-    t.addRule(/^\*$/, 'comment');
-    t.addRule(/^*\/$/, 'comment');
+    t.addRule(/^\\*$/, 'comment');
+    t.addRule(/^\*\/$/, 'comment');
 
     //slashStarComments(true)
     //slashSlashComments(true)
@@ -162,47 +162,43 @@
     
     var eos = require('end-of-stream');
 
-    // try {
-    //   c = nextToken();
-    //   while (Character.isWhitespace(c) && c != TT_EOF) {
-    //     c = nextToken();
-    //   }
-    // } catch (final IOException e) {
-    //   return "*** tokenizer error:" + t;
-    // }
+    try{
+      c = nextToken;
+      while(c == " " && c != TT_EOF){
+        c = nextToken;
+      }
+    } 
+    catch(err){
+      return "*** tokenizer error:" + t;
+    }
 
-    // switch (c) {
-    //   case TT_WORD: {
-    //     final char first = sval.charAt(0);
-    //     if (Character.isUpperCase(first) || '_' == first) {
-    //       t = "v:" + sval;
-    //     } else {
-    //       try {
-    //         final int n = Integer.parseInt(sval);
-    //         if (Math.abs(n) < 1 << 28) {
-    //           t = "n:" + sval;
-    //         } else {
-    //           t = "c:" + sval;
-    //         }
-    //       } catch (final Exception e) {
-    //         t = "c:" + sval;
-    //       }
-    //     }
-    //   }
-    //   break;
-
-    //   case StreamTokenizer.TT_EOF: {
-    //     t = null;
-    //   }
-    //   break;
-
-    //   default: {
-    //     t = "" + (char) c;
-    //   }
-
-    // }
-    // return t;
-    
+    switch(c)
+    {
+      case TT_WORD:
+        var first = sval.charAt(0);
+        if(first == first.toUpperCase() || '_' == first){
+          t = "v:" + sval;
+        } else {
+          try{
+            var n = parseInt(sval);
+            if(Math.abs(n) < 1 << 28){
+              t = "n:" + sval;
+            }else{
+              t = "c:" + sval;
+            }
+          }
+          catch(err){
+            t = "c:" + sval;
+          }
+        }
+      break;
+      case eos:
+        t = null;
+      break;
+      default:
+        t = "" + c;
+    }
+    return t;
   }
 
   function toSentences(s, fromFile){
@@ -213,7 +209,7 @@
 
     toks = makeToks(s, fromFile);
     t = "";
-    while(null != (t = toks.getWord())){
+    while(null != (t = getWord())){
       if(DOT == t){
         Wss.push(Ws);
         Wsss.push(Wss);
@@ -251,7 +247,8 @@
     console.log(Wsss);
   }
 
-  function main(){
+  exports.main = function(){
+    return true;
     toSentences("prog.nl", true);
   }
 
