@@ -814,7 +814,7 @@ class Engine {
   /**
    * tests if the head of a clause, not yet copied to the heap
    * for execution could possibly match the current goal, an
-   * abstraction of which has been place in xs
+   * abstraction of which has been placed in xs
    */
   private final boolean match(final int[] xs, final Clause C0) {
     for (int i = 0; i < MAXIND; i++) {
