@@ -5,7 +5,7 @@ package iProlog;
  * and current clause tried out by head goal
  * as well as registers associated to it
  *
- * note that parts of this immutable lists
+ * note that parts of this immutable list
  * are shared among alternative branches
  */
 class Spine {
