@@ -97,6 +97,10 @@ public class Toks extends StreamTokenizer {
     return t;
   }
 
+  // Wsss: list of predicates each of which is ...
+  // Wss: list of clauses, each of which is
+  // Ws: list of (token) strings
+  
   public static ArrayList<ArrayList<ArrayList<String>>>
   toSentences(final String s, final boolean fromFile) {
     final ArrayList<ArrayList<ArrayList<String>>> Wsss = new ArrayList<ArrayList<ArrayList<String>>>();
@@ -104,6 +108,7 @@ public class Toks extends StreamTokenizer {
     ArrayList<String> Ws = new ArrayList<String>();
     final Toks toks = makeToks(s, fromFile);
     String t = null;
+
     while (null != (t = toks.getWord())) {
 
       if (DOT.equals(t)) {
