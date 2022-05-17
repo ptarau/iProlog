@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch TestIntList",
+            "request": "launch",
+            "mainClass": "org.iprolog.TestIntList",
+            "projectName": "core"
+        },
+        {
+            "type": "java",
             "name": "Launch TestToks",
             "request": "launch",
             "mainClass": "org.iprolog.TestToks",

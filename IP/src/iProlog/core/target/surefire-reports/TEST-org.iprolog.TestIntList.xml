@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.iprolog.TestToks" time="0.006" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.iprolog.TestIntList" time="0.047" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="sun.desktop" value="windows"/>
     <property name="awt.toolkit" value="sun.awt.windows.WToolkit"/>
@@ -60,9 +60,8 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="52.0"/>
   </properties>
-  <testcase name="mainTest" classname="org.iprolog.TestToks" time="0.006">
-    <system-out><![CDATA[{<<<<<<<<<<< Test Toks >>>>>>>>>>>
-[[[c:live_, c:i_]], [[c:goal, v:X], [c:live_, v:X]]]
+  <testcase name="mainTest" classname="org.iprolog.TestIntList" time="0.028">
+    <system-out><![CDATA[<<<<<<< TestIntList >>>>>>>>
 ]]></system-out>
   </testcase>
 </testsuite>
