@@ -26,7 +26,7 @@ and
 
 for some motivations for this and justification of implementation choices
 
-a swi prolog script first compiles the code to a pl.nl
+an SWI-Prolog script first compiles the code to a pl.nl
 file, than Main calls stuff in Engine which loads it in memory
 and runs it
 
@@ -53,14 +53,14 @@ the java based runtime system
 * design a self-contained compiler
 * convert to C for more effective benchmarking against C-based Prolog systems
 * faster runtime:
-    memory efficiency - eg recursive loop, LCO
+    memory efficiency - e.g. recursive loop, LCO
     code to be mem_copied with ptrs to var/ref cells to be relocated?
 
 ### some out of the box thoughts:
 
-- no symbol tables: a symbol is just a (small) ground array of ints, and instead of a symbol table we would have a "ground cache" - that helps with better memory usege and also speed
+- no symbol tables: a symbol is just a (small) ground array of ints, and instead of a symbol table we would have a "ground cache" - that helps with better memory usage and also speed
 
-- when a non-ground compound tries to unify with a ground, the   ground term is expanded to the heap
+- when a non-ground compound tries to unify with a ground, the ground term is expanded to the heap
 
 - when a ground unifies with a ground - it's just pointer equality and when a var unifies with a ground, it just points to it - as if it were a constant
 

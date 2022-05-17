@@ -8,7 +8,7 @@ class Engine {
 
   final static int MAXIND = 3; // number of index args
   final static int START_INDEX = 20;
-  // switches off indexing for less then START_INDEX clauses e.g. <20
+  // switches off indexing for less than START_INDEX clauses e.g. <20
 
   /**
    * Builds a new engine from a natural-language style assembler.nl file
@@ -45,7 +45,7 @@ class Engine {
 
   /** runtime areas:
    *
-   * the heap contains code for and clauses their their copies
+   * the heap contains code for clauses and their copies
    * created during execution
    *
    * the trail is an undo list for variable bindings
@@ -55,9 +55,9 @@ class Engine {
    * the unification stack ustack helps handling term unification non-recursively
    *
    * the spines stack contains abstractions of clauses and goals and performs the
-   * functions of  both a choice-point stack and goal stack
+   * functions of both a choice-point stack and goal stack
    *
-   * imaps: contains indexes for up toMAXIND>0 arg positions (0 for pred symbol itself)
+   * imaps: contains indexes for up to MAXIND>0 arg positions (0 for pred symbol itself)
    *
    * vmaps: contains clause numbers for which vars occur in indexed arg positions
    */
@@ -76,7 +76,7 @@ class Engine {
   final IntMap[] vmaps;
 
   /**
-   * tags of our heap cells - that can also be seen as
+   * tags of our heap cells - these can also be seen as
    * instruction codes in a compiled implementation
    */
   final private static int V = 0;
@@ -93,7 +93,7 @@ class Engine {
   final private static int BAD = 7;
 
   /**
-   * tags an integer value while fliping it into a negative
+   * tags an integer value while flipping it into a negative
    * number to ensure that untagged cells are always negative and the tagged
    * ones are always positive - a simple way to ensure we do not mix them up
    * at runtime
@@ -164,7 +164,7 @@ class Engine {
   }
 
   /**
-   * Pushes an element - top is incremented frirst than the
+   * Pushes an element - top is incremented first than the
    * element is assigned. This means top point to the last assigned
    * element - which can be returned with peek().
    */
@@ -194,7 +194,7 @@ class Engine {
   }
 
   /**
-  * expands a "Xs lists .." statements to "Xs holds" statements
+  * expands "Xs lists .." statements to "Xs holds" statements
   */
 
   private final static ArrayList<String[]> maybeExpand(final ArrayList<String> Ws) {
@@ -458,7 +458,7 @@ class Engine {
   }
 
   /**
-   * raw display of a externalized term
+   * raw display of an externalized term
    */
   String showTerm(final Object O) {
     if (O instanceof Object[])
@@ -624,7 +624,7 @@ class Engine {
 
   /**
    * unification algorithm for cells X1 and X2 on ustack that also takes care
-   * to trail bindigs below a given heap address "base"
+   * to trail bindings below a given heap address "base"
    */
   final private boolean unify(final int base) {
     while (!ustack.isEmpty()) {
@@ -814,7 +814,7 @@ class Engine {
   /**
    * tests if the head of a clause, not yet copied to the heap
    * for execution could possibly match the current goal, an
-   * abstraction of which has been place in xs
+   * abstraction of which has been placed in xs
    */
   private final boolean match(final int[] xs, final Clause C0) {
     for (int i = 0; i < MAXIND; i++) {
@@ -924,7 +924,7 @@ class Engine {
   }
 
   /**
-   * removes this spines for the spine stack and
+   * removes this spine from the spine stack and
    * resets trail and heap to where they where at its
    * creating time - while undoing variable binding
    * up to that point
@@ -963,7 +963,7 @@ class Engine {
   }
 
   /**
-   * retrieves an answers and ensure the engine can be resumed
+   * retrieves an answers and ensures the engine can be resumed
    * by unwinding the trail of the query Spine
    * returns an external "human readable" representation of the answer
    */
