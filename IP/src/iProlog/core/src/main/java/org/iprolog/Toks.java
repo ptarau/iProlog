@@ -13,6 +13,7 @@ public class Toks extends StreamTokenizer {
   public static String AND = "and";
   public static String DOT = ".";
   public static String HOLDS = "holds";
+
   public static String LISTS = "lists"; // todo
   public static String IS = "is"; // todo
 
@@ -97,52 +98,61 @@ public class Toks extends StreamTokenizer {
     return t;
   }
 
-  // Wsss: list of predicates each of which is ...
-  // Wss: list of clauses, each of which is
-  // Ws: list of (token) strings
+  // Clauses: list of clauses each of which is ...
+  // Structures: list of structures, each of which is ...
+  // Tokens: list of (token) strings
   
   public static ArrayList<ArrayList<ArrayList<String>>>
   toSentences(final String s, final boolean fromFile) {
-    final ArrayList<ArrayList<ArrayList<String>>> Wsss = new ArrayList<ArrayList<ArrayList<String>>>();
-    ArrayList<ArrayList<String>> Wss = new ArrayList<ArrayList<String>>();
-    ArrayList<String> Ws = new ArrayList<String>();
+    final ArrayList<ArrayList<ArrayList<String>>> Clauses = new ArrayList<ArrayList<ArrayList<String>>>();
+    ArrayList<ArrayList<String>> Structures = new ArrayList<ArrayList<String>>();
+    ArrayList<String> Tokens = new ArrayList<String>();
     final Toks toks = makeToks(s, fromFile);
     String t = null;
 
     while (null != (t = toks.getWord())) {
 
       if (DOT.equals(t)) {
-        Wss.add(Ws);
-        Wsss.add(Wss);
-        Wss = new ArrayList<ArrayList<String>>();
-        Ws = new ArrayList<String>();
-      } else if (("c:" + IF).equals(t)) {
+        Structures.add(Tokens);      // add this finished (?) strucure
+        Clauses.add(Structures);    // add it to this finished clause
+                          // prepare for (possible) new clause and structure
+        Structures = new ArrayList<ArrayList<String>>();
+        Tokens = new ArrayList<String>();
+      } else if (("c:" + IF).equals(t)
+              || ("c:" + AND).equals(t)) {
 
-        Wss.add(Ws);
+                Structures.add(Tokens);  // finished with this structure
+                Tokens = new ArrayList<String>();
 
-        Ws = new ArrayList<String>();
-      } else if (("c:" + AND).equals(t)) {
-        Wss.add(Ws);
-
-        Ws = new ArrayList<String>();
       } else if (("c:" + HOLDS).equals(t)) {
-        final String w = Ws.get(0);
-        Ws.set(0, "h:" + w.substring(2));
-      } else if (("c:" + LISTS).equals(t)) {
-        final String w = Ws.get(0);
-        Ws.set(0, "l:" + w.substring(2));
+
+        final String w = Tokens.get(0);
+        Tokens.set(0, "h:" + w.substring(2));
+
+      } else 
+      
+    // to do?
+      
+      if (("c:" + LISTS).equals(t)) {
+
+        final String w = Tokens.get(0);
+        Tokens.set(0, "l:" + w.substring(2));
+
       } else if (("c:" + IS).equals(t)) {
-        final String w = Ws.get(0);
-        Ws.set(0, "f:" + w.substring(2));
+
+        final String w = Tokens.get(0);
+        Tokens.set(0, "f:" + w.substring(2));
+
       } else {
-        Ws.add(t);
+        Tokens.add(t);
       }
     }
-    return Wsss;
+    return Clauses;
   }
 
-  static String toString(final Object[] Wsss) {
-    return Arrays.deepToString(Wsss);
+
+  static String toString(final Object[] Clauses) {
+    return Arrays.deepToString(Clauses);
   }
 
   public static void main(final String[] args) {

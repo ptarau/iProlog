@@ -11,7 +11,7 @@ public class TestToks {
     public void mainTest () {
         assertEquals(1,1);
 
-        System.out.println ("{{{{{{{{{{{ Test Toks }}}}}}}}}}}");
+        System.out.println ("{<<<<<<<<<<< Test Toks >>>>>>>>>>>");
         Main.pp(Toks.toSentences("resources/t.pl.nl", true));
 
         String in = "";
@@ -19,6 +19,7 @@ public class TestToks {
         in += "goal X\n";
         in += "if\n";
         in += "  live_ X .\n";
+        
         Main.pp(Toks.toSentences(in, false));
     }
 

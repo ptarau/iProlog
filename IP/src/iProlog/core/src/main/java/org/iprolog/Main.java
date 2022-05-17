@@ -66,8 +66,7 @@ public class Main {
     String currentDir = System.getProperty("user.dir");
     System.out.println("Current dir using System:" + currentDir);
 
-		// String fname=args[0];
-    String fname="./core/resources/t.pl";
+    String fname=args[0];
     run(fname);
   }
 }

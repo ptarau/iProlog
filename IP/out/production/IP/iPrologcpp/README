@@ -1,0 +1,6 @@
+Attempt at translating iProlog from Java to C++
+
+Stopped for lack of an exact equivalent to LinkedHashMap in Engine.cpp
+
+Some clues here: 
+  https://stackoverflow.com/questions/42072073/equivalent-linkedhashmap-in-c
