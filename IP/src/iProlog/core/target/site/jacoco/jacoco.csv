@@ -1,0 +1,12 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+core,org.iprolog,IntList,84,0,6,0,24,0,14,0,11,0
+core,org.iprolog,Clause,18,0,0,0,7,0,1,0,1,0
+core,org.iprolog,Toks,393,0,29,0,86,0,22,0,7,0
+core,org.iprolog,ObStack,24,0,0,0,6,0,4,0,4,0
+core,org.iprolog,IMap,267,0,20,0,63,0,25,0,15,0
+core,org.iprolog,Spine,47,0,0,0,16,0,2,0,2,0
+core,org.iprolog,Prog,522,0,62,0,104,0,48,0,17,0
+core,org.iprolog,Main,149,0,0,0,38,0,7,0,7,0
+core,org.iprolog,IntStack,214,0,14,0,51,0,24,0,17,0
+core,org.iprolog,Engine,2073,0,202,0,452,0,169,0,62,0
+core,org.iprolog,IntMap,773,0,94,0,164,0,66,0,19,0

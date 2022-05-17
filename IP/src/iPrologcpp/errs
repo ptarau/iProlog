@@ -1,0 +1,104 @@
+g++    -c -o Engine.o Engine.cpp
+In file included from Engine.cpp:8:
+Engine.h:61:4: error: ‘LinkedHashMap’ does not name a type
+   61 |    LinkedHashMap<std::wstring, int> *const syms;
+      |    ^~~~~~~~~~~~~
+Engine.h:244:39: error: ‘std::any’ has not been declared
+  244 |    virtual std::wstring showTerm(std::any const O);
+      |                                       ^~~
+Engine.h:244:25: error: ‘virtual std::wstring iProlog::Engine::showTerm(int)’ cannot be overloaded with ‘virtual std::wstring iProlog::Engine::showTerm(int)’
+  244 |    virtual std::wstring showTerm(std::any const O);
+      |                         ^~~~~~~~
+Engine.h:239:25: note: previous declaration ‘virtual std::wstring iProlog::Engine::showTerm(int)’
+  239 |    virtual std::wstring showTerm(int const x);
+      |                         ^~~~~~~~
+Engine.h:256:17: error: ‘any’ in namespace ‘std’ does not name a type
+  256 |    virtual std::any exportTerm(int x);
+      |                 ^~~
+Engine.h:256:12: note: ‘std::any’ is only available from C++17 onwards
+  256 |    virtual std::any exportTerm(int x);
+      |            ^~~
+In file included from Engine.cpp:9:
+Toks.h:12:1: error: expected unqualified-id before ‘namespace’
+   12 | namespace iProlog
+      | ^~~~~~~~~
+In file included from Main.h:5,
+                 from Engine.cpp:10:
+/usr/lib/gcc/x86_64-pc-cygwin/10/include/c++/iostream:42:1: error: expected unqualified-id before ‘namespace’
+   42 | namespace std _GLIBCXX_VISIBILITY(default)
+      | ^~~~~~~~~
+In file included from Engine.cpp:10:
+Main.h:8:1: error: expected unqualified-id before ‘namespace’
+    8 | namespace iProlog
+      | ^~~~~~~~~
+In file included from /usr/lib/gcc/x86_64-pc-cygwin/10/include/c++/functional:58,
+                 from Prog.h:11,
+                 from Engine.cpp:11:
+/usr/lib/gcc/x86_64-pc-cygwin/10/include/c++/bits/refwrap.h:43:1: error: expected unqualified-id before ‘namespace’
+   43 | namespace std _GLIBCXX_VISIBILITY(default)
+      | ^~~~~~~~~
+In file included from /usr/lib/gcc/x86_64-pc-cygwin/10/include/c++/functional:59,
+                 from Prog.h:11,
+                 from Engine.cpp:11:
+/usr/lib/gcc/x86_64-pc-cygwin/10/include/c++/bits/std_function.h:47:1: error: expected unqualified-id before ‘namespace’
+   47 | namespace std _GLIBCXX_VISIBILITY(default)
+      | ^~~~~~~~~
+In file included from Prog.h:11,
+                 from Engine.cpp:11:
+/usr/lib/gcc/x86_64-pc-cygwin/10/include/c++/functional:72:1: error: expected unqualified-id before ‘namespace’
+   72 | namespace std _GLIBCXX_VISIBILITY(default)
+      | ^~~~~~~~~
+In file included from Engine.cpp:11:
+Prog.h:14:1: error: expected unqualified-id before ‘namespace’
+   14 | namespace iProlog
+      | ^~~~~~~~~
+Engine.cpp:13:1: error: expected unqualified-id before ‘namespace’
+   13 | namespace iProlog
+      | ^~~~~~~~~
+Engine.cpp:232:15: error: expected ‘}’ at end of input
+  232 |      case L'n':
+      |               ^
+In file included from Engine.cpp:8:
+Engine.h:32:2: note: to match this ‘{’
+   32 |  {
+      |  ^
+Engine.h:126:15: error: ‘static int iProlog::Engine::tag(int, int)’ marked ‘final’, but is not virtual
+  126 |    static int tag(int const t, int const w) final;
+      |               ^~~
+Engine.h:131:15: error: ‘static int iProlog::Engine::detag(int)’ marked ‘final’, but is not virtual
+  131 |    static int detag(int const w) final;
+      |               ^~~~~
+Engine.h:136:15: error: ‘static int iProlog::Engine::tagOf(int)’ marked ‘final’, but is not virtual
+  136 |    static int tagOf(int const w) final;
+      |               ^~~~~
+Engine.h:181:50: error: ‘static std::vector<std::vector<std::basic_string<wchar_t> > > iProlog::Engine::maybeExpand(std::vector<std::basic_string<wchar_t> >&)’ marked ‘final’, but is not virtual
+  181 |    static std::vector<std::vector<std::wstring>> maybeExpand(std::vector<std::wstring> &Ws) final;
+      |                                                  ^~~~~~~~~~~
+Engine.h:186:50: error: ‘static std::vector<std::vector<std::basic_string<wchar_t> > > iProlog::Engine::mapExpand(std::vector<std::vector<std::basic_string<wchar_t> > >&)’ marked ‘final’, but is not virtual
+  186 |    static std::vector<std::vector<std::wstring>> mapExpand(std::vector<std::vector<std::wstring>> &Wss) final;
+      |                                                  ^~~~~~~~~
+Engine.h:196:28: error: ‘static std::vector<int> iProlog::Engine::toNums(std::vector<iProlog::Clause*>&)’ marked ‘final’, but is not virtual
+  196 |    static std::vector<int> toNums(std::vector<Clause*> &clauses) final;
+      |                            ^~~~~~
+Engine.h:208:16: error: ‘static bool iProlog::Engine::isVAR(int)’ marked ‘final’, but is not virtual
+  208 |    static bool isVAR(int const x) final;
+      |                ^~~~~
+Engine.h:315:15: error: ‘static int iProlog::Engine::relocate(int, int)’ marked ‘final’, but is not virtual
+  315 |    static int relocate(int const b, int const cell) final;
+      |               ^~~~~~~~
+Engine.h: In destructor ‘virtual iProlog::Engine::~Engine()’:
+Engine.h:44:12: error: ‘syms’ was not declared in this scope
+   44 |     delete syms;
+      |            ^~~~
+In file included from Toks.h:10,
+                 from Engine.cpp:9:
+stringhelper.h: At global scope:
+stringhelper.h:290:2: error: expected unqualified-id at end of input
+  290 |  }
+      |  ^
+stringhelper.h:290:2: error: expected ‘}’ at end of input
+In file included from Engine.cpp:8:
+Engine.h:26:1: note: to match this ‘{’
+   26 | {
+      | ^
+make: *** [<builtin>: Engine.o] Error 1

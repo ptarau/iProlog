@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntList.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">org.iprolog</a> &gt; <span class="el_source">IntList.java</span></div><h1>IntList.java</h1><pre class="source lang-java linenums">
+package org.iprolog;
+class IntList {
+
+  private final int head;
+  private final IntList tail;
+
+<span class="nc" id="L8">  private IntList(final int head) {</span>
+<span class="nc" id="L9">    this.head = head;</span>
+<span class="nc" id="L10">    tail = null;</span>
+<span class="nc" id="L11">  }</span>
+
+<span class="nc" id="L13">  private IntList(final int X, final IntList Xs) {</span>
+<span class="nc" id="L14">    head = X;</span>
+<span class="nc" id="L15">    tail = Xs;</span>
+<span class="nc" id="L16">  }</span>
+
+  static final boolean isEmpty(final IntList Xs) {
+<span class="nc bnc" id="L19" title="All 2 branches missed.">    return null == Xs;</span>
+  }
+
+  static final int head(final IntList Xs) {
+<span class="nc" id="L23">    return Xs.head;</span>
+  }
+
+<span class="nc" id="L26">  static final IntList empty = null;</span>
+
+  static final IntList tail(final IntList Xs) {
+<span class="nc" id="L29">    return Xs.tail;</span>
+  }
+
+  static final IntList cons(final int X, final IntList Xs) {
+<span class="nc" id="L33">    return new IntList(X, Xs);</span>
+  }
+
+  static final IntList app(final int[] xs, final IntList Ys) {
+<span class="nc" id="L37">    IntList Zs = Ys;</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">    for (int i = xs.length - 1; i &gt;= 0; i--) {</span>
+<span class="nc" id="L39">      Zs = cons(xs[i], Zs);</span>
+    }
+<span class="nc" id="L41">    return Zs;</span>
+  }
+
+  static final IntStack toInts(IntList Xs) {
+<span class="nc" id="L45">    final IntStack is = new IntStack();</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">    while (!isEmpty(Xs)) {</span>
+<span class="nc" id="L47">      is.push(head(Xs));</span>
+<span class="nc" id="L48">      Xs = tail(Xs);</span>
+    }
+<span class="nc" id="L50">    return is;</span>
+  }
+
+  static final int len(final IntList Xs) {
+<span class="nc" id="L54">    return toInts(Xs).size();</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L59">    return toInts(this).toString();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

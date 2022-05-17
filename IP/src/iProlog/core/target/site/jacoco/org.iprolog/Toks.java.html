@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Toks.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">org.iprolog</a> &gt; <span class="el_source">Toks.java</span></div><h1>Toks.java</h1><pre class="source lang-java linenums">package org.iprolog;
+import java.io.*;
+import java.util.*;
+
+/**
+ * Reads chars from char streams using the current default encoding
+ */
+public class Toks extends StreamTokenizer {
+
+  // reserved words - with syntactic function
+
+<span class="nc" id="L12">  public static String IF = &quot;if&quot;;</span>
+<span class="nc" id="L13">  public static String AND = &quot;and&quot;;</span>
+<span class="nc" id="L14">  public static String DOT = &quot;.&quot;;</span>
+<span class="nc" id="L15">  public static String HOLDS = &quot;holds&quot;;</span>
+<span class="nc" id="L16">  public static String LISTS = &quot;lists&quot;; // todo</span>
+<span class="nc" id="L17">  public static String IS = &quot;is&quot;; // todo</span>
+
+  public static Toks makeToks(final String s, final boolean fromFile) {
+    try {
+      Reader R;
+<span class="nc bnc" id="L22" title="All 2 branches missed.">      if (fromFile) {</span>
+<span class="nc" id="L23">        R = new FileReader(s);</span>
+      } else {
+<span class="nc" id="L25">        R = new StringReader(s);</span>
+      }
+<span class="nc" id="L27">      final Toks T = new Toks(R);</span>
+<span class="nc" id="L28">      return T;</span>
+
+<span class="nc" id="L30">    } catch (final IOException e) {</span>
+<span class="nc" id="L31">      e.printStackTrace();</span>
+<span class="nc" id="L32">      return null;</span>
+    }
+  }
+
+  public Toks(final Reader reader) {
+<span class="nc" id="L37">    super(reader);</span>
+<span class="nc" id="L38">    resetSyntax();</span>
+<span class="nc" id="L39">    eolIsSignificant(false);</span>
+<span class="nc" id="L40">    ordinaryChar('.');</span>
+<span class="nc" id="L41">    ordinaryChars('!', '/'); // 33-47</span>
+<span class="nc" id="L42">    ordinaryChars(':', '@'); // 55-64</span>
+<span class="nc" id="L43">    ordinaryChars('[', '`'); // 91-96</span>
+<span class="nc" id="L44">    ordinaryChars('{', '~'); // 123-126</span>
+<span class="nc" id="L45">    wordChars('_', '_');</span>
+<span class="nc" id="L46">    wordChars('a', 'z');</span>
+<span class="nc" id="L47">    wordChars('A', 'Z');</span>
+<span class="nc" id="L48">    wordChars('0', '9');</span>
+<span class="nc" id="L49">    slashStarComments(true);</span>
+<span class="nc" id="L50">    slashSlashComments(true);</span>
+<span class="nc" id="L51">    ordinaryChar('%');</span>
+<span class="nc" id="L52">  }</span>
+
+  public String getWord() {
+<span class="nc" id="L55">    String t = null;</span>
+
+<span class="nc" id="L57">    int c = TT_EOF;</span>
+    try {
+<span class="nc" id="L59">      c = nextToken();</span>
+<span class="nc bnc" id="L60" title="All 4 branches missed.">      while (Character.isWhitespace(c) &amp;&amp; c != TT_EOF) {</span>
+<span class="nc" id="L61">        c = nextToken();</span>
+      }
+<span class="nc" id="L63">    } catch (final IOException e) {</span>
+<span class="nc" id="L64">      return &quot;*** tokenizer error:&quot; + t;</span>
+<span class="nc" id="L65">    }</span>
+
+<span class="nc bnc" id="L67" title="All 3 branches missed.">    switch (c) {</span>
+      case TT_WORD: {
+<span class="nc" id="L69">        final char first = sval.charAt(0);</span>
+<span class="nc bnc" id="L70" title="All 4 branches missed.">        if (Character.isUpperCase(first) || '_' == first) {</span>
+<span class="nc" id="L71">          t = &quot;v:&quot; + sval;</span>
+        } else {
+          try {
+<span class="nc" id="L74">            final int n = Integer.parseInt(sval);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            if (Math.abs(n) &lt; 1 &lt;&lt; 28) {</span>
+<span class="nc" id="L76">              t = &quot;n:&quot; + sval;</span>
+            } else {
+<span class="nc" id="L78">              t = &quot;c:&quot; + sval;</span>
+            }
+<span class="nc" id="L80">          } catch (final Exception e) {</span>
+<span class="nc" id="L81">            t = &quot;c:&quot; + sval;</span>
+<span class="nc" id="L82">          }</span>
+        }
+      }
+<span class="nc" id="L85">      break;</span>
+
+      case StreamTokenizer.TT_EOF: {
+<span class="nc" id="L88">        t = null;</span>
+      }
+<span class="nc" id="L90">      break;</span>
+
+      default: {
+<span class="nc" id="L93">        t = &quot;&quot; + (char) c;</span>
+      }
+
+    }
+<span class="nc" id="L97">    return t;</span>
+  }
+
+  public static ArrayList&lt;ArrayList&lt;ArrayList&lt;String&gt;&gt;&gt; toSentences(final String s, final boolean fromFile) {
+<span class="nc" id="L101">    final ArrayList&lt;ArrayList&lt;ArrayList&lt;String&gt;&gt;&gt; Wsss = new ArrayList&lt;ArrayList&lt;ArrayList&lt;String&gt;&gt;&gt;();</span>
+<span class="nc" id="L102">    ArrayList&lt;ArrayList&lt;String&gt;&gt; Wss = new ArrayList&lt;ArrayList&lt;String&gt;&gt;();</span>
+<span class="nc" id="L103">    ArrayList&lt;String&gt; Ws = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L104">    final Toks toks = makeToks(s, fromFile);</span>
+<span class="nc" id="L105">    String t = null;</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">    while (null != (t = toks.getWord())) {</span>
+
+<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (DOT.equals(t)) {</span>
+<span class="nc" id="L109">        Wss.add(Ws);</span>
+<span class="nc" id="L110">        Wsss.add(Wss);</span>
+<span class="nc" id="L111">        Wss = new ArrayList&lt;ArrayList&lt;String&gt;&gt;();</span>
+<span class="nc" id="L112">        Ws = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">      } else if ((&quot;c:&quot; + IF).equals(t)) {</span>
+
+<span class="nc" id="L115">        Wss.add(Ws);</span>
+
+<span class="nc" id="L117">        Ws = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">      } else if ((&quot;c:&quot; + AND).equals(t)) {</span>
+<span class="nc" id="L119">        Wss.add(Ws);</span>
+
+<span class="nc" id="L121">        Ws = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">      } else if ((&quot;c:&quot; + HOLDS).equals(t)) {</span>
+<span class="nc" id="L123">        final String w = Ws.get(0);</span>
+<span class="nc" id="L124">        Ws.set(0, &quot;h:&quot; + w.substring(2));</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">      } else if ((&quot;c:&quot; + LISTS).equals(t)) {</span>
+<span class="nc" id="L126">        final String w = Ws.get(0);</span>
+<span class="nc" id="L127">        Ws.set(0, &quot;l:&quot; + w.substring(2));</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">      } else if ((&quot;c:&quot; + IS).equals(t)) {</span>
+<span class="nc" id="L129">        final String w = Ws.get(0);</span>
+<span class="nc" id="L130">        Ws.set(0, &quot;f:&quot; + w.substring(2));</span>
+<span class="nc" id="L131">      } else {</span>
+<span class="nc" id="L132">        Ws.add(t);</span>
+      }
+    }
+<span class="nc" id="L135">    return Wsss;</span>
+  }
+
+  static String toString(final Object[] Wsss) {
+<span class="nc" id="L139">    return Arrays.deepToString(Wsss);</span>
+  }
+
+  public static void main(final String[] args) {
+<span class="nc" id="L143">    Main.pp(toSentences(&quot;prog.nl&quot;, true));</span>
+<span class="nc" id="L144">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

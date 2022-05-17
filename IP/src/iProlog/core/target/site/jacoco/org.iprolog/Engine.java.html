@@ -1,0 +1,1036 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Engine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">org.iprolog</a> &gt; <span class="el_source">Engine.java</span></div><h1>Engine.java</h1><pre class="source lang-java linenums">package org.iprolog;
+import java.util.*;
+
+/**
+ * Implements execution mechanism
+ */
+class Engine {
+
+  final static int MAXIND = 3; // number of index args
+  final static int START_INDEX = 20;
+  // switches off indexing for less then START_INDEX clauses e.g. &lt;20
+
+  /**
+   * Builds a new engine from a natural-language style assembler.nl file
+   */
+<span class="nc" id="L16">  Engine(final String fname) {</span>
+<span class="nc" id="L17">    syms = new LinkedHashMap&lt;String, Integer&gt;();</span>
+<span class="nc" id="L18">    slist = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L20">    makeHeap();</span>
+
+<span class="nc" id="L22">    trail = new IntStack();</span>
+<span class="nc" id="L23">    ustack = new IntStack();</span>
+
+<span class="nc" id="L25">    clauses = dload(fname);</span>
+
+<span class="nc" id="L27">    cls = toNums(clauses);</span>
+
+<span class="nc" id="L29">    query = init();</span>
+
+<span class="nc" id="L31">    vmaps = vcreate(MAXIND);</span>
+<span class="nc" id="L32">    imaps = index(clauses, vmaps);</span>
+<span class="nc" id="L33">  }</span>
+
+  /**
+   * trimmed down clauses ready to be quickly relocated to the heap
+   */
+  final Clause[] clauses;
+
+  final int[] cls;
+  /** symbol table made of map + reverse map from ints to syms */
+
+  final LinkedHashMap&lt;String, Integer&gt; syms;
+  final private ArrayList&lt;String&gt; slist;
+
+  /** runtime areas:
+   *
+   * the heap contains code for and clauses their their copies
+   * created during execution
+   *
+   * the trail is an undo list for variable bindings
+   * that facilitates retrying failed goals with alternative
+   * matching clauses
+   *
+   * the unification stack ustack helps handling term unification non-recursively
+   *
+   * the spines stack contains abstractions of clauses and goals and performs the
+   * functions of  both a choice-point stack and goal stack
+   *
+   * imaps: contains indexes for up toMAXIND&gt;0 arg positions (0 for pred symbol itself)
+   *
+   * vmaps: contains clause numbers for which vars occur in indexed arg positions
+   */
+
+  private int heap[];
+  private int top;
+<span class="nc" id="L67">  static int MINSIZE = 1 &lt;&lt; 15; // power of 2</span>
+
+  final private IntStack trail;
+  final private IntStack ustack;
+<span class="nc" id="L71">  final private ObStack&lt;Spine&gt; spines = new ObStack&lt;Spine&gt;();</span>
+
+  Spine query;
+
+  final IMap&lt;Integer&gt;[] imaps;
+  final IntMap[] vmaps;
+
+  /**
+   * tags of our heap cells - that can also be seen as
+   * instruction codes in a compiled implementation
+   */
+  final private static int V = 0;
+  final private static int U = 1;
+  final private static int R = 2;
+
+  final private static int C = 3;
+  final private static int N = 4;
+
+  final private static int A = 5;
+
+  // G - ground?
+
+  final private static int BAD = 7;
+
+  /**
+   * tags an integer value while fliping it into a negative
+   * number to ensure that untagged cells are always negative and the tagged
+   * ones are always positive - a simple way to ensure we do not mix them up
+   * at runtime
+   */
+  final private static int tag(final int t, final int w) {
+<span class="nc" id="L102">    return -((w &lt;&lt; 3) + t);</span>
+  }
+
+  /**
+   * removes tag after flipping sign
+   */
+  final private static int detag(final int w) {
+<span class="nc" id="L109">    return -w &gt;&gt; 3;</span>
+  }
+
+  /**
+   * extracts the tag of a cell
+   */
+  final private static int tagOf(final int w) {
+<span class="nc" id="L116">    return -w &amp; 7;</span>
+  }
+
+  /**
+   * places an identifier in the symbol table
+   */
+  final private int addSym(final String sym) {
+<span class="nc" id="L123">    Integer I = syms.get(sym);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (null == I) {</span>
+<span class="nc" id="L125">      final int i = syms.size();</span>
+<span class="nc" id="L126">      I = new Integer(i);</span>
+<span class="nc" id="L127">      syms.put(sym, I);</span>
+<span class="nc" id="L128">      slist.add(sym);</span>
+    }
+<span class="nc" id="L130">    return I.intValue();</span>
+  }
+
+  /**
+   * returns the symbol associated to an integer index
+   * in the symbol table
+   */
+  final private String getSym(final int w) {
+<span class="nc bnc" id="L138" title="All 4 branches missed.">    if (w &lt; 0 || w &gt;= slist.size())</span>
+<span class="nc" id="L139">      return &quot;BADSYMREF=&quot; + w;</span>
+<span class="nc" id="L140">    return slist.get(w);</span>
+  }
+
+  private final void makeHeap() {
+<span class="nc" id="L144">    makeHeap(MINSIZE);</span>
+<span class="nc" id="L145">  }</span>
+
+  private final void makeHeap(final int size) {
+<span class="nc" id="L148">    heap = new int[size];</span>
+<span class="nc" id="L149">    clear();</span>
+<span class="nc" id="L150">  }</span>
+
+  private final int getTop() {
+<span class="nc" id="L153">    return top;</span>
+  }
+
+  private final int setTop(final int top) {
+<span class="nc" id="L157">    return this.top = top;</span>
+  }
+
+  private final void clear() {
+    //for (int i = 0; i &lt;= top; i++)
+    //heap[i] = 0;
+<span class="nc" id="L163">    top = -1;</span>
+<span class="nc" id="L164">  }</span>
+
+  /**
+   * Pushes an element - top is incremented frirst than the
+   * element is assigned. This means top point to the last assigned
+   * element - which can be returned with peek().
+   */
+  private final void push(final int i) {
+<span class="nc" id="L172">    heap[++top] = i;</span>
+<span class="nc" id="L173">  }</span>
+
+  final int size() {
+<span class="nc" id="L176">    return top + 1;</span>
+  }
+
+  /**
+   * dynamic array operation: doubles when full
+   */
+  private final void expand() {
+<span class="nc" id="L183">    final int l = heap.length;</span>
+<span class="nc" id="L184">    final int[] newstack = new int[l &lt;&lt; 1];</span>
+
+<span class="nc" id="L186">    System.arraycopy(heap, 0, newstack, 0, l);</span>
+<span class="nc" id="L187">    heap = newstack;</span>
+<span class="nc" id="L188">  }</span>
+
+  private void ensureSize(final int more) {
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (1 + top + more &gt;= heap.length) {</span>
+<span class="nc" id="L192">      expand();</span>
+    }
+<span class="nc" id="L194">  }</span>
+
+  /**
+  * expands a &quot;Xs lists ..&quot; statements to &quot;Xs holds&quot; statements
+  */
+
+  private final static ArrayList&lt;String[]&gt; maybeExpand(final ArrayList&lt;String&gt; Ws) {
+<span class="nc" id="L201">    final String W = Ws.get(0);</span>
+<span class="nc bnc" id="L202" title="All 4 branches missed.">    if (W.length() &lt; 2 || !&quot;l:&quot;.equals(W.substring(0, 2)))</span>
+<span class="nc" id="L203">      return null;</span>
+
+<span class="nc" id="L205">    final int l = Ws.size();</span>
+<span class="nc" id="L206">    final ArrayList&lt;String[]&gt; Rss = new ArrayList&lt;String[]&gt;();</span>
+<span class="nc" id="L207">    final String V = W.substring(2);</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">    for (int i = 1; i &lt; l; i++) {</span>
+<span class="nc" id="L209">      final String[] Rs = new String[4];</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">      final String Vi = 1 == i ? V : V + &quot;__&quot; + (i - 1);</span>
+<span class="nc" id="L211">      final String Vii = V + &quot;__&quot; + i;</span>
+<span class="nc" id="L212">      Rs[0] = &quot;h:&quot; + Vi;</span>
+<span class="nc" id="L213">      Rs[1] = &quot;c:list&quot;;</span>
+<span class="nc" id="L214">      Rs[2] = Ws.get(i);</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">      Rs[3] = i == l - 1 ? &quot;c:nil&quot; : &quot;v:&quot; + Vii;</span>
+<span class="nc" id="L216">      Rss.add(Rs);</span>
+    }
+<span class="nc" id="L218">    return Rss;</span>
+
+  }
+
+  /**
+   * expands, if needed, &quot;lists&quot; statements in sequence of statements
+   */
+  private final static ArrayList&lt;String[]&gt; mapExpand(final ArrayList&lt;ArrayList&lt;String&gt;&gt; Wss) {
+<span class="nc" id="L226">    final ArrayList&lt;String[]&gt; Rss = new ArrayList&lt;String[]&gt;();</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">    for (final ArrayList&lt;String&gt; Ws : Wss) {</span>
+
+<span class="nc" id="L229">      final ArrayList&lt;String[]&gt; Hss = maybeExpand(Ws);</span>
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">      if (null == Hss) {</span>
+<span class="nc" id="L232">        final String[] ws = new String[Ws.size()];</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        for (int i = 0; i &lt; ws.length; i++) {</span>
+<span class="nc" id="L234">          ws[i] = Ws.get(i);</span>
+        }
+<span class="nc" id="L236">        Rss.add(ws);</span>
+<span class="nc" id="L237">      } else {</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">        for (final String[] X : Hss) {</span>
+<span class="nc" id="L239">          Rss.add(X);</span>
+<span class="nc" id="L240">        }</span>
+      }
+<span class="nc" id="L242">    }</span>
+<span class="nc" id="L243">    return Rss;</span>
+  }
+
+  /**
+   * loads a program from a .nl file of
+   * &quot;natural language&quot; equivalents of Prolog/HiLog statements
+   */
+  Clause[] dload(final String s) {
+<span class="nc" id="L251">    final boolean fromFile = true;</span>
+<span class="nc" id="L252">    final ArrayList&lt;ArrayList&lt;ArrayList&lt;String&gt;&gt;&gt; Wsss = Toks.toSentences(s, fromFile);</span>
+
+<span class="nc" id="L254">    final ArrayList&lt;Clause&gt; Cs = new ArrayList&lt;Clause&gt;();</span>
+
+<span class="nc bnc" id="L256" title="All 2 branches missed.">    for (final ArrayList&lt;ArrayList&lt;String&gt;&gt; Wss : Wsss) {</span>
+      // clause starts here
+
+<span class="nc" id="L259">      final LinkedHashMap&lt;String, IntStack&gt; refs = new LinkedHashMap&lt;String, IntStack&gt;();</span>
+<span class="nc" id="L260">      final IntStack cs = new IntStack();</span>
+<span class="nc" id="L261">      final IntStack gs = new IntStack();</span>
+
+<span class="nc" id="L263">      final ArrayList&lt;String[]&gt; Rss = mapExpand(Wss);</span>
+<span class="nc" id="L264">      int k = 0;</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">      for (final String[] ws : Rss) {</span>
+
+        // head or body element starts here
+
+<span class="nc" id="L269">        final int l = ws.length;</span>
+<span class="nc" id="L270">        gs.push(tag(R, k++));</span>
+<span class="nc" id="L271">        cs.push(tag(A, l));</span>
+
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (String w : ws) {</span>
+
+          // head or body subterm starts here
+
+<span class="nc bnc" id="L277" title="All 2 branches missed.">          if (1 == w.length()) {</span>
+<span class="nc" id="L278">            w = &quot;c:&quot; + w;</span>
+          }
+
+<span class="nc" id="L281">          final String L = w.substring(2);</span>
+
+<span class="nc bnc" id="L283" title="All 5 branches missed.">          switch (w.charAt(0)) {</span>
+            case 'c':
+<span class="nc" id="L285">              cs.push(encode(C, L));</span>
+<span class="nc" id="L286">              k++;</span>
+<span class="nc" id="L287">            break;</span>
+            case 'n':
+<span class="nc" id="L289">              cs.push(encode(N, L));</span>
+<span class="nc" id="L290">              k++;</span>
+<span class="nc" id="L291">            break;</span>
+            case 'v': {
+<span class="nc" id="L293">              IntStack Is = refs.get(L);</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">              if (null == Is) {</span>
+<span class="nc" id="L295">                Is = new IntStack();</span>
+<span class="nc" id="L296">                refs.put(L, Is);</span>
+              }
+<span class="nc" id="L298">              Is.push(k);</span>
+<span class="nc" id="L299">              cs.push(tag(BAD, k)); // just in case we miss this</span>
+<span class="nc" id="L300">              k++;</span>
+            }
+<span class="nc" id="L302">            break;</span>
+            case 'h': {
+<span class="nc" id="L304">              IntStack Is = refs.get(L);</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">              if (null == Is) {</span>
+<span class="nc" id="L306">                Is = new IntStack();</span>
+<span class="nc" id="L307">                refs.put(L, Is);</span>
+              }
+<span class="nc" id="L309">              Is.push(k - 1);</span>
+<span class="nc" id="L310">              cs.set(k - 1, tag(A, l - 1));</span>
+<span class="nc" id="L311">              gs.pop();</span>
+            }
+<span class="nc" id="L313">            break;</span>
+            default:
+<span class="nc" id="L315">              Main.pp(&quot;FORGOTTEN=&quot; + w);</span>
+          } // end subterm
+        } // end element
+<span class="nc" id="L318">      } // end clause</span>
+
+      // linker
+<span class="nc" id="L321">      final Iterator&lt;IntStack&gt; K = refs.values().iterator();</span>
+
+<span class="nc bnc" id="L323" title="All 2 branches missed.">      while (K.hasNext()) {</span>
+<span class="nc" id="L324">        final IntStack Is = K.next();</span>
+
+        // finding the A among refs
+<span class="nc" id="L327">        int leader = -1;</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">        for (final int j : Is.toArray()) {</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">          if (A == tagOf(cs.get(j))) {</span>
+<span class="nc" id="L330">            leader = j;</span>
+
+<span class="nc" id="L332">            break;</span>
+          }
+        }
+<span class="nc bnc" id="L335" title="All 2 branches missed.">        if (-1 == leader) {</span>
+          // for vars, first V others U
+<span class="nc" id="L337">          leader = Is.get(0);</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">          for (final int i : Is.toArray()) {</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">            if (i == leader) {</span>
+<span class="nc" id="L340">              cs.set(i, tag(V, i));</span>
+            } else {
+<span class="nc" id="L342">              cs.set(i, tag(U, leader));</span>
+            }
+
+          }
+        } else {
+<span class="nc bnc" id="L347" title="All 2 branches missed.">          for (final int i : Is.toArray()) {</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">            if (i == leader) {</span>
+<span class="nc" id="L349">              continue;</span>
+            }
+<span class="nc" id="L351">            cs.set(i, tag(R, leader));</span>
+          }
+        }
+<span class="nc" id="L354">      }</span>
+
+<span class="nc bnc" id="L356" title="All 2 branches missed.">      final int neck = 1 == gs.size() ? cs.size() : detag(gs.get(1));</span>
+<span class="nc" id="L357">      final int[] tgs = gs.toArray();</span>
+
+<span class="nc" id="L359">      final Clause C = putClause(cs.toArray(), tgs, neck);</span>
+
+<span class="nc" id="L361">      Cs.add(C);</span>
+
+<span class="nc" id="L363">    } // end clause set</span>
+
+<span class="nc" id="L365">    final int ccount = Cs.size();</span>
+<span class="nc" id="L366">    final Clause[] cls = new Clause[ccount];</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">    for (int i = 0; i &lt; ccount; i++) {</span>
+<span class="nc" id="L368">      cls[i] = Cs.get(i);</span>
+    }
+<span class="nc" id="L370">    return cls;</span>
+  }
+
+  private static final int[] toNums(final Clause[] clauses) {
+<span class="nc" id="L374">    final int l = clauses.length;</span>
+<span class="nc" id="L375">    final int[] cls = new int[l];</span>
+<span class="nc bnc" id="L376" title="All 2 branches missed.">    for (int i = 0; i &lt; l; i++) {</span>
+<span class="nc" id="L377">      cls[i] = i;</span>
+    }
+<span class="nc" id="L379">    return cls;</span>
+  }
+
+  /*
+   * encodes string constants into symbols while leaving
+   * other data types untouched
+   */
+  private final int encode(final int t, final String s) {
+    int w;
+    try {
+<span class="nc" id="L389">      w = Integer.parseInt(s);</span>
+<span class="nc" id="L390">    } catch (final Exception e) {</span>
+<span class="nc bnc" id="L391" title="All 2 branches missed.">      if (C == t) {</span>
+<span class="nc" id="L392">        w = addSym(s);</span>
+      } else
+        //pp(&quot;bad in encode=&quot; + t + &quot;:&quot; + s);
+<span class="nc" id="L395">        return tag(BAD, 666);</span>
+<span class="nc" id="L396">    }</span>
+<span class="nc" id="L397">    return tag(t, w);</span>
+  }
+
+  /**
+   * true if cell x is a variable
+   * assumes that variables are tagged with 0 or 1
+   */
+  final private static boolean isVAR(final int x) {
+    //final int t = tagOf(x);
+    //return V == t || U == t;
+<span class="nc bnc" id="L407" title="All 2 branches missed.">    return tagOf(x) &lt; 2;</span>
+  }
+
+  /**
+   * returns the heap cell another cell points to
+   */
+  final int getRef(final int x) {
+<span class="nc" id="L414">    return heap[detag(x)];</span>
+  }
+
+  /*
+   * sets a heap cell to point to another one
+   */
+  final private void setRef(final int w, final int r) {
+<span class="nc" id="L421">    heap[detag(w)] = r;</span>
+<span class="nc" id="L422">  }</span>
+
+  /**
+   * removes binding for variable cells
+   * above savedTop
+   */
+  private void unwindTrail(final int savedTop) {
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    while (savedTop &lt; trail.getTop()) {</span>
+<span class="nc" id="L430">      final int href = trail.pop();</span>
+      // assert href is var
+
+<span class="nc" id="L433">      setRef(href, href);</span>
+<span class="nc" id="L434">    }</span>
+<span class="nc" id="L435">  }</span>
+
+  /**
+   * scans reference chains starting from a variable
+   * until it points to an unbound root variable or some
+   * non-variable cell
+   */
+  final private int deref(int x) {
+<span class="nc bnc" id="L443" title="All 2 branches missed.">    while (isVAR(x)) {</span>
+<span class="nc" id="L444">      final int r = getRef(x);</span>
+<span class="nc bnc" id="L445" title="All 2 branches missed.">      if (r == x) {</span>
+<span class="nc" id="L446">        break;</span>
+      }
+<span class="nc" id="L448">      x = r;</span>
+<span class="nc" id="L449">    }</span>
+<span class="nc" id="L450">    return x;</span>
+  }
+
+  /**
+   * raw display of a term - to be overridden
+   */
+  String showTerm(final int x) {
+<span class="nc" id="L457">    return showTerm(exportTerm(x));</span>
+  }
+
+  /**
+   * raw display of a externalized term
+   */
+  String showTerm(final Object O) {
+<span class="nc bnc" id="L464" title="All 2 branches missed.">    if (O instanceof Object[])</span>
+<span class="nc" id="L465">      return Arrays.deepToString((Object[]) O);</span>
+<span class="nc" id="L466">    return O.toString();</span>
+  }
+
+  /**
+   * prints out content of the trail
+   */
+  void ppTrail() {
+<span class="nc bnc" id="L473" title="All 2 branches missed.">    for (int i = 0; i &lt;= trail.getTop(); i++) {</span>
+<span class="nc" id="L474">      final int t = trail.get(i);</span>
+<span class="nc" id="L475">      Main.pp(&quot;trail[&quot; + i + &quot;]=&quot; + showCell(t) + &quot;:&quot; + showTerm(t));</span>
+    }
+<span class="nc" id="L477">  }</span>
+
+  /**
+   * builds an array of embedded arrays from a heap cell
+   * representing a term for interaction with an external function
+   * including a displayer
+   */
+  Object exportTerm(int x) {
+<span class="nc" id="L485">    x = deref(x);</span>
+
+<span class="nc" id="L487">    final int t = tagOf(x);</span>
+<span class="nc" id="L488">    final int w = detag(x);</span>
+
+<span class="nc" id="L490">    Object res = null;</span>
+<span class="nc bnc" id="L491" title="All 5 branches missed.">    switch (t) {</span>
+      case C:
+<span class="nc" id="L493">        res = getSym(w);</span>
+<span class="nc" id="L494">      break;</span>
+      case N:
+<span class="nc" id="L496">        res = new Integer(w);</span>
+<span class="nc" id="L497">      break;</span>
+      case V:
+        //case U:
+<span class="nc" id="L500">        res = &quot;V&quot; + w;</span>
+<span class="nc" id="L501">      break;</span>
+      case R: {
+
+<span class="nc" id="L504">        final int a = heap[w];</span>
+<span class="nc bnc" id="L505" title="All 2 branches missed.">        if (A != tagOf(a))</span>
+<span class="nc" id="L506">          return &quot;*** should be A, found=&quot; + showCell(a);</span>
+<span class="nc" id="L507">        final int n = detag(a);</span>
+<span class="nc" id="L508">        final Object[] arr = new Object[n];</span>
+<span class="nc" id="L509">        final int k = w + 1;</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L511">          final int j = k + i;</span>
+<span class="nc" id="L512">          arr[i] = exportTerm(heap[j]);</span>
+        }
+<span class="nc" id="L514">        res = arr;</span>
+      }
+<span class="nc" id="L516">      break;</span>
+      default:
+<span class="nc" id="L518">        res = &quot;*BAD TERM*&quot; + showCell(x);</span>
+    }
+<span class="nc" id="L520">    return res;</span>
+  }
+
+  /**
+   * extracts an integer array pointing to
+   * the skeleton of a clause: a cell
+   * pointing to its head followed by cells pointing to its body's
+   * goals
+   */
+  static int[] getSpine(final int[] cs) {
+<span class="nc" id="L530">    final int a = cs[1];</span>
+<span class="nc" id="L531">    final int w = detag(a);</span>
+<span class="nc" id="L532">    final int[] rs = new int[w - 1];</span>
+<span class="nc bnc" id="L533" title="All 2 branches missed.">    for (int i = 0; i &lt; w - 1; i++) {</span>
+<span class="nc" id="L534">      final int x = cs[3 + i];</span>
+<span class="nc" id="L535">      final int t = tagOf(x);</span>
+<span class="nc bnc" id="L536" title="All 2 branches missed.">      if (R != t) {</span>
+<span class="nc" id="L537">        Main.pp(&quot;*** getSpine: unexpected tag=&quot; + t);</span>
+<span class="nc" id="L538">        return null;</span>
+      }
+<span class="nc" id="L540">      rs[i] = detag(x);</span>
+    }
+<span class="nc" id="L542">    return rs;</span>
+  }
+
+  /**
+   * raw display of a cell as tag : value
+   */
+  final String showCell(final int w) {
+<span class="nc" id="L549">    final int t = tagOf(w);</span>
+<span class="nc" id="L550">    final int val = detag(w);</span>
+<span class="nc" id="L551">    String s = null;</span>
+<span class="nc bnc" id="L552" title="All 7 branches missed.">    switch (t) {</span>
+      case V:
+<span class="nc" id="L554">        s = &quot;v:&quot; + val;</span>
+<span class="nc" id="L555">      break;</span>
+      case U:
+<span class="nc" id="L557">        s = &quot;u:&quot; + val;</span>
+<span class="nc" id="L558">      break;</span>
+      case N:
+<span class="nc" id="L560">        s = &quot;n:&quot; + val;</span>
+<span class="nc" id="L561">      break;</span>
+      case C:
+<span class="nc" id="L563">        s = &quot;c:&quot; + getSym(val);</span>
+<span class="nc" id="L564">      break;</span>
+      case R:
+<span class="nc" id="L566">        s = &quot;r:&quot; + val;</span>
+<span class="nc" id="L567">      break;</span>
+      case A:
+<span class="nc" id="L569">        s = &quot;a:&quot; + val;</span>
+<span class="nc" id="L570">      break;</span>
+      default:
+<span class="nc" id="L572">        s = &quot;*BAD*=&quot; + w;</span>
+    }
+<span class="nc" id="L574">    return s;</span>
+  }
+
+  /**
+   * a displayer for cells
+   */
+
+  String showCells(final int base, final int len) {
+<span class="nc" id="L582">    final StringBuffer buf = new StringBuffer();</span>
+<span class="nc bnc" id="L583" title="All 2 branches missed.">    for (int k = 0; k &lt; len; k++) {</span>
+<span class="nc" id="L584">      final int instr = heap[base + k];</span>
+
+<span class="nc" id="L586">      buf.append(&quot;[&quot; + (base + k) + &quot;]&quot;);</span>
+<span class="nc" id="L587">      buf.append(showCell(instr));</span>
+<span class="nc" id="L588">      buf.append(&quot; &quot;);</span>
+    }
+<span class="nc" id="L590">    return buf.toString();</span>
+  }
+
+  String showCells(final int[] cs) {
+<span class="nc" id="L594">    final StringBuffer buf = new StringBuffer();</span>
+<span class="nc bnc" id="L595" title="All 2 branches missed.">    for (int k = 0; k &lt; cs.length; k++) {</span>
+<span class="nc" id="L596">      buf.append(&quot;[&quot; + k + &quot;]&quot;);</span>
+<span class="nc" id="L597">      buf.append(showCell(cs[k]));</span>
+<span class="nc" id="L598">      buf.append(&quot; &quot;);</span>
+    }
+<span class="nc" id="L600">    return buf.toString();</span>
+  }
+
+  /**
+  * to be overridden as a printer of a spine
+  */
+  void ppc(final Spine C) {
+    // override
+<span class="nc" id="L608">  }</span>
+
+  /**
+   * to be overridden as a printer for current goals
+   * in a spine
+   */
+  void ppGoals(final IntList gs) {
+    // override
+<span class="nc" id="L616">  }</span>
+
+  /**
+   * to be overriden as a printer for spines
+   */
+  void ppSpines() {
+    // override
+<span class="nc" id="L623">  }</span>
+
+  /**
+   * unification algorithm for cells X1 and X2 on ustack that also takes care
+   * to trail bindigs below a given heap address &quot;base&quot;
+   */
+  final private boolean unify(final int base) {
+<span class="nc bnc" id="L630" title="All 2 branches missed.">    while (!ustack.isEmpty()) {</span>
+<span class="nc" id="L631">      final int x1 = deref(ustack.pop());</span>
+<span class="nc" id="L632">      final int x2 = deref(ustack.pop());</span>
+<span class="nc bnc" id="L633" title="All 2 branches missed.">      if (x1 != x2) {</span>
+<span class="nc" id="L634">        final int t1 = tagOf(x1);</span>
+<span class="nc" id="L635">        final int t2 = tagOf(x2);</span>
+<span class="nc" id="L636">        final int w1 = detag(x1);</span>
+<span class="nc" id="L637">        final int w2 = detag(x2);</span>
+
+<span class="nc bnc" id="L639" title="All 2 branches missed.">        if (isVAR(x1)) { /* unb. var. v1 */</span>
+<span class="nc bnc" id="L640" title="All 4 branches missed.">          if (isVAR(x2) &amp;&amp; w2 &gt; w1) { /* unb. var. v2 */</span>
+<span class="nc" id="L641">            heap[w2] = x1;</span>
+<span class="nc bnc" id="L642" title="All 2 branches missed.">            if (w2 &lt;= base) {</span>
+<span class="nc" id="L643">              trail.push(x2);</span>
+            }
+          } else { // x2 nonvar or older
+<span class="nc" id="L646">            heap[w1] = x2;</span>
+<span class="nc bnc" id="L647" title="All 2 branches missed.">            if (w1 &lt;= base) {</span>
+<span class="nc" id="L648">              trail.push(x1);</span>
+            }
+          }
+<span class="nc bnc" id="L651" title="All 2 branches missed.">        } else if (isVAR(x2)) { /* x1 is NONVAR */</span>
+<span class="nc" id="L652">          heap[w2] = x1;</span>
+<span class="nc bnc" id="L653" title="All 2 branches missed.">          if (w2 &lt;= base) {</span>
+<span class="nc" id="L654">            trail.push(x2);</span>
+          }
+<span class="nc bnc" id="L656" title="All 4 branches missed.">        } else if (R == t1 &amp;&amp; R == t2) { // both should be R</span>
+<span class="nc bnc" id="L657" title="All 2 branches missed.">          if (!unify_args(w1, w2))</span>
+<span class="nc" id="L658">            return false;</span>
+        } else
+<span class="nc" id="L660">          return false;</span>
+      }
+<span class="nc" id="L662">    }</span>
+<span class="nc" id="L663">    return true;</span>
+  }
+
+  final private boolean unify_args(final int w1, final int w2) {
+<span class="nc" id="L667">    final int v1 = heap[w1];</span>
+<span class="nc" id="L668">    final int v2 = heap[w2];</span>
+    // both should be A
+<span class="nc" id="L670">    final int n1 = detag(v1);</span>
+<span class="nc" id="L671">    final int n2 = detag(v2);</span>
+<span class="nc bnc" id="L672" title="All 2 branches missed.">    if (n1 != n2)</span>
+<span class="nc" id="L673">      return false;</span>
+<span class="nc" id="L674">    final int b1 = 1 + w1;</span>
+<span class="nc" id="L675">    final int b2 = 1 + w2;</span>
+<span class="nc bnc" id="L676" title="All 2 branches missed.">    for (int i = n1 - 1; i &gt;= 0; i--) {</span>
+<span class="nc" id="L677">      final int i1 = b1 + i;</span>
+<span class="nc" id="L678">      final int i2 = b2 + i;</span>
+<span class="nc" id="L679">      final int u1 = heap[i1];</span>
+<span class="nc" id="L680">      final int u2 = heap[i2];</span>
+<span class="nc bnc" id="L681" title="All 2 branches missed.">      if (u1 == u2) {</span>
+<span class="nc" id="L682">        continue;</span>
+      }
+<span class="nc" id="L684">      ustack.push(u2);</span>
+<span class="nc" id="L685">      ustack.push(u1);</span>
+    }
+<span class="nc" id="L687">    return true;</span>
+  }
+
+  /**
+   * places a clause built by the Toks reader on the heap
+   */
+  Clause putClause(final int[] cs, final int[] gs, final int neck) {
+<span class="nc" id="L694">    final int base = size();</span>
+<span class="nc" id="L695">    final int b = tag(V, base);</span>
+<span class="nc" id="L696">    final int len = cs.length;</span>
+<span class="nc" id="L697">    pushCells(b, 0, len, cs);</span>
+<span class="nc bnc" id="L698" title="All 2 branches missed.">    for (int i = 0; i &lt; gs.length; i++) {</span>
+<span class="nc" id="L699">      gs[i] = relocate(b, gs[i]);</span>
+    }
+<span class="nc" id="L701">    final int[] xs = getIndexables(gs[0]);</span>
+<span class="nc" id="L702">    return new Clause(len, gs, base, neck, xs);</span>
+  }
+
+  /**
+   * relocates a variable or array reference cell by b
+   * assumes var/ref codes V,U,R are 0,1,2
+   */
+  final private static int relocate(final int b, final int cell) {
+<span class="nc bnc" id="L710" title="All 2 branches missed.">    return tagOf(cell) &lt; 3 ? cell + b : cell;</span>
+  }
+
+  /**
+   * pushes slice[from,to] of array cs of cells to heap
+   */
+  final private void pushCells(final int b, final int from, final int to, final int base) {
+<span class="nc" id="L717">    ensureSize(to - from);</span>
+<span class="nc bnc" id="L718" title="All 2 branches missed.">    for (int i = from; i &lt; to; i++) {</span>
+<span class="nc" id="L719">      push(relocate(b, heap[base + i]));</span>
+    }
+<span class="nc" id="L721">  }</span>
+
+  /**
+   * pushes slice[from,to] of array cs of cells to heap
+   */
+  final private void pushCells(final int b, final int from, final int to, final int[] cs) {
+<span class="nc" id="L727">    ensureSize(to - from);</span>
+<span class="nc bnc" id="L728" title="All 2 branches missed.">    for (int i = from; i &lt; to; i++) {</span>
+<span class="nc" id="L729">      push(relocate(b, cs[i]));</span>
+    }
+<span class="nc" id="L731">  }</span>
+
+  /**
+   * copies and relocates head of clause at offset from heap to heap
+   */
+  final private int pushHead(final int b, final Clause C) {
+<span class="nc" id="L737">    pushCells(b, 0, C.neck, C.base);</span>
+<span class="nc" id="L738">    final int head = C.hgs[0];</span>
+<span class="nc" id="L739">    return relocate(b, head);</span>
+  }
+
+  /**
+   * copies and relocates body of clause at offset from heap to heap
+   * while also placing head as the first element of array gs that
+   * when returned contains references to the toplevel spine of the clause
+   */
+  final private int[] pushBody(final int b, final int head, final Clause C) {
+<span class="nc" id="L748">    pushCells(b, C.neck, C.len, C.base);</span>
+<span class="nc" id="L749">    final int l = C.hgs.length;</span>
+<span class="nc" id="L750">    final int[] gs = new int[l];</span>
+<span class="nc" id="L751">    gs[0] = head;</span>
+<span class="nc bnc" id="L752" title="All 2 branches missed.">    for (int k = 1; k &lt; l; k++) {</span>
+<span class="nc" id="L753">      final int cell = C.hgs[k];</span>
+<span class="nc" id="L754">      gs[k] = relocate(b, cell);</span>
+    }
+<span class="nc" id="L756">    return gs;</span>
+  }
+
+  /**
+   * makes, if needed, registers associated to top goal of a Spine
+   * these registers will be reused when matching with candidate clauses
+   * note that xs contains dereferenced cells - this is done once for
+   * each goal's toplevel subterms
+   */
+  final private void makeIndexArgs(final Spine G, final int goal) {
+<span class="nc bnc" id="L766" title="All 2 branches missed.">    if (null != G.xs)</span>
+<span class="nc" id="L767">      return;</span>
+
+<span class="nc" id="L769">    final int p = 1 + detag(goal);</span>
+<span class="nc" id="L770">    final int n = Math.min(MAXIND, detag(getRef(goal)));</span>
+
+<span class="nc" id="L772">    final int[] xs = new int[MAXIND];</span>
+
+<span class="nc bnc" id="L774" title="All 2 branches missed.">    for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L775">      final int cell = deref(heap[p + i]);</span>
+<span class="nc" id="L776">      xs[i] = cell2index(cell);</span>
+    }
+
+<span class="nc" id="L779">    G.xs = xs;</span>
+
+<span class="nc bnc" id="L781" title="All 2 branches missed.">    if (null == imaps)</span>
+<span class="nc" id="L782">      return;</span>
+<span class="nc" id="L783">    final int[] cs = IMap.get(imaps, vmaps, xs);</span>
+<span class="nc" id="L784">    G.cs = cs;</span>
+<span class="nc" id="L785">  }</span>
+
+  final private int[] getIndexables(final int ref) {
+<span class="nc" id="L788">    final int p = 1 + detag(ref);</span>
+<span class="nc" id="L789">    final int n = detag(getRef(ref));</span>
+<span class="nc" id="L790">    final int[] xs = new int[MAXIND];</span>
+<span class="nc bnc" id="L791" title="All 4 branches missed.">    for (int i = 0; i &lt; MAXIND &amp;&amp; i &lt; n; i++) {</span>
+<span class="nc" id="L792">      final int cell = deref(heap[p + i]);</span>
+<span class="nc" id="L793">      xs[i] = cell2index(cell);</span>
+    }
+<span class="nc" id="L795">    return xs;</span>
+  }
+
+  final private int cell2index(final int cell) {
+<span class="nc" id="L799">    int x = 0;</span>
+<span class="nc" id="L800">    final int t = tagOf(cell);</span>
+<span class="nc bnc" id="L801" title="All 3 branches missed.">    switch (t) {</span>
+      case R:
+<span class="nc" id="L803">        x = getRef(cell);</span>
+<span class="nc" id="L804">      break;</span>
+      case C:
+      case N:
+<span class="nc" id="L807">        x = cell;</span>
+      break;
+      // 0 otherwise - assert: tagging with R,C,N &lt;&gt;0
+    }
+<span class="nc" id="L811">    return x;</span>
+  }
+
+  /**
+   * tests if the head of a clause, not yet copied to the heap
+   * for execution could possibly match the current goal, an
+   * abstraction of which has been place in xs
+   */
+  private final boolean match(final int[] xs, final Clause C0) {
+<span class="nc bnc" id="L820" title="All 2 branches missed.">    for (int i = 0; i &lt; MAXIND; i++) {</span>
+<span class="nc" id="L821">      final int x = xs[i];</span>
+<span class="nc" id="L822">      final int y = C0.xs[i];</span>
+<span class="nc bnc" id="L823" title="All 4 branches missed.">      if (0 == x || 0 == y) {</span>
+<span class="nc" id="L824">        continue;</span>
+      }
+<span class="nc bnc" id="L826" title="All 2 branches missed.">      if (x != y)</span>
+<span class="nc" id="L827">        return false;</span>
+    }
+<span class="nc" id="L829">    return true;</span>
+  }
+
+  /**
+   * transforms a spine containing references to choice point and
+   * immutable list of goals into a new spine, by reducing the
+   * first goal in the list with a clause that successfully
+   * unifies with it - in which case places the goals of the
+   * clause at the top of the new list of goals, in reverse order
+   */
+  final private Spine unfold(final Spine G) {
+
+<span class="nc" id="L841">    final int ttop = trail.getTop();</span>
+<span class="nc" id="L842">    final int htop = getTop();</span>
+<span class="nc" id="L843">    final int base = htop + 1;</span>
+
+<span class="nc" id="L845">    final int goal = IntList.head(G.gs);</span>
+
+<span class="nc" id="L847">    makeIndexArgs(G, goal);</span>
+
+<span class="nc" id="L849">    final int last = G.cs.length;</span>
+<span class="nc bnc" id="L850" title="All 2 branches missed.">    for (int k = G.k; k &lt; last; k++) {</span>
+<span class="nc" id="L851">      final Clause C0 = clauses[G.cs[k]];</span>
+
+<span class="nc bnc" id="L853" title="All 2 branches missed.">      if (!match(G.xs, C0))</span>
+<span class="nc" id="L854">        continue;</span>
+
+<span class="nc" id="L856">      final int base0 = base - C0.base;</span>
+<span class="nc" id="L857">      final int b = tag(V, base0);</span>
+<span class="nc" id="L858">      final int head = pushHead(b, C0);</span>
+
+<span class="nc" id="L860">      ustack.clear(); // set up unification stack</span>
+
+<span class="nc" id="L862">      ustack.push(head);</span>
+<span class="nc" id="L863">      ustack.push(goal);</span>
+
+<span class="nc bnc" id="L865" title="All 2 branches missed.">      if (!unify(base)) {</span>
+<span class="nc" id="L866">        unwindTrail(ttop);</span>
+<span class="nc" id="L867">        setTop(htop);</span>
+<span class="nc" id="L868">        continue;</span>
+      }
+<span class="nc" id="L870">      final int[] gs = pushBody(b, head, C0);</span>
+<span class="nc" id="L871">      final IntList newgs = IntList.tail(IntList.app(gs, IntList.tail(G.gs)));</span>
+<span class="nc" id="L872">      G.k = k + 1;</span>
+<span class="nc bnc" id="L873" title="All 2 branches missed.">      if (!IntList.isEmpty(newgs))</span>
+<span class="nc" id="L874">        return new Spine(gs, base, IntList.tail(G.gs), ttop, 0, cls);</span>
+      else
+<span class="nc" id="L876">        return answer(ttop);</span>
+    } // end for
+<span class="nc" id="L878">    return null;</span>
+  }
+
+  /**
+   * extracts a query - by convention of the form
+   * goal(Vars):-body to be executed by the engine
+   */
+  Clause getQuery() {
+<span class="nc" id="L886">    return clauses[clauses.length - 1];</span>
+  }
+
+  /**
+   * returns the initial spine built from the
+   * query from which execution starts
+   */
+  Spine init() {
+<span class="nc" id="L894">    final int base = size();</span>
+
+<span class="nc" id="L896">    final Clause G = getQuery();</span>
+<span class="nc" id="L897">    final Spine Q = new Spine(G.hgs, base, IntList.empty, trail.getTop(), 0, cls);</span>
+<span class="nc" id="L898">    spines.push(Q);</span>
+<span class="nc" id="L899">    return Q;</span>
+  }
+
+  /**
+   * returns an answer as a Spine while recording in it
+   * the top of the trail to allow the caller to retrieve
+   * more answers by forcing backtracking
+   */
+  final private Spine answer(final int ttop) {
+<span class="nc" id="L908">    return new Spine(spines.get(0).hd, ttop);</span>
+  }
+
+  /**
+   * detects availability of alternative clauses for the
+   * top goal of this spine
+   */
+  final private boolean hasClauses(final Spine S) {
+<span class="nc bnc" id="L916" title="All 2 branches missed.">    return S.k &lt; S.cs.length;</span>
+  }
+
+  /**
+   * true when there are no more goals left to solve
+   */
+  final private boolean hasGoals(final Spine S) {
+<span class="nc bnc" id="L923" title="All 2 branches missed.">    return !IntList.isEmpty(S.gs);</span>
+  }
+
+  /**
+   * removes this spines for the spine stack and
+   * resets trail and heap to where they where at its
+   * creating time - while undoing variable binding
+   * up to that point
+   */
+  final private void popSpine() {
+<span class="nc" id="L933">    final Spine G = spines.pop();</span>
+<span class="nc" id="L934">    unwindTrail(G.ttop);</span>
+<span class="nc" id="L935">    setTop(G.base - 1);</span>
+<span class="nc" id="L936">  }</span>
+
+  /**
+   * main interpreter loop: starts from a spine and works
+   * though a stream of answers, returned to the caller one
+   * at a time, until the spines stack is empty - when it
+   * returns null
+   */
+  final Spine yield() {
+<span class="nc bnc" id="L945" title="All 2 branches missed.">    while (!spines.isEmpty()) {</span>
+<span class="nc" id="L946">      final Spine G = spines.peek();</span>
+<span class="nc bnc" id="L947" title="All 2 branches missed.">      if (!hasClauses(G)) {</span>
+<span class="nc" id="L948">        popSpine(); // no clauses left</span>
+<span class="nc" id="L949">        continue;</span>
+      }
+<span class="nc" id="L951">      final Spine C = unfold(G);</span>
+<span class="nc bnc" id="L952" title="All 2 branches missed.">      if (null == C) {</span>
+<span class="nc" id="L953">        popSpine(); // no matches</span>
+<span class="nc" id="L954">        continue;</span>
+      }
+<span class="nc bnc" id="L956" title="All 2 branches missed.">      if (hasGoals(C)) {</span>
+<span class="nc" id="L957">        spines.push(C);</span>
+<span class="nc" id="L958">        continue;</span>
+      }
+<span class="nc" id="L960">      return C; // answer</span>
+    }
+<span class="nc" id="L962">    return null;</span>
+  }
+
+  /**
+   * retrieves an answers and ensure the engine can be resumed
+   * by unwinding the trail of the query Spine
+   * returns an external &quot;human readable&quot; representation of the answer
+   */
+  Object ask() {
+<span class="nc" id="L971">    query = yield();</span>
+<span class="nc bnc" id="L972" title="All 2 branches missed.">    if (null == query)</span>
+<span class="nc" id="L973">      return null;</span>
+<span class="nc" id="L974">    final int res = answer(query.ttop).hd;</span>
+<span class="nc" id="L975">    final Object R = exportTerm(res);</span>
+<span class="nc" id="L976">    unwindTrail(query.ttop);</span>
+<span class="nc" id="L977">    return R;</span>
+  }
+
+  /**
+   * initiator and consumer of the stream of answers
+   * generated by this engine
+   */
+  void run() {
+<span class="nc" id="L985">    long ctr = 0L;</span>
+<span class="nc" id="L986">    for (;; ctr++) {</span>
+<span class="nc" id="L987">      final Object A = ask();</span>
+<span class="nc bnc" id="L988" title="All 2 branches missed.">      if (null == A) {</span>
+<span class="nc" id="L989">        break;</span>
+      }
+<span class="nc bnc" id="L991" title="All 2 branches missed.">      if(ctr&lt;5) Prog.println(&quot;[&quot; + ctr + &quot;] &quot; + &quot;*** ANSWER=&quot; + showTerm(A));</span>
+    }
+<span class="nc bnc" id="L993" title="All 2 branches missed.">    if(ctr&gt;5) Prog.println(&quot;...&quot;);</span>
+<span class="nc" id="L994">    Prog.println(&quot;TOTAL ANSWERS=&quot; + ctr);</span>
+<span class="nc" id="L995">  }</span>
+
+  // indexing extensions - ony active if START_INDEX clauses or more
+
+  public static IntMap[] vcreate(final int l) {
+<span class="nc" id="L1000">    final IntMap[] vss = new IntMap[l];</span>
+<span class="nc bnc" id="L1001" title="All 2 branches missed.">    for (int i = 0; i &lt; l; i++) {</span>
+<span class="nc" id="L1002">      vss[i] = new IntMap();</span>
+    }
+<span class="nc" id="L1004">    return vss;</span>
+  }
+
+  final static void put(final IMap&lt;Integer&gt;[] imaps, final IntMap[] vss, final int[] keys, final int val) {
+<span class="nc bnc" id="L1008" title="All 2 branches missed.">    for (int i = 0; i &lt; imaps.length; i++) {</span>
+<span class="nc" id="L1009">      final int key = keys[i];</span>
+<span class="nc bnc" id="L1010" title="All 2 branches missed.">      if (key != 0) {</span>
+<span class="nc" id="L1011">        IMap.put(imaps, i, key, val);</span>
+      } else {
+<span class="nc" id="L1013">        vss[i].add(val);</span>
+      }
+    }
+<span class="nc" id="L1016">  }</span>
+
+  final IMap&lt;Integer&gt;[] index(final Clause[] clauses, final IntMap[] vmaps) {
+<span class="nc bnc" id="L1019" title="All 2 branches missed.">    if (clauses.length &lt; START_INDEX)</span>
+<span class="nc" id="L1020">      return null;</span>
+
+<span class="nc" id="L1022">    final IMap&lt;Integer&gt;[] imaps = IMap.create(vmaps.length);</span>
+<span class="nc bnc" id="L1023" title="All 2 branches missed.">    for (int i = 0; i &lt; clauses.length; i++) {</span>
+<span class="nc" id="L1024">      final Clause c = clauses[i];</span>
+
+<span class="nc" id="L1026">      put(imaps, vmaps, c.xs, i + 1); // $$$ UGLY INC</span>
+
+    }
+<span class="nc" id="L1029">    Main.pp(&quot;INDEX&quot;);</span>
+<span class="nc" id="L1030">    Main.pp(IMap.show(imaps));</span>
+<span class="nc" id="L1031">    Main.pp(Arrays.toString(vmaps));</span>
+<span class="nc" id="L1032">    Main.pp(&quot;&quot;);</span>
+<span class="nc" id="L1033">    return imaps;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

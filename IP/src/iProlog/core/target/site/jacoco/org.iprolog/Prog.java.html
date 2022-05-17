@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Prog.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">org.iprolog</a> &gt; <span class="el_source">Prog.java</span></div><h1>Prog.java</h1><pre class="source lang-java linenums">
+package org.iprolog;
+//import java.util.Arrays;
+import java.util.stream.Stream;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.stream.StreamSupport;
+
+public class Prog extends Engine implements Spliterator&lt;Object&gt; {
+  Prog(final String fname) {
+<span class="nc" id="L11">    super(fname);</span>
+<span class="nc" id="L12">  }</span>
+
+  static void pp(final Object o) {
+<span class="nc" id="L15">    Main.pp(o);</span>
+<span class="nc" id="L16">  }</span>
+
+  static void println(final Object o) {
+<span class="nc" id="L19">    Main.println(o);</span>
+<span class="nc" id="L20">  }</span>
+
+  @Override
+  String showTerm(final Object O) {
+<span class="nc bnc" id="L24" title="All 2 branches missed.">    if (O instanceof Object[])</span>
+<span class="nc" id="L25">      return st0((Object[]) O);</span>
+<span class="nc" id="L26">    return O.toString();</span>
+  }
+
+  static String maybeNull(final Object O) {
+<span class="nc bnc" id="L30" title="All 2 branches missed.">    if (null == O)</span>
+<span class="nc" id="L31">      return &quot;$null&quot;;</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">    if (O instanceof Object[])</span>
+<span class="nc" id="L33">      return st0((Object[]) O);</span>
+<span class="nc" id="L34">    return O.toString();</span>
+  }
+
+  static boolean isListCons(final Object name) {
+<span class="nc bnc" id="L38" title="All 6 branches missed.">    return &quot;.&quot;.equals(name) || &quot;[|]&quot;.equals(name) || &quot;list&quot;.equals(name);</span>
+  }
+
+  static boolean isOp(final Object name) {
+<span class="nc bnc" id="L42" title="All 8 branches missed.">    return &quot;/&quot;.equals(name) || &quot;-&quot;.equals(name) || &quot;+&quot;.equals(name) || &quot;=&quot;.equals(name);</span>
+  }
+
+  static String st0(final Object[] args) {
+<span class="nc" id="L46">    final StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L47">    final String name = args[0].toString();</span>
+<span class="nc bnc" id="L48" title="All 4 branches missed.">    if (args.length == 3 &amp;&amp; isOp(name)) {</span>
+<span class="nc" id="L49">      buf.append(&quot;(&quot;);</span>
+<span class="nc" id="L50">      buf.append(maybeNull(args[0]));</span>
+<span class="nc" id="L51">      buf.append(&quot; &quot; + name + &quot; &quot;);</span>
+<span class="nc" id="L52">      buf.append(maybeNull(args[1]));</span>
+<span class="nc" id="L53">      buf.append(&quot;)&quot;);</span>
+<span class="nc bnc" id="L54" title="All 4 branches missed.">    } else if (args.length == 3 &amp;&amp; isListCons(name)) {</span>
+<span class="nc" id="L55">      buf.append('[');</span>
+      {
+<span class="nc" id="L57">        buf.append(maybeNull(args[1]));</span>
+<span class="nc" id="L58">        Object tail = args[2];</span>
+        for (;;) {
+
+<span class="nc bnc" id="L61" title="All 4 branches missed.">          if (&quot;[]&quot;.equals(tail) || &quot;nil&quot;.equals(tail)) {</span>
+<span class="nc" id="L62">            break;</span>
+          }
+<span class="nc bnc" id="L64" title="All 2 branches missed.">          if (!(tail instanceof Object[])) {</span>
+<span class="nc" id="L65">            buf.append('|');</span>
+<span class="nc" id="L66">            buf.append(maybeNull(tail));</span>
+<span class="nc" id="L67">            break;</span>
+          }
+<span class="nc" id="L69">          final Object[] list = (Object[]) tail;</span>
+<span class="nc bnc" id="L70" title="All 4 branches missed.">          if (!(list.length == 3 &amp;&amp; isListCons(list[0]))) {</span>
+<span class="nc" id="L71">            buf.append('|');</span>
+<span class="nc" id="L72">            buf.append(maybeNull(tail));</span>
+<span class="nc" id="L73">            break;</span>
+          } else {
+            //if (i &gt; 1)
+<span class="nc" id="L76">            buf.append(',');</span>
+<span class="nc" id="L77">            buf.append(maybeNull(list[1]));</span>
+<span class="nc" id="L78">            tail = list[2];</span>
+          }
+<span class="nc" id="L80">        }</span>
+      }
+<span class="nc" id="L82">      buf.append(']');</span>
+<span class="nc bnc" id="L83" title="All 4 branches missed.">    } else if (args.length == 2 &amp;&amp; &quot;$VAR&quot;.equals(name)) {</span>
+<span class="nc" id="L84">      buf.append(&quot;_&quot; + args[1]);</span>
+    } else {
+<span class="nc" id="L86">      final String qname = maybeNull(args[0]);</span>
+<span class="nc" id="L87">      buf.append(qname);</span>
+<span class="nc" id="L88">      buf.append(&quot;(&quot;);</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">      for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc" id="L90">        final Object O = args[i];</span>
+<span class="nc" id="L91">        buf.append(maybeNull(O));</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (i &lt; args.length - 1) {</span>
+<span class="nc" id="L93">          buf.append(&quot;,&quot;);</span>
+        }
+      }
+<span class="nc" id="L96">      buf.append(&quot;)&quot;);</span>
+    }
+<span class="nc" id="L98">    return buf.toString();</span>
+  }
+
+  void ppCode() {
+<span class="nc" id="L102">    pp(&quot;\nSYMS:&quot;);</span>
+<span class="nc" id="L103">    pp(syms);</span>
+<span class="nc" id="L104">    pp(&quot;\nCLAUSES:\n&quot;);</span>
+
+<span class="nc bnc" id="L106" title="All 2 branches missed.">    for (int i = 0; i &lt; clauses.length; i++) {</span>
+
+<span class="nc" id="L108">      final Clause C = clauses[i];</span>
+<span class="nc" id="L109">      pp(&quot;[&quot; + i + &quot;]:&quot; + showClause(C));</span>
+    }
+<span class="nc" id="L111">    pp(&quot;&quot;);</span>
+
+<span class="nc" id="L113">  }</span>
+
+  String showClause(final Clause s) {
+<span class="nc" id="L116">    final StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L117">    final int l = s.hgs.length;</span>
+<span class="nc" id="L118">    buf.append(&quot;---base:[&quot; + s.base + &quot;] neck: &quot; + s.neck + &quot;-----\n&quot;);</span>
+<span class="nc" id="L119">    buf.append(showCells(s.base, s.len)); // TODO</span>
+<span class="nc" id="L120">    buf.append(&quot;\n&quot;);</span>
+<span class="nc" id="L121">    buf.append(showCell(s.hgs[0]));</span>
+
+<span class="nc" id="L123">    buf.append(&quot; :- [&quot;);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    for (int i = 1; i &lt; l; i++) {</span>
+
+<span class="nc" id="L126">      final int e = s.hgs[i];</span>
+<span class="nc" id="L127">      buf.append(showCell(e));</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">      if (i &lt; l - 1) {</span>
+<span class="nc" id="L129">        buf.append(&quot;, &quot;);</span>
+      }
+    }
+
+<span class="nc" id="L133">    buf.append(&quot;]\n&quot;);</span>
+
+<span class="nc" id="L135">    buf.append(showTerm(s.hgs[0]));</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">    if (l &gt; 1) {</span>
+<span class="nc" id="L137">      buf.append(&quot; :- \n&quot;);</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">      for (int i = 1; i &lt; l; i++) {</span>
+<span class="nc" id="L139">        final int e = s.hgs[i];</span>
+<span class="nc" id="L140">        buf.append(&quot;  &quot;);</span>
+<span class="nc" id="L141">        buf.append(showTerm(e));</span>
+<span class="nc" id="L142">        buf.append(&quot;\n&quot;);</span>
+      }
+    } else {
+<span class="nc" id="L145">      buf.append(&quot;\n&quot;);</span>
+    }
+<span class="nc" id="L147">    return buf.toString();</span>
+  }
+
+  /*
+  String showHead(final Cls s) {
+    final int h = s.gs[0];
+    return showCell(h) + &quot;=&gt;&quot; + showTerm(h);
+  }
+  */
+
+  @Override
+  void ppGoals(IntList bs) {
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    while (!IntList.isEmpty(bs)) {</span>
+<span class="nc" id="L160">      pp(showTerm(IntList.head(bs)));</span>
+<span class="nc" id="L161">      bs = IntList.tail(bs);</span>
+    }
+
+<span class="nc" id="L164">  }</span>
+
+  @Override
+  void ppc(final Spine S) {
+    //stats();
+<span class="nc" id="L169">    final IntList bs = S.gs;</span>
+<span class="nc" id="L170">    pp(&quot;\nppc: t=&quot; + S.ttop + &quot;,k=&quot; + S.k + &quot;len=&quot; + IntList.len(bs));</span>
+<span class="nc" id="L171">    ppGoals(bs);</span>
+<span class="nc" id="L172">  }</span>
+
+  /////////////// end of show
+
+  // possibly finite Stream support
+
+  public Stream&lt;Object&gt; stream() {
+<span class="nc" id="L179">    return StreamSupport.stream(this, false);</span>
+  }
+
+  @Override
+  public Spliterator&lt;Object&gt; trySplit() {
+<span class="nc" id="L184">    return null;</span>
+  }
+
+  @Override
+  public int characteristics() {
+<span class="nc" id="L189">    return (Spliterator.ORDERED | Spliterator.NONNULL) &amp; ~Spliterator.SIZED;</span>
+  }
+
+  @Override
+  public long estimateSize() {
+<span class="nc" id="L194">    return Long.MAX_VALUE;</span>
+  }
+
+  @Override
+  public boolean tryAdvance(final Consumer&lt;Object&gt; action) {
+<span class="nc" id="L199">    final Object R = ask();</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">    final boolean ok = null != R;</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">    if (ok) {</span>
+<span class="nc" id="L202">      action.accept(R);</span>
+    }
+<span class="nc" id="L204">    return ok;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>
