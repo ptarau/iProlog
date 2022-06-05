@@ -1,2 +1,4 @@
 live_(i_).
-goal(X):-live_(X).
+live_(you_).
+good_(Person) :- live_(Person).
+goal(Person):-good_(Person).

@@ -21,6 +21,7 @@ public class Toks extends StreamTokenizer {
     try {
       Reader R;
       if (fromFile) {
+        System.out.println ("fromFile s = " + s);
         R = new FileReader(s);
       } else {
         R = new StringReader(s);
