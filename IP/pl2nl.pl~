@@ -136,10 +136,11 @@ clause_to_list(H,Bs,Cs) :-  body_to_list((H,Bs),Cs)
 body_to_list( B,      R      ) :- var(B), !, R=[B].
 body_to_list( (B,Cs), [B|Bs] ) :-         !, body_to_list(Cs,Bs).
 body_to_list( true,   []     ) :-         !.
-body_to_list( C,      [C]    ) .
+body_to_list( C,      [C]    ).
 
 
-eqss_to_nat(Xs,Ns) :- eqss_to_nat(Xs,Ns,[]).
+eqss_to_nat(Xs,Ns):-
+  eqss_to_nat(Xs,Ns,[]).
 
 eqss_to_nat( [H]    ) --> !, pred_to_nat(H), [(.)].
 eqss_to_nat( [H|Bs] ) -->    pred_to_nat(H), [(if)], body_to_nat(Bs), [(.)].
@@ -157,13 +158,13 @@ pred_to_nat([_=P|Ts])-->
 
 
 trim_call( [call|Xs], R  ) :- !, R=Xs.
-trim_call( Xs,        Xs ) .
+trim_call( Xs,        Xs ).
 
 eqs_to_nat( []       ) --> !, [].
 eqs_to_nat( [X=T|Es] ) --> [and], {T=..Xs}, [X], holds_lists_eqs(Xs), eqs_to_nat(Es).
 
 holds_lists_eqs( [lists|Xs] ) --> !, [lists], eq_to_words(Xs).
-holds_lists_eqs( Xs         ) -->    [holds], eq_to_words(Xs).
+holds_lists_eqs( Xs         ) --> [holds], eq_to_words(Xs).
 
 eq_to_words( []     ) --> [].
 eq_to_words( [X|Xs] ) --> [X], eq_to_words(Xs).
