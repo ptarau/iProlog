@@ -35,7 +35,7 @@ pl_to_nl(PL,NL):-
 % Pretty good explanation here:
 %
 
-read_with_names(T,T0):-
+read_with_names(Term,T0):-
   write(user_error, '%---- read_with_names: '),nl(user_error),
 
   read_term(T0,[variable_names(Es)]), % Read term from <PL>.pl, unify it with T0.
@@ -48,21 +48,21 @@ read_with_names(T,T0):-
 
 % https://stackoverflow.com/questions/7947910/converting-terms-to-atoms-preserving-variable-names-in-yap-prolog/7948525#7948525
 %
-%    ?- read_term(T,[variable_names(Eqs)]).
+%    ?- read_term(Term,[variable_names(Eqs)]).
 %    |: X+3*Y+X.
-%  Eqs = ['X'=_A,'Y'=_B], % mapping of var-as-atom to gen'ed vars in T:
-%  T = _A+3*_B+_A
+%  Eqs = ['X'=_A,'Y'=_B], % mapping of var-as-atom to gen'ed vars in Term:
+%  Term = _A+3*_B+_A
 
   write(user_error,'   T0 = '),write(user_error,T0),nl(user_error),
   write(user_error,'   Es = '),write(user_error,Es),nl(user_error),
 
-  copy_term(T0,T),                    % "Create a version of T0 with renamed
-                                      % (fresh) variables and unify it to T.
+  copy_term(T0,Term),                 % "Create a version of T0 with renamed
+                                      % (fresh) variables and unify it to Term.
                                       % Attributed variables have their
                                       % attributes copied"
 
-  write(user_error,'After copy_term(T0,T) T = '),
-  write(user_error,T),nl(user_error),
+  write(user_error,'After copy_term(T0,Term) Term = '),
+  write(user_error,Term),nl(user_error),
 
   maplist(call,Es).                   % Try to unify all Es?
                                       % ????????????????????
@@ -77,93 +77,95 @@ write_sym( W   ) :-         write( W   ),     write(' ').
 % clause_to_sentence - translate a clause to a "sentence"
 %
 clause_to_sentence(EOF):-
-   read_with_names(T,T0),             % get some T0 from input,
-                                      % T is copy with renamed variables,
-                                      % T0 unified to T
+   read_with_names(Term,T0),          % get some T0 from input,
+                                      % Term is copy with renamed variables,
+                                      % T0 unified to Term
    (
-     T==end_of_file->EOF=yes          % like a possible result from read/1
+     Term==end_of_file->EOF=yes       % like a possible result from read/1
    ;                                  % ;/2 -- like ||, and with -> above
                                       % "transparent to cuts"
      EOF=no,
-     clause_to_nat(T,Ns),             % Ns <- "naturalized" T
-     T=T0,                            % unify T0 to T
-     clean_up_nats(Ns,Xs),            %
+     clause_to_nats(Term,Nats),       % Nats <- "naturalized" Term
+     Term=T0,                         % unify T0 to Term
+     clean_up_nats(Nats,Xs),          %
      maplist(write_sym,Xs),nl
   ).
 
 % Not sure what the apparent two final implicit params in DCG rules are
 % about.
 %
-clean_up_nats(Ns,Xs):- clean_up_nats(Ns,Xs,0,_),
-                       write(user_error,'---- clean_up_nats:'), nl(user_error),
-                       write(user_error,'   Ns='),
-                       write(user_error,    Ns),                nl(user_error),
-                       write(user_error,'   Xs='),
-                       write(user_error,    Xs),                nl(user_error).
+clean_up_nats(Nats,Xs):- clean_up_nats(Nats,Xs,0,_),
+                         write(user_error,'---- clean_up_nats:'), nl(user_error),
+                         write(user_error,'   Nats='),
+                         write(user_error,    Nats),              nl(user_error),
+                         write(user_error,'   Xs='),
+                         write(user_error,    Xs),                nl(user_error).
 
 % Use of "-->" Definite Clause Grammar (DCG) operator
 % https://stackoverflow.com/questions/32579266/what-does-the-operator-in-prolog-do
 
-clean_up_nats( [],     []     ) --> [].
-clean_up_nats( [N|Ns], [X|Xs] ) --> clean_up_nat(N,X), clean_up_nats(Ns,Xs).
+clean_up_nats( [],       []       ) --> [].
+clean_up_nats( [N|Nats], [X|Xs] ) --> clean_up_nat(N,X), clean_up_nats(Nats,Xs).
 
-% var(X) if X free var
-% succ(K1,K2) if K2=K1+1 and K1>=0
-% atom_concat('_',K1,X) if X <- K1 with _ prepended
+% atom_concat('_',K1,X)  -- generates the _0, _1, etc. vars
 
-clean_up_nat( N,       X, K1, K2 ) :-  var(N),
-                                       !, succ(K1,K2), atom_concat('_',K1,X), N=X.
+clean_up_nat( Nat,     X, K1, K2 ) :-     var(Nat),
+                                       !, succ(K1,K2), atom_concat('_',K1,X), Nat=X.
 clean_up_nat( ('[|]'), X, K,  K  ) :-  !, X=list.
 clean_up_nat( ([]),    X, K,  K  ) :-  !, X=nil.
 clean_up_nat( X,       X, K,  K  ) .
 
 
-% clause_to_nat -
-%
-clause_to_nat(C,Ns):- clause_to_eqs(C,_,Es)
-                   ,  eqss_to_nat(Es,Ns)
-                   .
+% clause_to_nats -
 
-clause_to_eqs(C,Xs,Es):- (C=(H:-Bs)->true;C=H,Bs=true)
-                      ,  clause_to_list(H,Bs,Ts)
-                      ,  maplist(term_to_eqs,Xs,Ts,Es)
-                      .
+clause_to_nats(Clause,Nats) :- clause_to_eqns(Clause,_,Es)
+                            ,  eqnss_to_nat(Es,Nats)
+                            .
 
-clause_to_list(H,Bs,Cs) :-  body_to_list((H,Bs),Cs)
-                        .
+clause_to_eqns(Clause,Xs,Es) :- (Clause = (Head:-Bodies)->true ; Clause=Head,Bodies=true)
+                             ,  clause_to_list(Head,Bodies,Terms)
+                             ,  maplist(term_to_eqns,Xs,Terms,Es)
+                             .
 
+clause_to_list(Head,Bodies,Cs) :- body_to_list((Head,Bodies),Cs).
 
-body_to_list( B,      R      ) :- var(B), !, R=[B].
-body_to_list( (B,Cs), [B|Bs] ) :-         !, body_to_list(Cs,Bs).
-body_to_list( true,   []     ) :-         !.
-body_to_list( C,      [C]    ) .
+body_to_list( Body,      R             ) :- var(Body), !, R=[Body].
+body_to_list( (Body,Cs), [Body|Bodies] ) :-            !, body_to_list(Cs,Bodies).
+body_to_list( true,      []            ) :-            !.
+body_to_list( C,         [C]           ) .
 
 
-eqss_to_nat(Xs,Ns) :- eqss_to_nat(Xs,Ns,[]).
+eqnss_to_nat(Xs,Nats) :- eqnss_to_nat(Xs,Nats,[]).
 
-eqss_to_nat( [H]    ) --> !, pred_to_nat(H), [(.)].
-eqss_to_nat( [H|Bs] ) -->    pred_to_nat(H), [(if)], body_to_nat(Bs), [(.)].
+eqnss_to_nat( [Head]        ) --> !, pred_to_nat(Head), [(.)].
+eqnss_to_nat( [Head|Bodies] ) -->    pred_to_nat(Head)
+                               ,    [(if)]
+			       ,    body_to_nat(Bodies), [(.)]
+			       .
+
+body_to_nat( []            ) --> !, [].
+body_to_nat( [Body]        ) --> !, pred_to_nat(Body).
+body_to_nat( [Body|Bodies] ) -->    pred_to_nat(Body), [and], body_to_nat(Bodies).
 
 
-body_to_nat( []     ) --> !, [].
-body_to_nat( [B]    ) --> !, pred_to_nat(B).
-body_to_nat( [B|Bs] ) -->    pred_to_nat(B), [and],  body_to_nat(Bs).
-
-
-pred_to_nat([_=P|Ts])-->
-  {P=..Xs,trim_call(Xs,Ys)},
-  eq_to_words(Ys),
-  eqs_to_nat(Ts).
-
+pred_to_nat([_=P|Terms])--> {P=..Xs,trim_call(Xs,Ys)}
+                          , eq_to_words(Ys)
+			  , eqns_to_nat(Terms)
+			  .
 
 trim_call( [call|Xs], R  ) :- !, R=Xs.
 trim_call( Xs,        Xs ) .
 
-eqs_to_nat( []       ) --> !, [].
-eqs_to_nat( [X=T|Es] ) --> [and], {T=..Xs}, [X], holds_lists_eqs(Xs), eqs_to_nat(Es).
+eqns_to_nat( []          ) --> !, [].
+eqns_to_nat( [X=Term|Es] ) -->    [and]
+                             ,    {Term=..Xs}
+			     ,    [X]
+			     ,    holds_lists_eqns(Xs)
+			     ,    eqns_to_nat(Es)
+			     .
 
-holds_lists_eqs( [lists|Xs] ) --> !, [lists], eq_to_words(Xs).
-holds_lists_eqs( Xs         ) -->    [holds], eq_to_words(Xs).
+holds_lists_eqns( [lists|Xs] ) --> !, [lists], eq_to_words(Xs).
+holds_lists_eqns( Xs         ) -->    [holds], eq_to_words(Xs).
 
 eq_to_words( []     ) --> [].
 eq_to_words( [X|Xs] ) --> [X], eq_to_words(Xs).
@@ -171,25 +173,27 @@ eq_to_words( [X|Xs] ) --> [X], eq_to_words(Xs).
 
 % terms to equations
 
-term_to_eqs( X, T, [X=T] ) :-   var(T),           !.
-term_to_eqs( X, T, [X=T] ) :-   atomic(T),        !.
-term_to_eqs( X, T, Es    ) :-   compound(T),      term_to_eqs(X,T,Es,[]).
+term_to_eqns( X, Term, [X=Term] ) :-   var(Term),      !.
+term_to_eqns( X, Term, [X=Term] ) :-   atomic(Term),   !.
+term_to_eqns( X, Term, Es       ) :-   compound(Term), term_to_eqns(X,Term,Es,[]).
 
-term_to_eqs( X, T  ) --> {var(T)},          !, {X=T}.
-term_to_eqs( X, T  ) --> {atomic(T)},       !, {X=T}.
-term_to_eqs( X, Xs ) --> {is_list(Xs)},     !, {T=..[lists|Xs]}, term_to_eqs(X,T).
-term_to_eqs( X, T  ) --> {compound(T),
-		          functor(T,F,N),
-			  functor(TT,F,N)},    [X=TT], term_to_arg_eqs(0,N,TT,T).
+term_to_eqns( X, Term  ) --> {var(Term)},    !, {X=Term}.
+term_to_eqns( X, Term  ) --> {atomic(Term)}, !, {X=Term}.
+term_to_eqns( X, Xs    ) --> {is_list(Xs)},  !, {Term=..[lists|Xs]}, term_to_eqns(X,Term).
+term_to_eqns( X, Term  ) --> {compound(Term)
+                           ,  functor(Term,F,N)
+			   ,  functor(TT,F,N)}
+			   , [X=TT]
+			   , term_to_arg_eqns(0,N,TT,Term)
+			   .
 
-term_to_arg_eqs( N, N, _, _ ) --> !, [].
-term_to_arg_eqs( I, N, X, T ) -->
-  {I1 is I+1},
-  {arg(I1,X,V)},
-  {arg(I1,T,A)},
-  term_to_eqs(V,A),
-  term_to_arg_eqs(I1,N,X,T).
-
+term_to_arg_eqns( N, N, _, _    ) --> !, [].
+term_to_arg_eqns( I, N, X, Term ) --> {I1 is I+1}
+                                    , {arg(I1,X,V)}
+				    , {arg(I1,Term,A)}
+				    , term_to_eqns(V,A)
+				    , term_to_arg_eqns(I1,N,X,Term)
+				    .
 
 go:-
  pl_to_nl('progs/perms.pl'),
