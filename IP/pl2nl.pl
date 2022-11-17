@@ -149,33 +149,95 @@ body_to_nat( [Body|Bodies] ) -->    pred_to_nat(Body), [and], body_to_nat(Bodies
 
 
 pred_to_nat([_=P|Terms])--> {P=..Xs,trim_call(Xs,Ys)}
-                          , eq_to_words(Ys)
-			  , eqns_to_nat(Terms)
+                          , eqn_to_words(Ys)
+			  , eqns_to_nats(Terms)
+			  , {write(user_error,"****** pred to nats **** ")}
+			  , {nl(user_error)}
+			  , {write(user_error,"  P=")}
+			  , {write(user_error,P)}
+			  , {nl(user_error)}
+			  , {write(user_error,"  Xs=")}
+			  , {write(user_error,Xs)}
+			  , {nl(user_error)}
+			  , {write(user_error,"  Ys=")}
+			  , {write(user_error,Ys)}
+			  , {nl(user_error)}
+			  , {write(user_error,"  Terms=")}
+			  , {write(user_error,Terms)}
+			  , {nl(user_error)}
 			  .
 
 trim_call( [call|Xs], R  ) :- !, R=Xs.
 trim_call( Xs,        Xs ) .
 
-eqns_to_nat( []          ) --> !, [].
-eqns_to_nat( [X=Term|Es] ) -->    [and]
+eqns_to_nats( []          ) --> !, [].
+eqns_to_nats( [X=Term|Es] ) -->   [and]
                              ,    {Term=..Xs}
+			     , {write(user_error,"*** begin eqns to nats ***")}
+			     , {write(user_error,"  Term=")}
+			     , {write(user_error,Term)}
+			     , {nl(user_error)}
+			     , {write(user_error,"  Xs=")}
+			     , {write(user_error,Xs)}
+			     , {nl(user_error)}
 			     ,    [X]
 			     ,    holds_lists_eqns(Xs)
-			     ,    eqns_to_nat(Es)
+			     , {nl(user_error)}
+			     , {write(user_error,"  X=")}
+			     , {write(user_error,X)}
+			     , {nl(user_error)}
+			     ,    eqns_to_nats(Es)
+			     , {write(user_error,"  Es=")}
+			     , {write(user_error,Es)}
+			     , {nl(user_error)}
+			     , {write(user_error,"*** end eqns to nats ***")}
+			     , {nl(user_error)}
 			     .
 
-holds_lists_eqns( [lists|Xs] ) --> !, [lists], eq_to_words(Xs).
-holds_lists_eqns( Xs         ) -->    [holds], eq_to_words(Xs).
+holds_lists_eqns( [lists|Xs] ) --> !, [lists], eqn_to_words(Xs).
+holds_lists_eqns( Xs         ) -->    [holds], eqn_to_words(Xs).
 
-eq_to_words( []     ) --> [].
-eq_to_words( [X|Xs] ) --> [X], eq_to_words(Xs).
+eqn_to_words( []     ) --> [].
+eqn_to_words( [X|Xs] ) --> [X], eqn_to_words(Xs).
 
 
 % terms to equations
 
-term_to_eqns( X, Term, [X=Term] ) :-   var(Term),      !.
-term_to_eqns( X, Term, [X=Term] ) :-   atomic(Term),   !.
-term_to_eqns( X, Term, Es       ) :-   compound(Term), term_to_eqns(X,Term,Es,[]).
+term_to_eqns( X, Term, [X=Term] ) :-   var(Term)
+				  ,    write(user_error,'****** in var term_to_eqns')
+			          ,    {nl(user_error)}
+				  ,    write(user_error,"  X=")
+				  ,    write(user_error, X)
+			          ,    {nl(user_error)}
+				  ,    write(user_error,"  Term=")
+				  ,    write(user_error,Term)
+				  ,    nl(user_error)
+                                  ,    !
+				  .
+term_to_eqns( X, Term, [X=Term] ) :-   atomic(Term)
+				  ,    write(user_error,'****** in atomic term_to_eqns')
+				  ,    nl(user_error)
+				  ,    write(user_error,"  X=")
+				  ,    write(user_error,X)
+				  ,    nl(user_error)
+				  ,    write(user_error,"  Term=")
+				  ,    write(user_error,Term)
+				  ,    nl(user_error)
+                                  ,    !
+				  .
+term_to_eqns( X, Term, Es       ) :-   compound(Term)
+				  ,    write(user_error,'****** begin compound term_to_eqns')
+                                  ,    term_to_eqns(X,Term,Es,[])
+				  ,    nl(user_error)
+				  ,    write(user_error,"  X=")
+				  ,    write(user_error,X)
+				  ,    nl(user_error)
+				  ,    write(user_error,"  Term=")
+				  ,    write(user_error,Term)
+				  ,    nl(user_error)
+				  ,    write(user_error,'****** end compound term_to_eqns')
+				  ,    nl(user_error)
+				  .
 
 term_to_eqns( X, Term  ) --> {var(Term)},    !, {X=Term}.
 term_to_eqns( X, Term  ) --> {atomic(Term)}, !, {X=Term}.
