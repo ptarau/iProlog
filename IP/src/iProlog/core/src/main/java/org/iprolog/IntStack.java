@@ -45,7 +45,7 @@ class IntStack {
   /**
    * Pushes an element - top is incremented first then the
    * element is assigned. This means top points to the last assigned
-   * element - which can be returned with peek().
+   * element.
    */
   final void push(final int i) {
     // IO.dump("push:"+i);

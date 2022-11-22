@@ -1,7 +1,9 @@
 /**
  * derived from code at https://github.com/mikvor/hashmapTest
+ * "for use as IntSet" - Paul Tarau -- ???
  */
 package org.iprolog;
+
 class IntMap implements java.io.Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -72,8 +74,6 @@ class IntMap implements java.io.Serializable {
         return m_data[ptr + 1];
     }
   }
-
-  // for use as IntSet - Paul Tarau
 
   final boolean contains(final int key) {
     return NO_VALUE != get(key);
