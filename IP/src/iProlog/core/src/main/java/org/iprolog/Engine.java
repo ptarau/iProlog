@@ -779,7 +779,7 @@ class Engine {
     if (null == imaps)
       return;
     final int[] cs = IMap.get(imaps, vmaps, xs);
-    G.cs = cs;
+    G.clauses = cs;
   }
 
   final private int[] getIndexables(final int ref) {
@@ -840,13 +840,13 @@ class Engine {
     final int htop = getTop();
     final int base = htop + 1;
 
-    final int goal = IntList.head(G.gs);
+    final int goal = IntList.head(G.goals);
 
     makeIndexArgs(G, goal);
 
-    final int last = G.cs.length;
+    final int last = G.clauses.length;
     for (int k = G.k; k < last; k++) {
-      final Clause C0 = clauses[G.cs[k]];
+      final Clause C0 = clauses[G.clauses[k]];
 
       if (!match(G.xs, C0))
         continue;
@@ -866,10 +866,10 @@ class Engine {
         continue;
       }
       final int[] gs = pushBody(b, head, C0);
-      final IntList newgs = IntList.tail(IntList.app(gs, IntList.tail(G.gs)));
+      final IntList newgs = IntList.tail(IntList.app(gs, IntList.tail(G.goals)));
       G.k = k + 1;
       if (!IntList.isEmpty(newgs))
-        return new Spine(gs, base, IntList.tail(G.gs), ttop, 0, cls);
+        return new Spine(gs, base, IntList.tail(G.goals), ttop, 0, cls);
       else
         return answer(ttop);
     } // end for
@@ -902,7 +902,7 @@ class Engine {
    * more answers by forcing backtracking.
    */
   final private Spine answer(final int ttop) {
-    return new Spine(spines.get(0).hd, ttop);
+    return new Spine(spines.get(0).head, ttop);
   }
 
   /**
@@ -910,14 +910,14 @@ class Engine {
    * top goal of this spine.
    */
   final private boolean hasClauses(final Spine S) {
-    return S.k < S.cs.length;
+    return S.k < S.clauses.length;
   }
 
   /**
    * True when there are no more goals left to solve.
    */
   final private boolean hasGoals(final Spine S) {
-    return !IntList.isEmpty(S.gs);
+    return !IntList.isEmpty(S.goals);
   }
 
   /**
@@ -928,7 +928,7 @@ class Engine {
    */
   final private void popSpine() {
     final Spine G = spines.pop();
-    unwindTrail(G.ttop);
+    unwindTrail(G.trail_top);
     setTop(G.base - 1);
   }
 
@@ -968,9 +968,9 @@ class Engine {
     query = yield();
     if (null == query)
       return null;
-    final int res = answer(query.ttop).hd;
+    final int res = answer(query.trail_top).head;
     final Object R = exportTerm(res);
-    unwindTrail(query.ttop);
+    unwindTrail(query.trail_top);
     return R;
   }
 

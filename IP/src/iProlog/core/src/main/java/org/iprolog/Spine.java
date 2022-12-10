@@ -11,39 +11,42 @@ package org.iprolog;
  */
 class Spine {
 
-  final int hd; // head of the clause to which this Spine corresponds
+  final int head; // head of the clause to which this Spine corresponds
   final int base; // top of the heap when this Spine was created
 
-  final IntList gs; // goals - with the top one ready to unfold
-  final int ttop; // top of the trail when this Spine was created
+  final IntList goals; // goals - with the top one ready to unfold
+  final int trail_top; // top of the trail when this Spine was created
 
   int k;
 
   int[] xs; // index elements
-  int[] cs; // array of clauses known to be unifiable with top goal in gs
+  int[] clauses; // array of clauses known to be unifiable with top goal in goals
 
   /**
    * Creates a spine - as a snapshot of some runtime elements.
    */
-  Spine(final int[] gs0, final int base, final IntList gs, final int ttop, final int k, final int[] cs) {
-    hd = gs0[0];
+  Spine(final int[] goals0, final int base, final IntList goals, final int trail_top, final int k, final int[] cs) {
+    head = goals0[0];
     this.base = base;
-    this.gs = IntList.tail(IntList.app(gs0, gs)); // prepends the goals of clause with head hs
-    this.ttop = ttop;
+
+    // prepends the goals of clause with head hs:
+    this.goals = IntList.tail(IntList.app(goals0, goals));
+
+    this.trail_top = trail_top;
     this.k = k;
-    this.cs = cs;
+    this.clauses = cs;
   }
 
   /**
    * Creates a specialized spine returning an answer (with no goals left to solve).
    */
-  Spine(final int hd, final int ttop) {
-    this.hd = hd;
+  Spine(final int head, final int trail_top) {
+    this.head = head;
     base = 0;
-    gs = IntList.empty;
-    this.ttop = ttop;
+    goals = IntList.empty;
+    this.trail_top = trail_top;
 
     k = -1;
-    cs = null;
+    clauses = null;
   }
 }

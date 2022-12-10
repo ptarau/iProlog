@@ -166,8 +166,8 @@ public class Prog extends Engine implements Spliterator<Object> {
   @Override
   void ppc(final Spine S) {
     //stats();
-    final IntList bs = S.gs;
-    pp("\nppc: t=" + S.ttop + ",k=" + S.k + "len=" + IntList.len(bs));
+    final IntList bs = S.goals;
+    pp("\nppc: t=" + S.trail_top + ",k=" + S.k + "len=" + IntList.len(bs));
     ppGoals(bs);
   }
 
