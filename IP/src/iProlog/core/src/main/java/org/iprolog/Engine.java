@@ -6,9 +6,49 @@ import java.util.*;
  */
 class Engine {
 
+  Spine query;
+
   final static int MAXIND = 3; // number of index args
-  final static int START_INDEX = 20;
-  // switches off indexing for less then START_INDEX clauses e.g. <20
+  final static int START_INDEX = 20;  // if # of clauses < START_INDEX, turn off indexing
+
+  /* trimmed down clauses ready to be quickly relocated to the heap */
+  final Clause[] clauses;
+
+  final int[] cls;
+
+  /* symbol table made of map + reverse map from ints to syms */
+  final LinkedHashMap<String, Integer> syms; // syms->ints
+  final private ArrayList<String> slist;     // resizeable ints->syms
+
+    /** runtime areas: **/
+
+   /* heap - contains code for 'and' clauses and their copies created during execution
+   */
+  private int heap[];
+  private int top;
+  static int MINSIZE = 1 << 15; // power of 2
+
+  /* trail - undo list for variable bindings; facilitates retrying failed goals
+   *   with alternative matching clauses
+   */
+  final private IntStack trail;
+  
+  /* ustack - unification stack; helps handling term unification non-recursively
+   */
+  final private IntStack ustack;
+  
+  /* spines - stack of abstractions of clauses and goals;
+   *    both a choice-point stack and goal stack
+   */
+  final private ObStack<Spine> spines = new ObStack<Spine>();
+
+   /* imaps - contains indexes for up to MAXIND>0 arg positions (0 for pred symbol itself)
+   */
+  final IMap<Integer>[] imaps;
+
+    /* vmaps - contains clause numbers for which vars occur in indexed arg positions
+   */
+  final IntMap[] vmaps;
 
   /**
    * Builds a new engine from a natural-language style assembler.nl file
@@ -22,58 +62,16 @@ class Engine {
     trail = new IntStack();
     ustack = new IntStack();
 
-    clauses = dload(fname);
+    clauses = dload(fname); // load "natural language" source
 
-    cls = toNums(clauses);
+    cls = toNums(clauses); // an array that contains ints 0..clause.length 
 
-    query = init();
+    query = init();  /* initial spine built from query from which execution starts */
 
-    vmaps = vcreate(MAXIND);
+    vmaps = vcreate(MAXIND); // array of MAXIND IntMaps
+
     imaps = index(clauses, vmaps);
   }
-
-  /**
-   * trimmed down clauses ready to be quickly relocated to the heap
-   */
-  final Clause[] clauses;
-
-  final int[] cls;
-  /** symbol table made of map + reverse map from ints to syms */
-
-  final LinkedHashMap<String, Integer> syms;
-  final private ArrayList<String> slist;
-
-  /** runtime areas:
-   *
-   * the heap contains code for 'and' clauses and their copies
-   * created during execution
-   *
-   * the trail is an undo list for variable bindings
-   * that facilitates retrying failed goals with alternative
-   * matching clauses
-   *
-   * the unification stack ustack helps handling term unification non-recursively
-   *
-   * the spines stack contains abstractions of clauses and goals and performs the
-   * functions of both a choice-point stack and goal stack
-   *
-   * imaps: contains indexes for up to MAXIND>0 arg positions (0 for pred symbol itself)
-   *
-   * vmaps: contains clause numbers for which vars occur in indexed arg positions
-   */
-
-  private int heap[];
-  private int top;
-  static int MINSIZE = 1 << 15; // power of 2
-
-  final private IntStack trail;
-  final private IntStack ustack;
-  final private ObStack<Spine> spines = new ObStack<Spine>();
-
-  Spine query;
-
-  final IMap<Integer>[] imaps;
-  final IntMap[] vmaps;
 
   /**
    * tags of our heap cells - these can also be seen as
@@ -93,31 +91,31 @@ class Engine {
   final private static int BAD = 7;
 
   /**
-   * tags an integer value while flipping it into a negative
+   * Tags an integer value while flipping it into a negative
    * number to ensure that untagged cells are always negative and the tagged
    * ones are always positive - a simple way to ensure we do not mix them up
-   * at runtime
+   * at runtime.
    */
   final private static int tag(final int t, final int w) {
     return -((w << 3) + t);
   }
 
   /**
-   * removes tag after flipping sign
+   * Eemoves tag after flipping sign.
    */
   final private static int detag(final int w) {
     return -w >> 3;
   }
 
   /**
-   * extracts the tag of a cell
+   * Extracts the tag of a cell.
    */
   final private static int tagOf(final int w) {
     return -w & 7;
   }
 
   /**
-   * places an identifier in the symbol table
+   * Places an identifier in the symbol table.
    */
   final private int addSym(final String sym) {
     Integer I = syms.get(sym);
@@ -131,8 +129,8 @@ class Engine {
   }
 
   /**
-   * returns the symbol associated to an integer index
-   * in the symbol table
+   * Returns the symbol associated to an integer index
+   * in the symbol table.
    */
   final private String getSym(final int w) {
     if (w < 0 || w >= slist.size())
@@ -177,7 +175,7 @@ class Engine {
   }
 
   /**
-   * dynamic array operation: doubles when full
+   * Dynamic array operation: doubles when full.
    */
   private final void expand() {
     final int l = heap.length;
@@ -194,7 +192,7 @@ class Engine {
   }
 
   /**
-  * expands "Xs lists .." statements to "Xs holds" statements
+  * Expands "Xs lists .." statements to "Xs holds" statements.
   */
 
   private final static ArrayList<String[]> maybeExpand(final ArrayList<String> Ws) {
@@ -220,7 +218,7 @@ class Engine {
   }
 
   /**
-   * expands, if needed, "lists" statements in sequence of statements
+   * Expands, if needed, "lists" statements in sequence of statements.
    */
   private final static ArrayList<String[]> mapExpand(final ArrayList<ArrayList<String>> Wss) {
     final ArrayList<String[]> Rss = new ArrayList<String[]>();
@@ -244,7 +242,7 @@ class Engine {
   }
 
   /**
-   * loads a program from a .nl file of
+   * Loads a program from a .nl file of
    * "natural language" equivalents of Prolog/HiLog statements
    */
   Clause[] dload(final String s) {
@@ -380,8 +378,8 @@ class Engine {
   }
 
   /*
-   * encodes string constants into symbols while leaving
-   * other data types untouched
+   * Encodes string constants into symbols while leaving
+   * other data types untouched.
    */
   private final int encode(final int t, final String s) {
     int w;
@@ -398,8 +396,8 @@ class Engine {
   }
 
   /**
-   * true if cell x is a variable
-   * assumes that variables are tagged with 0 or 1
+   * True if cell x is a variable.
+   * Assumes that variables are tagged with 0 or 1.
    */
   final private static boolean isVAR(final int x) {
     //final int t = tagOf(x);
@@ -408,22 +406,22 @@ class Engine {
   }
 
   /**
-   * returns the heap cell another cell points to
+   * Returns the heap cell another cell points to.
    */
   final int getRef(final int x) {
     return heap[detag(x)];
   }
 
   /*
-   * sets a heap cell to point to another one
+   * Sets a heap cell to point to another one.
    */
   final private void setRef(final int w, final int r) {
     heap[detag(w)] = r;
   }
 
   /**
-   * removes binding for variable cells
-   * above savedTop
+   * Removes binding for variable cells
+   * above savedTop.
    */
   private void unwindTrail(final int savedTop) {
     while (savedTop < trail.getTop()) {
@@ -435,9 +433,9 @@ class Engine {
   }
 
   /**
-   * scans reference chains starting from a variable
+   * Scans reference chains starting from a variable
    * until it points to an unbound root variable or some
-   * non-variable cell
+   * non-variable cell.
    */
   final private int deref(int x) {
     while (isVAR(x)) {
@@ -451,14 +449,14 @@ class Engine {
   }
 
   /**
-   * raw display of a term - to be overridden
+   * Raw display of a term - to be overridden.
    */
   String showTerm(final int x) {
     return showTerm(exportTerm(x));
   }
 
   /**
-   * raw display of a externalized term
+   * Raw display of an externalized term.
    */
   String showTerm(final Object O) {
     if (O instanceof Object[])
@@ -467,7 +465,7 @@ class Engine {
   }
 
   /**
-   * prints out content of the trail
+   * Prints out content of the trail.
    */
   void ppTrail() {
     for (int i = 0; i <= trail.getTop(); i++) {
@@ -477,9 +475,9 @@ class Engine {
   }
 
   /**
-   * builds an array of embedded arrays from a heap cell
+   * Builds an array of embedded arrays from a heap cell
    * representing a term for interaction with an external function
-   * including a displayer
+   * including a displayer.
    */
   Object exportTerm(int x) {
     x = deref(x);
@@ -521,10 +519,10 @@ class Engine {
   }
 
   /**
-   * extracts an integer array pointing to
+   * Extracts an integer array pointing to
    * the skeleton of a clause: a cell
    * pointing to its head followed by cells pointing to its body's
-   * goals
+   * goals.
    */
   static int[] getSpine(final int[] cs) {
     final int a = cs[1];
@@ -543,7 +541,7 @@ class Engine {
   }
 
   /**
-   * raw display of a cell as tag : value
+   * Raw display of a cell as tag : value
    */
   final String showCell(final int w) {
     final int t = tagOf(w);
@@ -575,7 +573,7 @@ class Engine {
   }
 
   /**
-   * a displayer for cells
+   * A displayer for cells
    */
 
   String showCells(final int base, final int len) {
@@ -623,8 +621,8 @@ class Engine {
   }
 
   /**
-   * unification algorithm for cells X1 and X2 on ustack that also takes care
-   * to trail bindings below a given heap address "base"
+   * Unification algorithm for cells X1 and X2 on ustack that also takes care
+   * to trail bindings below a given heap address "base".
    */
   final private boolean unify(final int base) {
     while (!ustack.isEmpty()) {
@@ -688,7 +686,7 @@ class Engine {
   }
 
   /**
-   * places a clause built by the Toks reader on the heap
+   * Places a clause built by the Toks reader on the heap.
    */
   Clause putClause(final int[] cs, final int[] gs, final int neck) {
     final int base = size();
@@ -703,15 +701,15 @@ class Engine {
   }
 
   /**
-   * relocates a variable or array reference cell by b
-   * assumes var/ref codes V,U,R are 0,1,2
+   * Relocates a variable or array reference cell by b
+   * assumes var/ref codes V,U,R are 0,1,2.
    */
   final private static int relocate(final int b, final int cell) {
     return tagOf(cell) < 3 ? cell + b : cell;
   }
 
   /**
-   * pushes slice[from,to] of array cs of cells to heap
+   * Pushes slice[from,to] of array cs of cells to heap.
    */
   final private void pushCells(final int b, final int from, final int to, final int base) {
     ensureSize(to - from);
@@ -721,7 +719,7 @@ class Engine {
   }
 
   /**
-   * pushes slice[from,to] of array cs of cells to heap
+   * Pushes slice[from,to] of array cs of cells to heap.
    */
   final private void pushCells(final int b, final int from, final int to, final int[] cs) {
     ensureSize(to - from);
@@ -731,7 +729,7 @@ class Engine {
   }
 
   /**
-   * copies and relocates head of clause at offset from heap to heap
+   * Copies and relocates head of clause at offset from heap to heap.
    */
   final private int pushHead(final int b, final Clause C) {
     pushCells(b, 0, C.neck, C.base);
@@ -740,9 +738,9 @@ class Engine {
   }
 
   /**
-   * copies and relocates body of clause at offset from heap to heap
-   * while also placing head as the first element of array gs that
-   * when returned contains references to the toplevel spine of the clause
+   * Copies and relocates body of clause at offset from heap to heap
+   * while also placing head as the first element of array gs that,
+   * when returned, contains references to the toplevel spine of the clause.
    */
   final private int[] pushBody(final int b, final int head, final Clause C) {
     pushCells(b, C.neck, C.len, C.base);
@@ -757,10 +755,10 @@ class Engine {
   }
 
   /**
-   * makes, if needed, registers associated to top goal of a Spine
-   * these registers will be reused when matching with candidate clauses.
-   * note that xs contains dereferenced cells - this is done once for
-   * each goal's toplevel subterms
+   * Makes, if needed, registers associated to top goal of a Spine.
+   * These registers will be reused when matching with candidate clauses.
+   * Note that xs contains dereferenced cells - this is done once for
+   * each goal's toplevel subterms.
    */
   final private void makeIndexArgs(final Spine G, final int goal) {
     if (null != G.xs)
@@ -812,9 +810,9 @@ class Engine {
   }
 
   /**
-   * tests if the head of a clause, not yet copied to the heap
+   * Tests if the head of a clause, not yet copied to the heap
    * for execution, could possibly match the current goal, an
-   * abstraction of which has been place in xs
+   * abstraction of which has been place in xs.
    */
   private final boolean match(final int[] xs, final Clause C0) {
     for (int i = 0; i < MAXIND; i++) {
@@ -830,11 +828,11 @@ class Engine {
   }
 
   /**
-   * transforms a spine containing references to choice point and
+   * Transforms a spine containing references to choice point and
    * immutable list of goals into a new spine, by reducing the
    * first goal in the list with a clause that successfully
    * unifies with it - in which case it places the goals of the
-   * clause at the top of the new list of goals, in reverse order
+   * clause at the top of the new list of goals, in reverse order.
    */
   final private Spine unfold(final Spine G) {
 
@@ -879,7 +877,7 @@ class Engine {
   }
 
   /**
-   * extracts a query - by convention of the form
+   * Extracts a query - by convention of the form
    * goal(Vars):-body to be executed by the engine
    */
   Clause getQuery() {
@@ -887,8 +885,7 @@ class Engine {
   }
 
   /**
-   * returns the initial spine built from the
-   * query from which execution starts
+   * Returns the initial spine built from the query from which execution starts.
    */
   Spine init() {
     final int base = size();
@@ -900,34 +897,34 @@ class Engine {
   }
 
   /**
-   * returns an answer as a Spine while recording in it
+   * Returns an answer as a Spine while recording in it
    * the top of the trail to allow the caller to retrieve
-   * more answers by forcing backtracking
+   * more answers by forcing backtracking.
    */
   final private Spine answer(final int ttop) {
     return new Spine(spines.get(0).hd, ttop);
   }
 
   /**
-   * detects availability of alternative clauses for the
-   * top goal of this spine
+   * Detects availability of alternative clauses for the
+   * top goal of this spine.
    */
   final private boolean hasClauses(final Spine S) {
     return S.k < S.cs.length;
   }
 
   /**
-   * true when there are no more goals left to solve
+   * True when there are no more goals left to solve.
    */
   final private boolean hasGoals(final Spine S) {
     return !IntList.isEmpty(S.gs);
   }
 
   /**
-   * removes this spine for the spine stack and
+   * Removes this spine for the spine stack and
    * resets trail and heap to where they were at its
    * creation time - while undoing variable binding
-   * up to that point
+   * up to that point.
    */
   final private void popSpine() {
     final Spine G = spines.pop();
@@ -936,10 +933,10 @@ class Engine {
   }
 
   /**
-   * main interpreter loop: starts from a spine and works
+   * Main interpreter loop: starts from a spine and works
    * though a stream of answers, returned to the caller one
    * at a time, until the spines stack is empty - when it
-   * returns null
+   * returns null.
    */
   final Spine yield() {
     while (!spines.isEmpty()) {
@@ -963,9 +960,9 @@ class Engine {
   }
 
   /**
-   * retrieves an answer and ensures the engine can be resumed
+   * Retrieves an answer and ensures the engine can be resumed
    * by unwinding the trail of the query Spine.
-   * returns an external "human readable" representation of the answer
+   * Returns an external "human readable" representation of the answer.
    */
   Object ask() {
     query = yield();

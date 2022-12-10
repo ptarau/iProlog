@@ -2,8 +2,6 @@ package org.iprolog;
 
 import org.junit.jupiter.api.Test;
 
-import org.iprolog.Toks;
-
 public class TestToks {
 
     public String case1() {

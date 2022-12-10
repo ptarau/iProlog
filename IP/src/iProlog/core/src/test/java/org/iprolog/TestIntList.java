@@ -6,14 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import org.iprolog.IntList;
-
 public class TestIntList {
 
     @Test
     public void mainTest() {
         System.out.println ("<<<<<<< TestIntList >>>>>>>>");
-
 
         IntList il = IntList.cons(1,null);
         assertNotNull(il);
@@ -31,10 +28,13 @@ public class TestIntList {
         assertEquals(2,IntList.len(il2));
         IntList ilx = IntList.app(xs,il2);
         assertEquals(4,IntList.len(ilx));
+        int iii = IntList.head(IntList.tail(ilx));
+        assertEquals(iii,xs[1]);
 
         System.out.println ("ilx = " + ilx.toString());
 
         IntStack is = IntList.toInts(ilx);
+        
         System.out.println ("is = " + is.toString());
         System.out.println ("<<<<<<< TestIntList DONE >>>>>>>>");
     }
