@@ -4,17 +4,20 @@ package org.iprolog;
  * representation of a clause
  */
 class Clause {
+
+  final int len; // length of heap slice
+  final int[] hgs; // head+goals pointing to cells in clauses
+  final int base; // heap where this clause starts
+  final int neck; // first after the end of the head
+  final int[] xs; // indexables in head
+
   Clause(final int len, final int[] hgs, final int base, final int neck, final int[] xs) {
-    this.hgs = hgs; // head+goals pointing to cells in cs
-    this.base = base; // heap where this starts
-    this.len = len; // length of heap slice
-    this.neck = neck; // first after the end of the head
-    this.xs = xs; // indexables in head
+    this.hgs = hgs;
+    this.base = base;
+    this.len = len;
+    this.neck = neck;
+    this.xs = xs;
   }
 
-  final int len;
-  final int[] hgs;
-  final int base;
-  final int neck;
-  final int[] xs;
+
 }
