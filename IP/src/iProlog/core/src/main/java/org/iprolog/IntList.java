@@ -36,7 +36,7 @@ class IntList {
   }
 
   // append Intlist Ys to Intlist made from int array xs, return result
-  static final IntList app(final int[] xs, final IntList Ys) {
+  static final IntList concat(final int[] xs, final IntList Ys) {
     IntList Zs = Ys;
     for (int i = xs.length - 1; i >= 0; i--) {
       Zs = cons(xs[i], Zs);

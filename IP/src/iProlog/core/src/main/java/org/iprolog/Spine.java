@@ -2,7 +2,7 @@ package org.iprolog;
 
 /**
  * Runtime representation of an immutable list of goals
- * together with top of heap and trail pointers
+ * together with top of heap (base) and trail pointers
  * and current clause tried out by head goal
  * as well as registers associated to it.
  *
@@ -30,7 +30,7 @@ class Spine {
     this.base = base;
 
     // prepends the goals of clause with head hs:
-    this.goals = IntList.tail(IntList.app(goals0, goals));
+    this.goals = IntList.tail(IntList.concat(goals0, goals));
 
     this.trail_top = trail_top;
     this.k = k;

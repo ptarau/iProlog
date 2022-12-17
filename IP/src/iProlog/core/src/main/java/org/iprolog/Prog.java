@@ -6,6 +6,8 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 
+/* Prog is mainly an Engine with some extended trace output */
+
 public class Prog extends Engine implements Spliterator<Object> {
   Prog(final String fname) {
     super(fname);
@@ -19,6 +21,7 @@ public class Prog extends Engine implements Spliterator<Object> {
     Main.println(o);
   }
 
+  // From Engine
   @Override
   String showTerm(final Object O) {
     if (O instanceof Object[])
@@ -154,6 +157,7 @@ public class Prog extends Engine implements Spliterator<Object> {
   }
   */
 
+  // from Engine
   @Override
   void ppGoals(IntList bs) {
     while (!IntList.isEmpty(bs)) {
@@ -163,6 +167,7 @@ public class Prog extends Engine implements Spliterator<Object> {
 
   }
 
+  // from Engine
   @Override
   void ppc(final Spine S) {
     //stats();
@@ -178,6 +183,8 @@ public class Prog extends Engine implements Spliterator<Object> {
   public Stream<Object> stream() {
     return StreamSupport.stream(this, false);
   }
+
+  //Spliterator:
 
   @Override
   public Spliterator<Object> trySplit() {

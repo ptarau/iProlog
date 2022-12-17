@@ -3,6 +3,36 @@ import java.util.*;
 
 /**
  * Implements execution mechanism
+ * 
+ * "an array representation
+ *  with variables on the left side of our equations
+ *  turned into indices pointing to compound terms
+ *  at higher addresses in the same array."
+ * 
+ * add _0 Y _1 and _0 holds(=) s X and _1 holds(=) s Z if add X Y Z:
+ * 
+ **[5]  a: 4        -- because |[add,_0,Y,_1]| = 4
+ * [6]  c: ->"add"
+ * [7]  r: 10       -- link to subterm: _0 = s X (???)
+ * [8]  v: 8        -- Y
+ * [9]  r: 13       -- link to next subterm: _1 = s Z (???)
+ * 
+ *                  -- _0 = s X
+ **[10] a: 2
+ * [11] c: ->"s"
+ * [12] v: 12       -- X
+ * 
+ *                  -- _1 = s Z
+ **[13] a: 2
+ * [14] c: ->"s"
+ * [15] v: 15       -- Z
+ * 
+ *                  -- add X Y Z
+ **[16] a: 4
+ * [17] c: "add"
+ * [18] u: 12       -- X
+ * [19] u: 8        -- Y
+ * [20] u: 15       -- Z
  */
 class Engine {
 
@@ -11,16 +41,16 @@ class Engine {
   final static int MAXIND = 3; // number of index args
   final static int START_INDEX = 20;  // if # of clauses < START_INDEX, turn off indexing
 
-  /* trimmed down clauses ready to be quickly relocated to the heap */
+  /* Trimmed-down clauses ready to be quickly relocated to the heap: */
   final Clause[] clauses;
 
   final int[] cls;
 
-  /* symbol table made of map + reverse map from ints to syms */
+  /* Symbol table - made of map (syms) + reverse map from ints to syms (slist) */
   final LinkedHashMap<String, Integer> syms; // syms->ints
   final private ArrayList<String> slist;     // resizeable ints->syms
 
-    /** runtime areas: **/
+    /** Runtime areas: **/
 
    /* heap - contains code for 'and' clauses and their copies created during execution
    */
@@ -33,7 +63,7 @@ class Engine {
    */
   final private IntStack trail;
   
-  /* ustack - unification stack; helps handling term unification non-recursively
+  /* ustack - unification stack; helps to handle term unification non-recursively
    */
   final private IntStack ustack;
   
@@ -51,7 +81,7 @@ class Engine {
   final IntMap[] vmaps;
 
   /**
-   * Builds a new engine from a natural-language style assembler.nl file
+   * Builds a new engine from a natural-language-style assembler.nl file
    */
   Engine(final String fname) {
     syms = new LinkedHashMap<String, Integer>();
@@ -64,7 +94,8 @@ class Engine {
 
     clauses = dload(fname); // load "natural language" source
 
-    cls = toNums(clauses); // an array that contains ints 0..clause.length 
+    cls = toNums(clauses); // initially an array that contains ints 0..clause.length-1 
+      // Not at all clear what this is for.
 
     query = init();  /* initial spine built from query from which execution starts */
 
@@ -74,17 +105,21 @@ class Engine {
   }
 
   /**
-   * tags of our heap cells - these can also be seen as
-   * instruction codes in a compiled implementation
+   * Tags of our heap cells. These can also be seen as
+   * instruction codes in a compiled implementation.
+   * Tag marks a ....
    */
-  final private static int V = 0;
-  final private static int U = 1;
-  final private static int R = 2;
+  final private static int V = 0; // ... first occurrence of a *Variable in a clause
+  final private static int U = 1; // ... subsequent occurrence (for "*Unbound"?)
+  final private static int R = 2; // ... *Ref to array slice representing a subterm
 
-  final private static int C = 3;
-  final private static int N = 4;
+  final private static int C = 3; // ... symbol (index into a sym table -- "C"??)
+  final private static int N = 4; // ... small integer
 
-  final private static int A = 5;
+  final private static int A = 5; // ... *Arity of array slice holding flattened term;
+                                  // "(of size 1 + number of arguments, to also
+                                  // make room for the function symbol --
+                                  // that could be an atom or a variable.)" -- HHG doc
 
   // G - ground?
 
@@ -101,7 +136,7 @@ class Engine {
   }
 
   /**
-   * Eemoves tag after flipping sign.
+   * Removes tag after flipping sign.
    */
   final private static int detag(final int w) {
     return -w >> 3;
@@ -195,7 +230,7 @@ class Engine {
   * Expands "Xs lists .." statements to "Xs holds" statements.
   */
 
-  private final static ArrayList<String[]> maybeExpand(final ArrayList<String> Ws) {
+  private final static ArrayList<String[]> expand_lists_to_holds(final ArrayList<String> Ws) {
     final String W = Ws.get(0);
     if (W.length() < 2 || !"l:".equals(W.substring(0, 2)))
       return null;
@@ -220,11 +255,11 @@ class Engine {
   /**
    * Expands, if needed, "lists" statements in sequence of statements.
    */
-  private final static ArrayList<String[]> mapExpand(final ArrayList<ArrayList<String>> Wss) {
+  private final static ArrayList<String[]> expand_lists_stmts(final ArrayList<ArrayList<String>> Wss) {
     final ArrayList<String[]> Rss = new ArrayList<String[]>();
     for (final ArrayList<String> Ws : Wss) {
 
-      final ArrayList<String[]> Hss = maybeExpand(Ws);
+      final ArrayList<String[]> Hss = expand_lists_to_holds(Ws);
 
       if (null == Hss) {
         final String[] ws = new String[Ws.size()];
@@ -243,13 +278,14 @@ class Engine {
 
   /**
    * Loads a program from a .nl file of
-   * "natural language" equivalents of Prolog/HiLog statements
+   * "natural language" equivalents of Prolog/HiLog statements.
+   * "W" seems to be an abbreviation of "Word".
    */
   Clause[] dload(final String s) {
     final boolean fromFile = true;
     final ArrayList<ArrayList<ArrayList<String>>> Wsss = Toks.toSentences(s, fromFile);
 
-    final ArrayList<Clause> Cs = new ArrayList<Clause>();
+    final ArrayList<Clause> Clauses = new ArrayList<Clause>();
 
     for (final ArrayList<ArrayList<String>> Wss : Wsss) {
       // clause starts here
@@ -258,7 +294,7 @@ class Engine {
       final IntStack cs = new IntStack();
       final IntStack gs = new IntStack();
 
-      final ArrayList<String[]> Rss = mapExpand(Wss);
+      final ArrayList<String[]> Rss = expand_lists_stmts(Wss);
       int k = 0;
       for (final String[] ws : Rss) {
 
@@ -351,21 +387,26 @@ class Engine {
         }
       }
 
-      final int neck = 1 == gs.size() ? cs.size() : detag(gs.get(1));
+      final int neck;
+      if (1 == gs.size())
+        neck = cs.size();
+      else
+        neck = detag(gs.get(1));
+
       final int[] tgs = gs.toArray();
 
       final Clause C = putClause(cs.toArray(), tgs, neck);
 
-      Cs.add(C);
+      Clauses.add(C);
 
     } // end clause set
 
-    final int ccount = Cs.size();
-    final Clause[] cls = new Clause[ccount];
-    for (int i = 0; i < ccount; i++) {
-      cls[i] = Cs.get(i);
+    final int clause_count = Clauses.size();
+    final Clause[] clauses = new Clause[clause_count];
+    for (int i = 0; i < clause_count; i++) {
+      clauses[i] = Clauses.get(i);
     }
-    return cls;
+    return clauses;
   }
 
   private static final int[] toNums(final Clause[] clauses) {
@@ -440,7 +481,7 @@ class Engine {
   final private int deref(int x) {
     while (isVAR(x)) {
       final int r = getRef(x);
-      if (r == x) {
+      if (r == x) { // unbound root variable
         break;
       }
       x = r;
@@ -487,24 +528,24 @@ class Engine {
 
     Object res = null;
     switch (t) {
-      case C:
+      case C: // symbol
         res = getSym(w);
       break;
-      case N:
+      case N: // integer
         res = new Integer(w);
       break;
-      case V:
+      case V: // variable
         //case U:
         res = "V" + w;
       break;
-      case R: {
+      case R: { // reference
 
         final int a = heap[w];
         if (A != tagOf(a))
           return "*** should be A, found=" + showCell(a);
         final int n = detag(a);
         final Object[] arr = new Object[n];
-        final int k = w + 1;
+        final int k = w + 1;   // offset to embedded array
         for (int i = 0; i < n; i++) {
           final int j = k + i;
           arr[i] = exportTerm(heap[j]);
@@ -512,6 +553,8 @@ class Engine {
         res = arr;
       }
       break;
+      // Case U is commented out above, strangely.
+      // Maybe exportTerm is called only when all variables are bound?
       default:
         res = "*BAD TERM*" + showCell(x);
     }
@@ -836,9 +879,9 @@ class Engine {
    */
   final private Spine unfold(final Spine G) {
 
-    final int ttop = trail.getTop();
-    final int htop = getTop();
-    final int base = htop + 1;
+    final int trail_top = trail.getTop();
+    final int heap_top = getTop();
+    final int base = heap_top + 1;
 
     final int goal = IntList.head(G.goals);
 
@@ -861,17 +904,17 @@ class Engine {
       ustack.push(goal);
 
       if (!unify(base)) {
-        unwindTrail(ttop);
-        setTop(htop);
+        unwindTrail(trail_top);
+        setTop(heap_top);
         continue;
       }
       final int[] gs = pushBody(b, head, C0);
-      final IntList newgs = IntList.tail(IntList.app(gs, IntList.tail(G.goals)));
+      final IntList newgs = IntList.tail(IntList.concat(gs, IntList.tail(G.goals)));
       G.k = k + 1;
       if (!IntList.isEmpty(newgs))
-        return new Spine(gs, base, IntList.tail(G.goals), ttop, 0, cls);
+        return new Spine(gs, base, IntList.tail(G.goals), trail_top, 0, cls);
       else
-        return answer(ttop);
+        return answer(trail_top);
     } // end for
     return null;
   }
@@ -901,8 +944,8 @@ class Engine {
    * the top of the trail to allow the caller to retrieve
    * more answers by forcing backtracking.
    */
-  final private Spine answer(final int ttop) {
-    return new Spine(spines.get(0).head, ttop);
+  final private Spine answer(final int trail_top) {
+    return new Spine(spines.get(0).head, trail_top);
   }
 
   /**
@@ -921,7 +964,7 @@ class Engine {
   }
 
   /**
-   * Removes this spine for the spine stack and
+   * Removes this spine from the spine stack and
    * resets trail and heap to where they were at its
    * creation time - while undoing variable binding
    * up to that point.
@@ -968,30 +1011,34 @@ class Engine {
     query = yield();
     if (null == query)
       return null;
-    final int res = answer(query.trail_top).head;
-    final Object R = exportTerm(res);
+    final int result = answer(query.trail_top).head;
+    final Object R = exportTerm(result);
     unwindTrail(query.trail_top);
     return R;
   }
 
   /**
-   * initiator and consumer of the stream of answers
-   * generated by this engine
+   * Initiator and consumer of the stream of answers
+   * generated by this engine.
    */
   void run() {
     long ctr = 0L;
+    int MAX_OUTPUT_LINES = 5;
+
     for (;; ctr++) {
       final Object A = ask();
       if (null == A) {
         break;
       }
-      if(ctr<5) Prog.println("[" + ctr + "] " + "*** ANSWER=" + showTerm(A));
+      if(ctr<MAX_OUTPUT_LINES)
+        Prog.println("[" + ctr + "] " + "*** ANSWER=" + showTerm(A));
     }
-    if(ctr>5) Prog.println("...");
+    if(ctr>MAX_OUTPUT_LINES)
+      Prog.println("...");
     Prog.println("TOTAL ANSWERS=" + ctr);
   }
 
-  // indexing extensions - ony active if START_INDEX clauses or more
+  // Indexing extensions - ony active if START_INDEX clauses or more.
 
   public static IntMap[] vcreate(final int l) {
     final IntMap[] vss = new IntMap[l];
