@@ -147,7 +147,7 @@ public class Toks extends StreamTokenizer {
       } else if (("c:" + IS).equals(t)) {
 
         final String w = Tokens.get(0);
-        Tokens.set(0, "f:" + w.substring(2));
+        Tokens.set(0, "f:" + w.substring(2));  // why "f"???
 
       } else {
         Tokens.add(t);

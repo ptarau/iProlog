@@ -1,6 +1,8 @@
 package org.iprolog;
 
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class TestToks {
 
@@ -17,7 +19,21 @@ public class TestToks {
 
     @Test
     public void mainTest () {
-        System.out.println ("{<<<<<<<<<<< Test Toks >>>>>>>>>>>");
+        System.out.println ("<<<<<<<<<< Test Toks >>>>>>>>>>>");
+
+        Toks T = Toks.makeToks("Hello 123 nothing .", false);
+        assertNotNull(T);
+
+        String s = T.getWord();
+        assert(s.compareTo("v:Hello") == 0);
+        s = T.getWord();
+        assert(s.compareTo("n:123") == 0);
+        s = T.getWord();
+        assert(s.compareTo("c:nothing") == 0);
+        s = T.getWord();
+        assert(s.compareTo(".") == 0);
+        s = T.getWord();
+        assertNull(s);
 
         Main.pp(Toks.toSentences(case1(), false));
     }
