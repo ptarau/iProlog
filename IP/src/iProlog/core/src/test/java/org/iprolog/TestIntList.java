@@ -26,7 +26,7 @@ public class TestIntList {
         final int [] xs = { 3, 4 };
         assertEquals(2,xs.length);
         assertEquals(2,IntList.len(il2));
-        IntList ilx = IntList.app(xs,il2);
+        IntList ilx = IntList.concat(xs,il2);
         assertEquals(4,IntList.len(ilx));
         int iii = IntList.head(IntList.tail(ilx));
         assertEquals(iii,xs[1]);

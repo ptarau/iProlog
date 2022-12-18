@@ -56,6 +56,7 @@ public class Toks extends StreamTokenizer {
   public String getWord() {
     String t = null;
 
+    // discard any leading whitespace:
     int c = TT_EOF;
     try {
       c = nextToken();
@@ -74,13 +75,13 @@ public class Toks extends StreamTokenizer {
         } else {
           try {
             final int n = Integer.parseInt(sval);
-            if (Math.abs(n) < 1 << 28) {
-              t = "n:" + sval;
+            if (Math.abs(n) < 1 << 28) {   // to allow for 3 bits of tag + 1 bit of sign?
+              t = "n:" + sval;              // N: int constant
             } else {
-              t = "c:" + sval;
+              t = "c:" + sval;              // C: symbol (see Engine.java)
             }
           } catch (final Exception e) {
-            t = "c:" + sval;
+            t = "c:" + sval;                // C: symbol (see Engine.java)
           }
         }
       }
@@ -92,7 +93,7 @@ public class Toks extends StreamTokenizer {
       break;
 
       default: {
-        t = "" + (char) c;
+        t = "" + (char) c;  // to convert int c to string?
       }
 
     }
