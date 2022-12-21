@@ -95,7 +95,7 @@ class Engine {
     clauses = dload(fname); // load "natural language" source
 
     cls = toNums(clauses); // initially an array that contains ints 0..clause.length-1 
-      // Not at all clear what this is for.
+      // Not at all clear what this is for. Somehow related to cls/2 in HHG doc?
 
     query = init();  /* initial spine built from query from which execution starts */
 
@@ -109,14 +109,14 @@ class Engine {
    * instruction codes in a compiled implementation.
    * Tag marks a ....
    */
-  final private static int V = 0; // ... first occurrence of a *Variable in a clause
-  final private static int U = 1; // ... subsequent occurrence (for "*Unbound"?)
-  final private static int R = 2; // ... *Ref to array slice representing a subterm
+  final private static int V = 0; // ... first occurrence of a Variable in a clause
+  final private static int U = 1; // ... subsequent occurrence (for "Unbound"?)
+  final private static int R = 2; // ... Ref to array slice representing a subterm
 
-  final private static int C = 3; // ... symbol (index into a sym table -- "C"??)
-  final private static int N = 4; // ... small integer
+  final private static int C = 3; // ... Constant (index into a sym table)
+  final private static int N = 4; // ... small iNteger
 
-  final private static int A = 5; // ... *Arity of array slice holding flattened term;
+  final private static int A = 5; // ... Arity of array slice holding flattened term;
                                   // "(of size 1 + number of arguments, to also
                                   // make room for the function symbol --
                                   // that could be an atom or a variable.)" -- HHG doc
@@ -804,7 +804,7 @@ class Engine {
    * each goal's toplevel subterms.
    */
   final private void makeIndexArgs(final Spine G, final int goal) {
-    if (null != G.xs)
+    if (null != G.xs)  // made only once
       return;
 
     final int p = 1 + detag(goal);
@@ -855,9 +855,9 @@ class Engine {
   /**
    * Tests if the head of a clause, not yet copied to the heap
    * for execution, could possibly match the current goal, an
-   * abstraction of which has been place in xs.
+   * abstraction of which has been placed in xs.
    */
-  private final boolean match(final int[] xs, final Clause C0) {
+  private final boolean possible_match(final int[] xs, final Clause C0) {
     for (int i = 0; i < MAXIND; i++) {
       final int x = xs[i];
       final int y = C0.xs[i];
@@ -883,7 +883,7 @@ class Engine {
     final int heap_top = getTop();
     final int base = heap_top + 1;
 
-    final int goal = IntList.head(G.goals);
+    final int goal = IntList.head(G.goal_stack);
 
     makeIndexArgs(G, goal);
 
@@ -891,7 +891,7 @@ class Engine {
     for (int k = G.k; k < last; k++) {
       final Clause C0 = clauses[G.clauses[k]];
 
-      if (!match(G.xs, C0))
+      if (!possible_match(G.xs, C0))
         continue;
 
       final int base0 = base - C0.base;
@@ -909,10 +909,10 @@ class Engine {
         continue;
       }
       final int[] gs = pushBody(b, head, C0);
-      final IntList newgs = IntList.tail(IntList.concat(gs, IntList.tail(G.goals)));
+      final IntList newgs = IntList.tail(IntList.concat(gs, IntList.tail(G.goal_stack)));
       G.k = k + 1;
       if (!IntList.isEmpty(newgs))
-        return new Spine(gs, base, IntList.tail(G.goals), trail_top, 0, cls);
+        return new Spine(gs, base, IntList.tail(G.goal_stack), trail_top, 0, cls);
       else
         return answer(trail_top);
     } // end for
@@ -957,10 +957,10 @@ class Engine {
   }
 
   /**
-   * True when there are no more goals left to solve.
+   * True when there are goals left to solve.
    */
-  final private boolean hasGoals(final Spine S) {
-    return !IntList.isEmpty(S.goals);
+  final private boolean any_goals_left(final Spine S) {
+    return !IntList.isEmpty(S.goal_stack);
   }
 
   /**
@@ -983,29 +983,47 @@ class Engine {
    */
   final Spine yield() {
     while (!spines.isEmpty()) {
-      final Spine G = spines.peek();
+      final Spine G = spines.peek(); // "The active component of a Spine is the topmost goal
+                                     // in [its]] immutable [goal_stack]" [HHG doc]
       if (!hasClauses(G)) {
         popSpine(); // no clauses left
         continue;
       }
       final Spine C = unfold(G);
       if (null == C) {
-        popSpine(); // no matches
+        popSpine(); // no matches - "When there are no more
+                    // matching clauses for a given goal,
+                    // the topmost Spine is popped off." [HHG doc]
         continue;
       }
-      if (hasGoals(C)) {
+      if (any_goals_left(C)) {
         spines.push(C);
         continue;
       }
-      return C; // answer
+      return C; // answer - "When no goals are left to solve,
+                // a computed answer is yield[ed],
+                // encapsulated in a Spine that can be used by the caller
+                // to resume execution." [HHG doc]
     }
-    return null;
+    return null; // "An empty Spine stack indicates the end of execution
+                // signaled to the caller by returning null." [HHG doc]
   }
 
   /**
    * Retrieves an answer and ensures the engine can be resumed
    * by unwinding the trail of the query Spine.
    * Returns an external "human readable" representation of the answer.
+   * 
+   * "A key element in the interpreter loop is to ensure that
+   * after an Engine yields an answer, it can, if asked to,
+   * resume execution and work on computing more answers. [...]
+   * A variable 'query' of type Spine, contains the top of the trail
+   * as it was before evaluation of the last goal,
+   * up to where bindings of the variables will have to be undone,
+   * before resuming execution. It also unpacks the actual answer term
+   * (by calling the method exportTerm) to a tree representation of a term,
+   * consisting of recursively embedded arrays hosting as leaves,
+   * an external representation of symbols, numbers and variables." [HHG doc]
    */
   Object ask() {
     query = yield();

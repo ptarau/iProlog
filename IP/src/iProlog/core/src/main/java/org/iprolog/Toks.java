@@ -78,10 +78,10 @@ public class Toks extends StreamTokenizer {
             if (Math.abs(n) < 1 << 28) {   // to allow for 3 bits of tag + 1 bit of sign?
               t = "n:" + sval;              // N: int constant
             } else {
-              t = "c:" + sval;              // C: symbol (see Engine.java)
+              t = "c:" + sval;              // C: constant (see Engine.java)
             }
           } catch (final Exception e) {
-            t = "c:" + sval;                // C: symbol (see Engine.java)
+            t = "c:" + sval;                // C: constant (see Engine.java)
           }
         }
       }
@@ -119,7 +119,7 @@ public class Toks extends StreamTokenizer {
       System.out.println (" -- getword -> " + t);
 
       if (DOT.equals(t)) {
-        Structures.add(Tokens);      // add this finished (?) strucure
+        Structures.add(Tokens);      // add this finished (?) structure
         Clauses.add(Structures);    // add it to this finished clause
                           // prepare for (possible) new clause and structure
         Structures = new ArrayList<ArrayList<String>>();
