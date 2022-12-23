@@ -210,7 +210,9 @@ class Engine {
   }
 
   /**
-   * Dynamic array operation: doubles when full.
+   * Dynamic array operation: heap size doubles when full
+   * or when the heap would otherwise overflow from what will be
+   * pushed onto it.
    */
   private final void expand() {
     final int l = heap.length;
@@ -291,8 +293,8 @@ class Engine {
       // clause starts here
 
       final LinkedHashMap<String, IntStack> refs = new LinkedHashMap<String, IntStack>();
-      final IntStack cs = new IntStack();
-      final IntStack gs = new IntStack();
+      final IntStack cells = new IntStack();
+      final IntStack goals = new IntStack();
 
       final ArrayList<String[]> Rss = expand_lists_stmts(Wss);
       int k = 0;
@@ -301,8 +303,8 @@ class Engine {
         // head or body element starts here
 
         final int l = ws.length;
-        gs.push(tag(R, k++));
-        cs.push(tag(A, l));
+        goals.push(tag(R, k++));
+        cells.push(tag(A, l));
 
         for (String w : ws) {
 
@@ -316,11 +318,11 @@ class Engine {
 
           switch (w.charAt(0)) {
             case 'c':
-              cs.push(encode(C, L));
+              cells.push(encode(C, L));
               k++;
             break;
             case 'n':
-              cs.push(encode(N, L));
+              cells.push(encode(N, L));
               k++;
             break;
             case 'v': {
@@ -330,7 +332,7 @@ class Engine {
                 refs.put(L, Is);
               }
               Is.push(k);
-              cs.push(tag(BAD, k)); // just in case we miss this
+              cells.push(tag(BAD, k)); // just in case we miss this
               k++;
             }
             break;
@@ -341,8 +343,8 @@ class Engine {
                 refs.put(L, Is);
               }
               Is.push(k - 1);
-              cs.set(k - 1, tag(A, l - 1));
-              gs.pop();
+              cells.set(k - 1, tag(A, l - 1));
+              goals.pop();
             }
             break;
             default:
@@ -360,7 +362,7 @@ class Engine {
         // finding the A among refs
         int leader = -1;
         for (final int j : Is.toArray()) {
-          if (A == tagOf(cs.get(j))) {
+          if (A == tagOf(cells.get(j))) {
             leader = j;
 
             break;
@@ -371,9 +373,9 @@ class Engine {
           leader = Is.get(0);
           for (final int i : Is.toArray()) {
             if (i == leader) {
-              cs.set(i, tag(V, i));
+              cells.set(i, tag(V, i));
             } else {
-              cs.set(i, tag(U, leader));
+              cells.set(i, tag(U, leader));
             }
 
           }
@@ -382,20 +384,20 @@ class Engine {
             if (i == leader) {
               continue;
             }
-            cs.set(i, tag(R, leader));
+            cells.set(i, tag(R, leader));
           }
         }
       }
 
       final int neck;
-      if (1 == gs.size())
-        neck = cs.size();
+      if (1 == goals.size())
+        neck = cells.size();
       else
-        neck = detag(gs.get(1));
+        neck = detag(goals.get(1));
 
-      final int[] tgs = gs.toArray();
+      final int[] tgs = goals.toArray();
 
-      final Clause C = putClause(cs.toArray(), tgs, neck);
+      final Clause C = putClause(cells.toArray(), tgs, neck);
 
       Clauses.add(C);
 
@@ -744,15 +746,15 @@ class Engine {
   }
 
   /**
-   * Relocates a variable or array reference cell by b
-   * assumes var/ref codes V,U,R are 0,1,2.
+   * Relocates a variable or array reference cell by b.
+   * Assumes var/ref codes V,U,R are 0,1,2.
    */
   final private static int relocate(final int b, final int cell) {
     return tagOf(cell) < 3 ? cell + b : cell;
   }
 
   /**
-   * Pushes slice[from,to] of array cs of cells to heap.
+   * Pushes slice[from,to] at given base to the heap.
    */
   final private void pushCells(final int b, final int from, final int to, final int base) {
     ensureSize(to - from);
@@ -772,7 +774,7 @@ class Engine {
   }
 
   /**
-   * Copies and relocates head of clause at offset from heap to heap.
+   * Copies and relocates the head of clause C at offset b from heap to the heap.
    */
   final private int pushHead(final int b, final Clause C) {
     pushCells(b, 0, C.neck, C.base);
@@ -801,11 +803,12 @@ class Engine {
    * Makes, if needed, registers associated to top goal of a Spine.
    * These registers will be reused when matching with candidate clauses.
    * Note that xs contains dereferenced cells - this is done once for
-   * each goal's toplevel subterms.
+   * each goal's toplevel subterms. Return top goal.
    */
-  final private void makeIndexArgs(final Spine G, final int goal) {
+  final private int makeIndexArgs(final Spine G) {
+    final int goal = IntList.head(G.goal_stack);
     if (null != G.xs)  // made only once
-      return;
+      return goal;
 
     final int p = 1 + detag(goal);
     final int n = Math.min(MAXIND, detag(getRef(goal)));
@@ -820,9 +823,11 @@ class Engine {
     G.xs = xs;
 
     if (null == imaps)
-      return;
+      return goal;
     final int[] cs = IMap.get(imaps, vmaps, xs);
     G.clauses = cs;
+
+    return goal;
   }
 
   final private int[] getIndexables(final int ref) {
@@ -883,11 +888,12 @@ class Engine {
     final int heap_top = getTop();
     final int base = heap_top + 1;
 
-    final int goal = IntList.head(G.goal_stack);
-
-    makeIndexArgs(G, goal);
+    final int goal = makeIndexArgs(G);
 
     final int last = G.clauses.length;
+    // G.k: "index of the last clause [that]
+          // the top goal of [this] Spine [G]
+          // has tried to match so far " [HHG doc]
     for (int k = G.k; k < last; k++) {
       final Clause C0 = clauses[G.clauses[k]];
 

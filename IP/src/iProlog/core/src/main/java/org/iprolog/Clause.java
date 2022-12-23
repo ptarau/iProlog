@@ -6,8 +6,8 @@ package org.iprolog;
 class Clause {
 
   final int len; // length of heap slice
-  final int[] hgs; // head+goals pointing to cells in clauses
-  final int base; // heap where this clause starts
+  final int[] hgs; // "head+goals pointing to cells in clauses"???
+  final int base; // the point in the heap where this clause starts
   final int neck; // first after the end of the head
   final int[] xs; // indexables in head
 
