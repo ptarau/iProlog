@@ -18,6 +18,4 @@ class Clause {
     this.neck = neck;
     this.xs = xs;
   }
-
-
 }

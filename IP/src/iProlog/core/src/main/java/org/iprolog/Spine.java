@@ -37,16 +37,20 @@ class Spine {
   /**
    * Creates a spine - as a snapshot of some runtime elements.
    */
-  Spine(final int[] goal_stack_0, final int base, final IntList goal_stack, final int trail_top, final int k, final int[] cs) {
-    head = goal_stack_0[0];
+  Spine(final int[]   goal_stack_0
+       ,final int     base
+       ,final IntList goal_stack
+       ,final int     trail_top
+       ,final int     k
+       ,final int[]   clauses
+       ) {
+    this.head = goal_stack_0[0];
     this.base = base;
-
-    // prepends the goals of clause with head hs:
+    // prepends the goals of clause with head:
     this.goal_stack = IntList.tail(IntList.concat(goal_stack_0, goal_stack));
-
     this.trail_top = trail_top;
     this.k = k;
-    this.clauses = cs;
+    this.clauses = clauses;
   }
 
   /**
@@ -54,11 +58,10 @@ class Spine {
    */
   Spine(final int head, final int trail_top) {
     this.head = head;
-    base = 0;
-    goal_stack = IntList.empty;
+    this.base = 0;
+    this.goal_stack = IntList.empty;
     this.trail_top = trail_top;
-
-    k = -1;
-    clauses = null;
+    this.k = -1;
+    this.clauses = null;
   }
 }

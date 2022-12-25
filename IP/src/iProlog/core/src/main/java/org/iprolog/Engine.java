@@ -13,9 +13,9 @@ import java.util.*;
  * 
  **[5]  a: 4        -- because |[add,_0,Y,_1]| = 4
  * [6]  c: ->"add"
- * [7]  r: 10       -- link to subterm: _0 = s X (???)
+ * [7]  r: 10       -- link to subterm: _0 = s X
  * [8]  v: 8        -- Y
- * [9]  r: 13       -- link to next subterm: _1 = s Z (???)
+ * [9]  r: 13       -- link to next subterm: _1 = s Z
  * 
  *                  -- _0 = s X
  **[10] a: 2
@@ -395,9 +395,9 @@ class Engine {
       else
         neck = detag(goals.get(1));
 
-      final int[] tgs = goals.toArray();
+      final int[] tmp_goals = goals.toArray();
 
-      final Clause C = putClause(cells.toArray(), tgs, neck);
+      final Clause C = putClause(cells.toArray(), tmp_goals, neck);
 
       Clauses.add(C);
 
@@ -445,6 +445,8 @@ class Engine {
   final private static boolean isVAR(final int x) {
     //final int t = tagOf(x);
     //return V == t || U == t;
+    assert V < 2;
+    assert U < 2;
     return tagOf(x) < 2;
   }
 
@@ -469,7 +471,7 @@ class Engine {
   private void unwindTrail(final int savedTop) {
     while (savedTop < trail.getTop()) {
       final int href = trail.pop();
-      // assert href is var
+      assert detag(href) == V || detag(href) == U;
 
       setRef(href, href);
     }
@@ -564,17 +566,30 @@ class Engine {
   }
 
   /**
-   * Extracts an integer array pointing to
-   * the skeleton of a clause: a cell
-   * pointing to its head followed by cells pointing to its body's
-   * goals.
+     * Extracts an integer array pointing to
+     * the skeleton of a clause: a cell
+     * pointing to its head followed by cells pointing to its body's
+     * goals.
+     * * *
+     * It doesn't look like this is called.
+   * "Skeleton" here seems to refer to the [H,B] pair, a "toplevel
+   * skeleton abstracting away the main components of a Horn clause:
+   * the variable referencing the head, followed by zero or more
+   * references to the elements of the conjunctions forming
+   * the body of the clause." [HHG doc]
    */
-  static int[] getSpine(final int[] cs) {
-    final int a = cs[1];
-    final int w = detag(a);
-    final int[] rs = new int[w - 1];
+  static int[] getSpine(final int[] cells) {
+    System.out.println ("********* getSpine entered *********");
+    // cells[0] is apparently ignored. Why?
+    // Not called from anywhere, so the mystery remains.
+    // Is it "cells" or "conjunctions" or ...?
+    final int a = cells[1];  // offset 1 not 0 because ... ?
+    assert tagOf(a) == A;   // arity? Looks like
+    final int w = detag(a); // == # of args + 1 for functor
+    final int[] rs = new int[w - 1];  // subtract 1 because of functor being counted
     for (int i = 0; i < w - 1; i++) {
-      final int x = cs[3 + i];
+      final int x = cells[3 + i];
+         // + 3 because ... 1 offset + 1 for arity, then + 1 for C: functor atom
       final int t = tagOf(x);
       if (R != t) {
         Main.pp("*** getSpine: unexpected tag=" + t);
@@ -593,32 +608,20 @@ class Engine {
     final int val = detag(w);
     String s = null;
     switch (t) {
-      case V:
-        s = "v:" + val;
-      break;
-      case U:
-        s = "u:" + val;
-      break;
-      case N:
-        s = "n:" + val;
-      break;
-      case C:
-        s = "c:" + getSym(val);
-      break;
-      case R:
-        s = "r:" + val;
-      break;
-      case A:
-        s = "a:" + val;
-      break;
-      default:
-        s = "*BAD*=" + w;
+      case V:        s = "v:" + val;          break;
+      case U:        s = "u:" + val;          break;
+      case N:        s = "n:" + val;          break;
+      case C:        s = "c:" + getSym(val);  break;
+      case R:        s = "r:" + val;          break;
+      case A:        s = "a:" + val;          break;
+
+      default:       s = "*BAD*=" + w;
     }
     return s;
   }
 
   /**
-   * A displayer for cells
+   * Displayers for cells
    */
 
   String showCells(final int base, final int len) {
@@ -633,11 +636,11 @@ class Engine {
     return buf.toString();
   }
 
-  String showCells(final int[] cs) {
+  String showCells(final int[] cells) {
     final StringBuffer buf = new StringBuffer();
-    for (int k = 0; k < cs.length; k++) {
+    for (int k = 0; k < cells.length; k++) {
       buf.append("[" + k + "]");
-      buf.append(showCell(cs[k]));
+      buf.append(showCell(cells[k]));
       buf.append(" ");
     }
     return buf.toString();
@@ -654,7 +657,7 @@ class Engine {
    * to be overridden as a printer for current goals
    * in a spine
    */
-  void ppGoals(final IntList gs) {
+  void ppGoals(final IntList goals) {
     // override
   }
 
@@ -733,30 +736,39 @@ class Engine {
   /**
    * Places a clause built by the Toks reader on the heap.
    */
-  Clause putClause(final int[] cs, final int[] gs, final int neck) {
+  Clause putClause(final int[] cells, final int[] goals, final int neck) {
     final int base = size();
+    // The following seems to depend on V==0 . . .
     final int b = tag(V, base);
-    final int len = cs.length;
-    pushCells(b, 0, len, cs);
-    for (int i = 0; i < gs.length; i++) {
-      gs[i] = relocate(b, gs[i]);
+    // ... because b is used later in '+' ops that would otherwise mangle tags.
+    final int len = cells.length;
+    pushCells(b, 0, len, cells);
+    for (int i = 0; i < goals.length; i++) {
+      goals[i] = relocate(b, goals[i]);
     }
-    final int[] xs = getIndexables(gs[0]);
-    return new Clause(len, gs, base, neck, xs);
+    final int[] xs = getIndexables(goals[0]);
+    return new Clause(len, goals, base, neck, xs);
   }
 
   /**
-   * Relocates a variable or array reference cell by b.
+   * Relocates a variable or reference by b.
    * Assumes var/ref codes V,U,R are 0,1,2.
+   * Also assumes that b has cell structure --
+   *  left-shifted by 3, tagged 0 (==V) [???]
    */
   final private static int relocate(final int b, final int cell) {
+    assert tagOf(b) == V;
+    assert V == 0;
     return tagOf(cell) < 3 ? cell + b : cell;
   }
 
   /**
-   * Pushes slice[from,to] at given base to the heap.
+   * Pushes slice[from,to] at given base onto the heap.
+   * b has cell structure, i.e, index, shifted left 3 bits, with tag 0 (==V)
    */
   final private void pushCells(final int b, final int from, final int to, final int base) {
+    assert tagOf(b) == V;
+    assert V == 0;
     ensureSize(to - from);
     for (int i = from; i < to; i++) {
       push(relocate(b, heap[base + i]));
@@ -764,19 +776,21 @@ class Engine {
   }
 
   /**
-   * Pushes slice[from,to] of array cs of cells to heap.
+   * Pushes slice[from,to] of cells array to heap.
    */
-  final private void pushCells(final int b, final int from, final int to, final int[] cs) {
+  final private void pushCells(final int b, final int from, final int to, final int[] cells) {
     ensureSize(to - from);
     for (int i = from; i < to; i++) {
-      push(relocate(b, cs[i]));
+      push(relocate(b, cells[i]));
     }
   }
 
   /**
-   * Copies and relocates the head of clause C at offset b from heap to the heap.
+   * Copies and relocates the head of clause C from heap to heap.
    */
   final private int pushHead(final int b, final Clause C) {
+    assert tagOf(b) == V;
+    assert V == 0;
     pushCells(b, 0, C.neck, C.base);
     final int head = C.hgs[0];
     return relocate(b, head);
@@ -784,31 +798,33 @@ class Engine {
 
   /**
    * Copies and relocates body of clause at offset from heap to heap
-   * while also placing head as the first element of array gs that,
+   * while also placing head as the first element of array 'goals' that,
    * when returned, contains references to the toplevel spine of the clause.
    */
   final private int[] pushBody(final int b, final int head, final Clause C) {
+    assert tagOf(b) == V;
+    assert V == 0;
     pushCells(b, C.neck, C.len, C.base);
     final int l = C.hgs.length;
-    final int[] gs = new int[l];
-    gs[0] = head;
+    final int[] goals = new int[l];
+    goals[0] = head;
     for (int k = 1; k < l; k++) {
       final int cell = C.hgs[k];
-      gs[k] = relocate(b, cell);
+      goals[k] = relocate(b, cell);
     }
-    return gs;
+    return goals;
   }
 
   /**
    * Makes, if needed, registers associated to top goal of a Spine.
    * These registers will be reused when matching with candidate clauses.
    * Note that xs contains dereferenced cells - this is done once for
-   * each goal's toplevel subterms. Return top goal.
+   * each goal's toplevel subterms.
    */
-  final private int makeIndexArgs(final Spine G) {
-    final int goal = IntList.head(G.goal_stack);
+  final private void makeIndexArgs(final Spine G, final int goal) {
+
     if (null != G.xs)  // made only once
-      return goal;
+      return;
 
     final int p = 1 + detag(goal);
     final int n = Math.min(MAXIND, detag(getRef(goal)));
@@ -823,11 +839,9 @@ class Engine {
     G.xs = xs;
 
     if (null == imaps)
-      return goal;
+      return;
     final int[] cs = IMap.get(imaps, vmaps, xs);
     G.clauses = cs;
-
-    return goal;
   }
 
   final private int[] getIndexables(final int ref) {
@@ -861,6 +875,7 @@ class Engine {
    * Tests if the head of a clause, not yet copied to the heap
    * for execution, could possibly match the current goal, an
    * abstraction of which has been placed in xs.
+   * ("abstraction of which"???)
    */
   private final boolean possible_match(final int[] xs, final Clause C0) {
     for (int i = 0; i < MAXIND; i++) {
@@ -888,7 +903,9 @@ class Engine {
     final int heap_top = getTop();
     final int base = heap_top + 1;
 
-    final int goal = makeIndexArgs(G);
+    final int goal = IntList.head(G.goal_stack);
+
+    makeIndexArgs(G, goal);
 
     final int last = G.clauses.length;
     // G.k: "index of the last clause [that]
@@ -902,6 +919,7 @@ class Engine {
 
       final int base0 = base - C0.base;
       final int b = tag(V, base0);
+      assert V == 0;
       final int head = pushHead(b, C0);
 
       ustack.clear(); // set up unification stack
@@ -914,11 +932,11 @@ class Engine {
         setTop(heap_top);
         continue;
       }
-      final int[] gs = pushBody(b, head, C0);
-      final IntList newgs = IntList.tail(IntList.concat(gs, IntList.tail(G.goal_stack)));
+      final int[] goals = pushBody(b, head, C0);
+      final IntList new_goals = IntList.tail(IntList.concat(goals, IntList.tail(G.goal_stack)));
       G.k = k + 1;
-      if (!IntList.isEmpty(newgs))
-        return new Spine(gs, base, IntList.tail(G.goal_stack), trail_top, 0, cls);
+      if (!IntList.isEmpty(new_goals))
+        return new Spine(goals, base, IntList.tail(G.goal_stack), trail_top, 0, cls);
       else
         return answer(trail_top);
     } // end for
