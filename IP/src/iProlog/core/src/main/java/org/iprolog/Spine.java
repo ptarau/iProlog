@@ -32,11 +32,10 @@ class Spine {
   // "int[] regs: dereferenced goal registers" [HHG doc]
   // Comments in Engine.java suggest that xs is regs
   
-  int[] clauses; // array of clauses known to be unifiable with top goal in goals
-          // (This is not listed in HHG description of Spine.)
-          // Initialized from cls, in Engine. Not used in any obvious way.
-          // Seems like clauses[i] == i, always, from how cls is
-          // initialized in Engine.
+  int[] cs; // array of clauses known to be unifiable with top goal in goal stack.
+          // (This is not listed in the HHG description of Spine.)
+          // Initialized from cls, in Engine. If indexing is not
+          // activated, cs[i] == i.
 
   /**
    * Creates a spine - as a snapshot of some runtime elements.
@@ -46,7 +45,7 @@ class Spine {
        ,final IntList goal_stack
        ,final int     trail_top
        ,final int     k
-       ,final int[]   clauses
+       ,final int[]   cs
        ) {
     this.head = goal_stack_0[0];
     this.base = base;
@@ -54,7 +53,7 @@ class Spine {
     this.goal_stack = IntList.tail(IntList.concat(goal_stack_0, goal_stack));
     this.trail_top = trail_top;
     this.k = k;
-    this.clauses = clauses;
+    this.cs = cs;
   }
 
   /**
@@ -66,6 +65,6 @@ class Spine {
     this.goal_stack = IntList.empty;
     this.trail_top = trail_top;
     this.k = -1;
-    this.clauses = null;
+    this.cs = null;
   }
 }

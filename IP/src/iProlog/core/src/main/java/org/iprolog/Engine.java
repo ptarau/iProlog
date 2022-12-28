@@ -13,23 +13,23 @@ import java.util.*;
  * 
  **[5]  a: 4        -- because |[add,_0,Y,_1]| = 4
  * [6]  c: ->"add"
- * [7]  r: 10       -- link to subterm: _0 = s X
+ * [7]  r: 10       -- link to subterm: _0 holds(=) s X
  * [8]  v: 8        -- Y
- * [9]  r: 13       -- link to next subterm: _1 = s Z
+ * [9]  r: 13       -- link to next subterm: _1 holds(=) s Z
  * 
- *                  -- _0 = s X:
+ *                  -- _0 holds(=) s X:
  **[10] a: 2
  * [11] c: ->"s"
  * [12] v: 12       -- X
  * 
- *                  -- _1 = s Z:
+ *                  -- _1 holds(=) s Z:
  **[13] a: 2
  * [14] c: ->"s"
  * [15] v: 15       -- Z
  * 
  *                  -- add X Y Z:
  **[16] a: 4
- * [17] c: "add"
+ * [17] c: ->"add"
  * [18] u: 12       -- X
  * [19] u: 8        -- Y
  * [20] u: 15       -- Z
@@ -46,7 +46,7 @@ class Engine {
   /* (Not clear what "trimmed-down" means.) */
   final Clause[] clauses;
 
-  final int[] cls; // like cls as in HHG doc?
+  final int[] cls; // if no indexing, [0..clauses.length-1]
 
   /* Symbol table - made of map (syms) + reverse map from ints to syms (slist) */
   final LinkedHashMap<String, Integer> syms; // syms->ints
@@ -97,7 +97,7 @@ class Engine {
     clauses = dload(fname); // load "natural language" source
 
     cls = toNums(clauses); // initially an array  [0..clauses.length-1]
-      // Not at all clear what this is for. Somehow related to cls/2 in HHG doc?
+      // Used in indexing (somehow)
 
     query = init();  /* initial spine built from query from which execution starts */
 
@@ -397,9 +397,9 @@ class Engine {
       else
         neck = detag(goals.get(1));
 
-      final int[] tmp_goals = goals.toArray();
+      final int[] hgs = goals.toArray();
 
-      final Clause C = putClause(cells.toArray(), tmp_goals, neck);
+      final Clause C = putClause(cells.toArray(), hgs, neck);
 
       Clauses.add(C);
 
@@ -738,18 +738,19 @@ class Engine {
   /**
    * Places a clause built by the Toks reader on the heap.
    */
-  Clause putClause(final int[] cells, final int[] goals, final int neck) {
+  Clause putClause(final int[] cells, final int[] hgs, final int neck) {
     final int base = size();
     // The following seems to depend on V==0 . . .
+    assert V==0;
     final int b = tag(V, base);
     // ... because b is used later in '+' ops that would otherwise mangle tags.
     final int len = cells.length;
     pushCells(b, 0, len, cells);
-    for (int i = 0; i < goals.length; i++) {
-      goals[i] = relocate(b, goals[i]);
+    for (int i = 0; i < hgs.length; i++) {
+      hgs[i] = relocate(b, hgs[i]);
     }
-    final int[] xs = getIndexables(goals[0]);
-    return new Clause(len, goals, base, neck, xs);
+    final int[] xs = getIndexables(hgs[0]);
+    return new Clause(len, hgs, base, neck, xs);
   }
 
   /**
@@ -843,7 +844,7 @@ class Engine {
     if (null == imaps)
       return;
     final int[] cs = IMap.get(imaps, vmaps, xs);
-    G.clauses = cs;
+    G.cs = cs;
   }
 
   final private int[] getIndexables(final int ref) {
@@ -909,12 +910,12 @@ class Engine {
 
     makeIndexArgs(G, goal);
 
-    final int last = G.clauses.length;
+    final int last = G.cs.length;
     // G.k: "index of the last clause [that]
           // the top goal of [this] Spine [G]
           // has tried to match so far " [HHG doc]
     for (int k = G.k; k < last; k++) {
-      final Clause C0 = clauses[G.clauses[k]];
+      final Clause C0 = clauses[G.cs[k]];
 
       if (!possible_match(G.xs, C0))
         continue;
@@ -979,7 +980,7 @@ class Engine {
    * top goal of this spine.
    */
   final private boolean hasClauses(final Spine S) {
-    return S.k < S.clauses.length;
+    return S.k < S.cs.length;
   }
 
   /**
