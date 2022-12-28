@@ -17,23 +17,24 @@ import java.util.*;
  * [8]  v: 8        -- Y
  * [9]  r: 13       -- link to next subterm: _1 = s Z
  * 
- *                  -- _0 = s X
+ *                  -- _0 = s X:
  **[10] a: 2
  * [11] c: ->"s"
  * [12] v: 12       -- X
  * 
- *                  -- _1 = s Z
+ *                  -- _1 = s Z:
  **[13] a: 2
  * [14] c: ->"s"
  * [15] v: 15       -- Z
  * 
- *                  -- add X Y Z
+ *                  -- add X Y Z:
  **[16] a: 4
  * [17] c: "add"
  * [18] u: 12       -- X
  * [19] u: 8        -- Y
  * [20] u: 15       -- Z
  */
+
 class Engine {
 
   Spine query;
@@ -42,9 +43,10 @@ class Engine {
   final static int START_INDEX = 20;  // if # of clauses < START_INDEX, turn off indexing
 
   /* Trimmed-down clauses ready to be quickly relocated to the heap: */
+  /* (Not clear what "trimmed-down" means.) */
   final Clause[] clauses;
 
-  final int[] cls;
+  final int[] cls; // like cls as in HHG doc?
 
   /* Symbol table - made of map (syms) + reverse map from ints to syms (slist) */
   final LinkedHashMap<String, Integer> syms; // syms->ints
@@ -94,7 +96,7 @@ class Engine {
 
     clauses = dload(fname); // load "natural language" source
 
-    cls = toNums(clauses); // initially an array that contains ints 0..clause.length-1 
+    cls = toNums(clauses); // initially an array  [0..clauses.length-1]
       // Not at all clear what this is for. Somehow related to cls/2 in HHG doc?
 
     query = init();  /* initial spine built from query from which execution starts */

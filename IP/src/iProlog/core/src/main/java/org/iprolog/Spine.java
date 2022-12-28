@@ -31,8 +31,12 @@ class Spine {
   int[] xs; // index elements ("based on regs" [HHG] but no regs)
   // "int[] regs: dereferenced goal registers" [HHG doc]
   // Comments in Engine.java suggest that xs is regs
+  
   int[] clauses; // array of clauses known to be unifiable with top goal in goals
           // (This is not listed in HHG description of Spine.)
+          // Initialized from cls, in Engine. Not used in any obvious way.
+          // Seems like clauses[i] == i, always, from how cls is
+          // initialized in Engine.
 
   /**
    * Creates a spine - as a snapshot of some runtime elements.
