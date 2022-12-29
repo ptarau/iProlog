@@ -746,6 +746,9 @@ class Engine {
     // ... because b is used later in '+' ops that would otherwise mangle tags.
     final int len = cells.length;
     pushCells(b, 0, len, cells);
+
+System.out.println ("---- putClause: hgs.length="+hgs.length+" -----");
+
     for (int i = 0; i < hgs.length; i++) {
       hgs[i] = relocate(b, hgs[i]);
     }

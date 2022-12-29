@@ -109,7 +109,7 @@ public class Prog extends Engine implements Spliterator<Object> {
     for (int i = 0; i < clauses.length; i++) {
 
       final Clause C = clauses[i];
-      pp("[" + i + "]:" + showClause(C));
+      pp("Clause " + i + ":" + showClause(C));
     }
     pp("");
 
@@ -118,7 +118,20 @@ public class Prog extends Engine implements Spliterator<Object> {
   String showClause(final Clause s) {
     final StringBuffer buf = new StringBuffer();
     final int l = s.hgs.length;
-    buf.append("---base:[" + s.base + "] neck: " + s.neck + "-----\n");
+    buf.append("\n ");
+    buf.append(showTerm(s.hgs[0]));
+    if (l > 1) {
+      buf.append(" :- \n");
+      for (int i = 1; i < l; i++) {
+        final int e = s.hgs[i];
+        buf.append("   ");
+        buf.append(showTerm(e));
+        buf.append("\n");
+      }
+    } else {
+      buf.append("\n");
+    }
+    buf.append("--- base=" + s.base + " neck=" + s.neck + " -----\n");
     buf.append(showCells(s.base, s.len)); // TODO
     buf.append("\n");
     buf.append(showCell(s.hgs[0]));
@@ -135,18 +148,6 @@ public class Prog extends Engine implements Spliterator<Object> {
 
     buf.append("]\n");
 
-    buf.append(showTerm(s.hgs[0]));
-    if (l > 1) {
-      buf.append(" :- \n");
-      for (int i = 1; i < l; i++) {
-        final int e = s.hgs[i];
-        buf.append("  ");
-        buf.append(showTerm(e));
-        buf.append("\n");
-      }
-    } else {
-      buf.append("\n");
-    }
     return buf.toString();
   }
 
