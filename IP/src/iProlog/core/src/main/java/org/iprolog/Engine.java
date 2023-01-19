@@ -547,8 +547,7 @@ class Engine {
       case R: { // reference
 
         final int a = heap[w];
-        if (A != tagOf(a))
-          return "*** should be A, found=" + showCell(a);
+        assert A == tagOf(a);
         final int n = detag(a);
         final Object[] arr = new Object[n];
         final int k = w + 1;   // offset to embedded array
@@ -592,11 +591,7 @@ class Engine {
     for (int i = 0; i < w - 1; i++) {
       final int x = cells[3 + i];
          // + 3 because ... 1 offset + 1 for arity, then + 1 for C: functor atom
-      final int t = tagOf(x);
-      if (R != t) {
-        Main.pp("*** getSpine: unexpected tag=" + t);
-        return null;
-      }
+      assert R == tagOf(x);
       rs[i] = detag(x);
     }
     return rs;
