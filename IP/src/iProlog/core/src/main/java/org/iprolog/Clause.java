@@ -3,6 +3,8 @@ package org.iprolog;
 
 import java.util.List;
 
+import org.omg.CORBA.StringHolder;
+
 /**
  * representation of a clause
  */
