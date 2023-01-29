@@ -1,9 +1,14 @@
 
 package org.iprolog;
+
+import java.util.List;
+
 /**
  * representation of a clause
  */
 class Clause {
+
+// Skeletal elements for compiled form:
 
   final int len; // length of heap slice
   final int[] hgs; // "head+goals pointing to cells in clauses"???
@@ -20,6 +25,14 @@ class Clause {
                   // term of the head of the clause, with zero values
                   // marking variable positions."
                   // Should it be "outermost termS"?
+
+// Placeholders for Prolog abstract parse tree representation.
+// The API here should also be useful for construction, manipulation
+// and querying of RAM-only logic programs built from
+// NSM/Minimal language specs
+
+String functor;  // String just a start; this really needs to index into some symbol table
+List<String> terms;
 
   Clause(final int len, final int[] hgs, final int base, final int neck, final int[] xs) {
     this.hgs = hgs;
