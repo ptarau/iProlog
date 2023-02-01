@@ -112,7 +112,7 @@ class Engine {
    * Tag marks a ....
    */
   final private static int V = 0; // ... first occurrence of a Variable in a clause
-  final private static int U = 1; // ... subsequent occurrence (for "Unbound"?)
+  final private static int U = 1; // ... subsequent occurrence (U for "Unbound"?)
   final private static int R = 2; // ... Ref to array slice representing a subterm
 
   final private static int C = 3; // ... Constant (index into a sym table)
@@ -892,6 +892,13 @@ System.out.println ("---- putClause: hgs.length="+hgs.length+" -----");
   }
 
   /**
+   * Video: "...to procedurally emulate our metainterpreter,
+   * ... so what did we do in the metainterpreter?
+   * We just took the first goal, and replaced it
+   * with the body of a clause whose head was matching that first goal.
+   * And that's called unfolding.
+   * So it's a repeated process until there's nothing to unfold."
+   * 
    * Transforms a spine containing references to choice point and
    * immutable list of goals into a new spine, by reducing the
    * first goal in the list with a clause that successfully
