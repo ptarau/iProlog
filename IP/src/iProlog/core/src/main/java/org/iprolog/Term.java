@@ -1,6 +1,7 @@
 package org.iprolog;
 
-import java.util.List;
+import java.util.LinkedList;
+import java.util.TreeMap;
 
 // Prolog "term", with lexical conventions abstracted away.
 // E.g., variables don't have to start with a capital letter
@@ -26,20 +27,21 @@ public class Term {
     final public static int Variable = 1;   // correponds to Engine.U (unbound variable)
     final public static int Compound = 2;   // correponds to Engine.R (reference)
     final public static int Constant = 3;   // correponds to Engine.C (constant)
-    final public static int MaxTag = Constant;
+    final public static int Equation = 4;   // special for Term = Term
+    final public static int MaxTag = Equation;
 
-    final int tag;
+    final private int tag;
+    String v;
+    String c;
+    final private LinkedList<Term> terms;   // What's in "(...)" in a compound,
+                                            // or (hacky) the list [lhs,rhs] if equation
 
-    final String v;
-    final String c;
-    final List<Term> terms;
-
-    Term (int tag, String thing, List<Term> terms) {
+    Term (int tag, String thing, LinkedList<Term> terms) {
     
-        assert (tag > 0 && tag <= Constant);
+        assert (tag > 0 && tag <= MaxTag);
         assert (thing != null);
 
-        if (tag == Compound) {
+        if (tag == Compound || tag == Equation) {
             assert (terms != null);
         } else {
             assert (terms == null);
@@ -51,6 +53,7 @@ public class Term {
             case Variable: this.v = thing; this.terms = null;  this.c = null;  return;
             case Compound: this.c = thing; this.terms = terms; this.v = null;  return;
             case Constant: this.v = null;  this.terms = null;  this.c = thing; return;
+            case Equation: this.v = null;  this.terms = terms; this.c = null;  return;
         }
 // should really raise some exception here
         this.v = null;
@@ -61,15 +64,30 @@ public class Term {
     public Boolean is_a_variable() {  return this.tag == Variable;  }
     public Boolean is_a_compound() {  return this.tag == Compound;  }
     public Boolean is_a_constant() {  return this.tag == Constant;  }
+    public Boolean is_an_equation(){  return this.tag == Equation;  }
 
-    public static Term variable(String v) {  Term t = new Term (Variable, v, null); return t; }
-    public static Term compound(String C,
-                         List<Term> terms) {
-        assert (terms != null);  
-        Term t = new Term (Compound, C, terms);
-        return t;
+    public static Term variable(String v) { return new Term (Variable, v, null); }
+    public static Term constant(String c) { return new Term (Constant, c, null); }
+    public static Term compound(String C) { return new Term (Compound, C, new LinkedList<Term>()); }
+    public static Term compound(String C, LinkedList<Term> terms) {
+        return new Term (Compound, C, terms);
     }
-    public static Term constant(String c) {  Term t = new Term (Constant, c, null); return t; }
+    public static Term equation(Term lhs, Term rhs) {
+        LinkedList<Term> ll = new LinkedList<Term>();
+        ll.add (lhs);
+        ll.add (rhs);
+        return new Term(Equation, "=", ll);
+    }
+
+    public Term lhs() {
+        assert this.is_an_equation();
+        return terms.peekFirst();
+    }
+
+    public Term rhs() {
+        assert this.is_an_equation();
+        return terms.peekLast();
+    }
 
     private String terms_to_str() {
         String delim = "";
@@ -86,8 +104,90 @@ public class Term {
             case Variable: return v;
             case Constant: return c;
             case Compound: return c + "(" + terms_to_str() + ")";
+            case Equation: return terms.peekFirst().toString() + "=" + terms.peekLast().toString();
         }
- 
-        return "<should have thrown exception here>";
+        return "<should've thrown exception here>";
+    }
+
+    public void takes_this(Term t) {
+        assert tag == Compound;
+        terms.add (t);
+    }
+
+    private static int    gensym_i = 0;
+    public  static void   reset_gensym() { gensym_i = 0; }
+    public  static String gensym() { return "_" + gensym_i++; }
+
+    private Boolean is_simple() {
+        return tag == Variable || tag == Constant;
+    }
+
+    public Boolean is_flat() {
+        if (this.is_simple()) return true;
+
+//        System.out.println ("In is_flat: this=" + this);
+
+        if (tag == Equation)
+            return lhs().is_flat() && rhs().is_flat();
+
+        //depends on representing lhs+rhs as terms list in eqns:
+        for (Term t : terms)
+            if (!t.is_simple())
+                return false;
+
+        return true;
+    }
+
+    public LinkedList<Term> flatten() {
+
+// COULD BE LEAKY:
+        LinkedList<Term> eqn_form = new LinkedList<Term>();
+
+        if (tag == Variable || tag == Constant) {
+            eqn_form.add (this);
+            return eqn_form;
+        }
+        if (tag == Equation) {
+            System.out.println ("flattening an equation: " + this);
+            LinkedList<Term> Lhs = lhs().flatten();
+            Term eqn_lhs = Lhs.pop();
+            LinkedList<Term> Rhs = rhs().flatten();
+            Term eqn_rhs = Rhs.pop();
+            System.out.println ("Lhs 1st elt = " + eqn_lhs);
+            System.out.println ("Rhs 1st elt = " + eqn_rhs);
+
+            Term nE = equation(eqn_lhs, eqn_rhs);
+            System.out.println ("... equation flattened: " + nE + "...:");
+            for (Term t : Lhs) System.out.println ("  lhs: " + t);
+            for (Term t : Rhs) System.out.println ("  rhs: " + t);
+            eqn_form.add(nE);
+            eqn_form.addAll (Lhs);
+            eqn_form.addAll (Rhs);
+            return eqn_form;
+        }
+
+        System.out.println ("Flattening a compound: " + this);
+
+        Term nC = compound(c);                      // make a new compound
+        eqn_form.add(nC);
+
+        for (Term t : terms) {                      // for each elt in this compound's arg list
+            if (t.tag == Variable
+             || t.tag == Constant) {                 // if elt is var or const,
+                System.out.println ("  flatten sees t = " + t);
+                nC.takes_this (t);                  //      emit elt to new compound
+             } else {                                  // else
+                System.out.println ("  flatten sees t = " + t);
+                Term nV = variable(gensym());       //      add new variable
+                nC.takes_this (nV);                 //      add it to args for new compound
+                Term nEq = Term.equation(nV,t);
+                eqn_form.addAll (nEq.flatten());
+            }
+        }
+        // while queue not empty
+        //   flatten first elt (note side effect on queue)
+        //   move ptr (careful of side effects)
+        
+        return eqn_form;
     }
 }
