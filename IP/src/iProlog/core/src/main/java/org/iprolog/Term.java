@@ -1,7 +1,6 @@
 package org.iprolog;
 
 import java.util.LinkedList;
-import java.util.TreeMap;
 
 // Prolog "term", with lexical conventions abstracted away.
 // E.g., variables don't have to start with a capital letter
@@ -72,6 +71,11 @@ public class Term {
     public static Term compound(String C, LinkedList<Term> terms) {
         return new Term (Compound, C, terms);
     }
+    public static Term compound(String C, Term t) {
+        LinkedList<Term> llt = new LinkedList<>();
+        llt.add (t);
+        return compound (C, llt);
+    }
     public static Term equation(Term lhs, Term rhs) {
         LinkedList<Term> ll = new LinkedList<Term>();
         ll.add (lhs);
@@ -89,13 +93,41 @@ public class Term {
         return terms.peekLast();
     }
 
-    private String terms_to_str() {
+    // Prolog-ish defaults: 
+    public static String arg_sep = ",";
+    public static String and_op = ",";
+    public static String args_start = "(";
+    public static String args_end = ")";
+    public static String clause_end = ".";
+    public static String if_sym = ":-";
+    public static String holds_op = "=";
+
+    public static void set_TarauLog() {
+        arg_sep = " ";
+        and_op = " and ";
+        args_start = " ";
+        args_end = " ";
+        if_sym = "\nif ";
+        holds_op = " holds ";
+    }
+
+    public String as_fact() { return this + clause_end; }
+    public String as_head() { return this + if_sym; }
+    public String as_expr(String ended_with) {
+        return "  " + this + ended_with;
+    }
+
+    // Problem with conflating equations/expressions and terms:
+    // - for compounds it's still comma-separated;
+    // - between expressions, it's Tarau's "and";
+    // - so allow for either.
+    private String terms_to_str(String sep) {
         String delim = "";
         String s = "";
         for (Term t : terms) {
             s = s + delim;
             s = s + t;
-            delim = ",";
+            delim = sep;
         }
         return s;
     }
@@ -103,8 +135,11 @@ public class Term {
         switch (tag) {
             case Variable: return v;
             case Constant: return c;
-            case Compound: return c + "(" + terms_to_str() + ")";
-            case Equation: return terms.peekFirst().toString() + "=" + terms.peekLast().toString();
+            case Compound: return c
+                                + args_start
+                                + terms_to_str(arg_sep)
+                                + args_end;
+            case Equation: return lhs() + holds_op + rhs();
         }
         return "<should've thrown exception here>";
     }
@@ -148,25 +183,25 @@ public class Term {
             return eqn_form;
         }
         if (tag == Equation) {
-            System.out.println ("flattening an equation: " + this);
+            // System.out.println ("flattening an equation: " + this);
             LinkedList<Term> Lhs = lhs().flatten();
             Term eqn_lhs = Lhs.pop();
             LinkedList<Term> Rhs = rhs().flatten();
             Term eqn_rhs = Rhs.pop();
-            System.out.println ("Lhs 1st elt = " + eqn_lhs);
-            System.out.println ("Rhs 1st elt = " + eqn_rhs);
+            // System.out.println ("Lhs 1st elt = " + eqn_lhs);
+            // System.out.println ("Rhs 1st elt = " + eqn_rhs);
 
             Term nE = equation(eqn_lhs, eqn_rhs);
-            System.out.println ("... equation flattened: " + nE + "...:");
-            for (Term t : Lhs) System.out.println ("  lhs: " + t);
-            for (Term t : Rhs) System.out.println ("  rhs: " + t);
+            // System.out.println ("... equation flattened: " + nE + "...:");
+            // for (Term t : Lhs) System.out.println ("  lhs: " + t);
+            // for (Term t : Rhs) System.out.println ("  rhs: " + t);
             eqn_form.add(nE);
             eqn_form.addAll (Lhs);
             eqn_form.addAll (Rhs);
             return eqn_form;
         }
 
-        System.out.println ("Flattening a compound: " + this);
+        // System.out.println ("Flattening a compound: " + this);
 
         Term nC = compound(c);                      // make a new compound
         eqn_form.add(nC);
@@ -174,10 +209,10 @@ public class Term {
         for (Term t : terms) {                      // for each elt in this compound's arg list
             if (t.tag == Variable
              || t.tag == Constant) {                 // if elt is var or const,
-                System.out.println ("  flatten sees t = " + t);
+                // System.out.println ("  flatten sees t = " + t);
                 nC.takes_this (t);                  //      emit elt to new compound
              } else {                                  // else
-                System.out.println ("  flatten sees t = " + t);
+                // System.out.println ("  flatten sees t = " + t);
                 Term nV = variable(gensym());       //      add new variable
                 nC.takes_this (nV);                 //      add it to args for new compound
                 Term nEq = Term.equation(nV,t);
