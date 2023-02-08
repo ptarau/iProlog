@@ -22,7 +22,7 @@ public class Main {
       pp("CODE");
       ((Prog) P).ppCode();
     } else {
-      P = new Engine(fname);
+      P = new Engine(fname, true);
     }
 
     pp("RUNNING");

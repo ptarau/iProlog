@@ -10,7 +10,10 @@ import java.util.stream.StreamSupport;
 
 public class Prog extends Engine implements Spliterator<Object> {
   Prog(final String fname) {
-    super(fname);
+    super(fname, true);
+  }
+  Prog (final String s, Boolean fromFile) {
+    super(s, fromFile);
   }
 
   static void pp(final Object o) {

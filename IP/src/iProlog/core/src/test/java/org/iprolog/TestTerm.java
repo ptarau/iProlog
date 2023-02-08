@@ -6,17 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+
 import java.util.LinkedList;
 
 public class TestTerm {
 
+    String out = "";
 
     private void emit_as_fact(Term t) {
         assert t != null;
+        out += t.as_fact() + "\n";
         System.out.println (t.as_fact());
     }
     private void emit_as_head(Term t) {
         assert t != null;
+        out += t.as_head() + "\n";
         System.out.println (t.as_head());
     }
     private void emit_as_head(LinkedList<Term> eqns) {
@@ -28,8 +32,18 @@ public class TestTerm {
                 emit_as_expr (t, Term.and_op);
         }
     }
+    private void emit_as_body(LinkedList<Term> eqns) {
+        int n = eqns.size();
+        for (Term t : eqns) {
+            if (--n == 0)
+                emit_as_fact (t);
+            else
+                emit_as_expr (t, Term.and_op);
+        }
+    }
     private void emit_as_expr(Term t, String ended_with) {
         assert t != null;
+        out += t.as_expr(ended_with) + "\n";
         System.out.println (t.as_expr(ended_with));
     }
 
@@ -52,6 +66,9 @@ public class TestTerm {
                 *   good_ Person .
 
          */
+        out = "";
+        Term.reset_gensym();
+
         Term live_of_i_   = Term.compound("live_", Term.variable("i_"));
         Term live_of_you_ = Term.compound("live_", Term.variable("you_"));
         Term good_Person  = Term.compound("good_", Term.variable("Person"));
@@ -66,6 +83,14 @@ public class TestTerm {
         emit_as_expr (live_Person, Term.clause_end);
         emit_as_head (goal_Person);
         emit_as_expr (good_Person, Term.clause_end);
+
+        Prog P = new Prog(out, false);
+
+        P.ppCode();
+
+        System.out.println ("\n===<<< Starting to run >>>===");
+        
+        P.run();
     }
 
     private void try_add() {
@@ -93,6 +118,7 @@ public class TestTerm {
               _3 holds the_successor_of 0 .
          */
 
+        out = "";
         Term.reset_gensym();
         LinkedList<Term> args_0_X_X = new LinkedList<Term>();
         Term c0 = Term.constant("0");
@@ -140,9 +166,9 @@ public class TestTerm {
         the_sum_of.takes_this (s_of_s_of_0);
         the_sum_of.takes_this (s_of_s_of_0);
         the_sum_of.takes_this (vR);
-        emit_as_expr (the_sum_of, Term.clause_end);
+        // emit_as_expr (the_sum_of, Term.clause_end);
 
-        System.out.println ("... and flattening that:");
+        // System.out.println ("... and flattening that:");
         Term.reset_gensym();
 
         LinkedList<Term> add_s_s_0_s_s_0_R = the_sum_of.flatten();
@@ -151,10 +177,21 @@ public class TestTerm {
          /// should be "emit_as_body" I guess:
         ////////////
 
-        emit_as_head(add_s_s_0_s_s_0_R);
-        
+        emit_as_body(add_s_s_0_s_s_0_R);
+
         // comes out with different gensym sequencing
         // maybe because of DFS rather than BFS?
+
+        System.out.println ("===<<< as a single String >>>===");
+        System.out.println (out);
+
+        Prog P = new Prog(out, false);
+
+        P.ppCode();
+
+        System.out.println ("\n===<<< Starting to run >>>===");
+        
+        P.run();
         
         Term.set_TarauLog();
     }

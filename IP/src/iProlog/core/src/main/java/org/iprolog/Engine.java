@@ -85,7 +85,7 @@ class Engine {
   /**
    * Builds a new engine from a natural-language-style assembler.nl file
    */
-  Engine(final String fname) {
+  Engine(final String s, final boolean fromFile) {
     syms = new LinkedHashMap<String, Integer>();
     slist = new ArrayList<String>();
 
@@ -94,7 +94,7 @@ class Engine {
     trail = new IntStack();
     ustack = new IntStack();
 
-    clauses = dload(fname); // load "natural language" source
+    clauses = dload_from_x(s, fromFile); // load "natural language" source
 
     cls = toNums(clauses); // initially an array  [0..clauses.length-1]
       // Used in indexing (somehow)
@@ -105,6 +105,8 @@ class Engine {
 
     imaps = index(clauses, vmaps);
   }
+
+
 
   /**
    * Tags of our heap cells. These can also be seen as
@@ -286,7 +288,10 @@ class Engine {
    * "W" seems to be an abbreviation of "Word".
    */
   Clause[] dload(final String s) {
-    final boolean fromFile = true;
+    return dload_from_x(s, true);
+  }
+  Clause[] dload_from_x(final String s, Boolean fromFile) {
+    // final boolean fromFile = true;
     final ArrayList<ArrayList<ArrayList<String>>> Wsss = Toks.toSentences(s, fromFile);
 
     final ArrayList<Clause> Clauses = new ArrayList<Clause>();
@@ -473,7 +478,8 @@ class Engine {
   private void unwindTrail(final int savedTop) {
     while (savedTop < trail.getTop()) {
       final int href = trail.pop();
-      assert detag(href) == V || detag(href) == U;
+
+      assert tagOf(href) == V || tagOf(href) == U;
 
       setRef(href, href);
     }
