@@ -71,7 +71,7 @@ public class Toks extends StreamTokenizer {
       case TT_WORD: {
         final char first = sval.charAt(0);
         if (Character.isUpperCase(first) || '_' == first) {
-          t = "v:" + sval;
+          t = "v:" + Term.remove_any_Var_prefix(sval);
         } else {
           try {
             final int n = Integer.parseInt(sval);

@@ -69,11 +69,14 @@ public class TestTerm {
         out = "";
         Term.reset_gensym();
 
-        Term live_of_i_   = Term.compound("live_", Term.variable("i_"));
-        Term live_of_you_ = Term.compound("live_", Term.variable("you_"));
-        Term good_Person  = Term.compound("good_", Term.variable("Person"));
-        Term live_Person  = Term.compound("live_", Term.variable("Person"));
-        Term goal_Person  = Term.compound("goal", Term.variable("Person"));
+        Term vP = Term.variable("person");
+
+        Term live_of_i_   = Term.compound("live_", Term.constant("i_"));
+        Term live_of_you_ = Term.compound("live_", Term.constant("you_"));
+
+        Term good_Person  = Term.compound("good_", vP);
+        Term live_Person  = Term.compound("live_", vP);
+        Term goal_Person  = Term.compound("goal", vP);
 
         Term.set_TarauLog();
         

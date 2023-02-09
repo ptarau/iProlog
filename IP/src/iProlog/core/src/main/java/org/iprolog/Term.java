@@ -29,6 +29,8 @@ public class Term {
     final public static int Equation = 4;   // special for Term = Term
     final public static int MaxTag = Equation;
 
+    final public static String Var_prefix = "V__";
+
     final private int tag;
     String v;
     String c;
@@ -65,7 +67,21 @@ public class Term {
     public Boolean is_a_constant() {  return this.tag == Constant;  }
     public Boolean is_an_equation(){  return this.tag == Equation;  }
 
-    public static Term variable(String v) { return new Term (Variable, v, null); }
+    public static String remove_any_Var_prefix(String s) {
+        if (s.startsWith(Var_prefix))
+            s = s.substring(Var_prefix.length());
+
+        return s;
+    }
+
+    // Embarrassingly hacky Prolog fakeout:
+    //  Var_prefix is prepended when a variable ID is lower case.
+    // Maybe in getword() this could be detected and removed,
+    // but the v tag kept.
+    public static Term variable(String v) {
+        if (Character.isLowerCase(v.charAt(0))) v = Var_prefix + v;
+        return new Term (Variable, v, null);
+    }
     public static Term constant(String c) { return new Term (Constant, c, null); }
     public static Term compound(String C) { return new Term (Compound, C, new LinkedList<Term>()); }
     public static Term compound(String C, LinkedList<Term> terms) {
