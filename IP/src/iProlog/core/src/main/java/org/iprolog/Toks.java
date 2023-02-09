@@ -8,7 +8,7 @@ import java.util.*;
 public class Toks extends StreamTokenizer {
 
   // reserved words - with syntactic function
-
+  // See Term class (or whatever I'm calling it now.)
   public static String IF = "if";
   public static String AND = "and";
   public static String DOT = ".";

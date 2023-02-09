@@ -102,6 +102,7 @@ public class Term {
     public static String if_sym = ":-";
     public static String holds_op = "=";
 
+    // See Toks, though:
     public static void set_TarauLog() {
         arg_sep = " ";
         and_op = " and ";

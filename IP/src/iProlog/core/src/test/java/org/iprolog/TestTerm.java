@@ -193,7 +193,7 @@ public class TestTerm {
         
         P.run();
         
-        Term.set_TarauLog();
+        Term.set_TarauLog();  // His "assembly language" for virtual machine
     }
 
     @Test

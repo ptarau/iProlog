@@ -282,22 +282,37 @@ class Engine {
     return Rss;
   }
 
+  final static IntStack put_ref(String arg,
+                                LinkedHashMap<String, IntStack> refs,
+                                int clause_pos) {   // guessing it means clause position
+    IntStack Is = refs.get(arg);
+    if (null == Is) {
+      Is = new IntStack();
+      refs.put(arg, Is);
+    }
+    Is.push (clause_pos);
+    return Is;
+  }
+
   /**
-   * Loads a program from a .nl file of
+   * Loads a program from a .nl file (or a String) of
    * "natural language" equivalents of Prolog/HiLog statements.
-   * "W" seems to be an abbreviation of "Word".
+   *
+
    */
   Clause[] dload(final String s) {
     return dload_from_x(s, true);
   }
   Clause[] dload_from_x(final String s, Boolean fromFile) {
-    // final boolean fromFile = true;
+
+    // "W" seems to be an abbreviation of "Word". Each "s" indicates a level
+    // of pluralization.
+
     final ArrayList<ArrayList<ArrayList<String>>> Wsss = Toks.toSentences(s, fromFile);
 
     final ArrayList<Clause> Clauses = new ArrayList<Clause>();
 
-    for (final ArrayList<ArrayList<String>> Wss : Wsss) {
-      // clause starts here
+    for (final ArrayList<ArrayList<String>> Wss : Wsss) { // for each clause
 
       final LinkedHashMap<String, IntStack> refs = new LinkedHashMap<String, IntStack>();
       final IntStack cells = new IntStack();
@@ -305,57 +320,35 @@ class Engine {
 
       final ArrayList<String[]> Rss = expand_lists_stmts(Wss);
       int k = 0;
-      for (final String[] ws : Rss) {
-
-        // head or body element starts here
+      for (final String[] ws : Rss) { // for each head or body element
 
         final int l = ws.length;
         goals.push(tag(R, k++));
         cells.push(tag(A, l));
 
-        for (String w : ws) {
+        for (String w : ws) { // gen code for 'element' (= head/body subterm)
 
-          // head or body subterm starts here
-
-          if (1 == w.length()) {
+          if (1 == w.length())  // when would this be?
             w = "c:" + w;
-          }
 
-          final String L = w.substring(2);
+          final String arg = w.substring(2);
 
-          switch (w.charAt(0)) {
-            case 'c':
-              cells.push(encode(C, L));
-              k++;
-            break;
-            case 'n':
-              cells.push(encode(N, L));
-              k++;
-            break;
-            case 'v': {
-              IntStack Is = refs.get(L);
-              if (null == Is) {
-                Is = new IntStack();
-                refs.put(L, Is);
-              }
-              Is.push(k);
-              cells.push(tag(BAD, k)); // just in case we miss this
-              k++;
-            }
-            break;
-            case 'h': {
-              IntStack Is = refs.get(L);
-              if (null == Is) {
-                Is = new IntStack();
-                refs.put(L, Is);
-              }
-              Is.push(k - 1);
-              cells.set(k - 1, tag(A, l - 1));
-              goals.pop();
-            }
-            break;
-            default:
-              Main.pp("FORGOTTEN=" + w);
+          switch (w.charAt(0)) {  // gen code for subterm:
+            // Constant
+            case 'c': cells.push(encode(C, arg));              k++; break;
+            // small iNt
+            case 'n': cells.push(encode(N, arg));              k++; break;
+            // Variable
+            case 'v': put_ref (arg, refs, k);
+                      // "just in case we miss this:" ??
+                      //  P. Tarau comment
+                      cells.push(tag(BAD, k));                 k++; break;
+            // 'Holds' ('=')
+            case 'h': put_ref (arg, refs, k - 1);
+                      cells.set(k - 1, tag(A, l - 1));
+                      goals.pop();
+                                                                    break;
+            default: Main.pp("FORGOTTEN=" + w);
           } // end subterm
         } // end element
       } // end clause
