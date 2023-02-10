@@ -81,7 +81,7 @@ public class Toks extends StreamTokenizer {
               t = "c:" + sval;              // C: constant (see Engine.java)
             }
           } catch (final Exception e) {
-            t = "c:" + sval;                // C: constant (see Engine.java)
+            t = "c:" + Term.remove_any_Const_prefix(sval);                // C: constant (see Engine.java)
           }
         }
       }

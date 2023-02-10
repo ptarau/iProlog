@@ -71,8 +71,8 @@ public class TestTerm {
 
         Term vP = Term.variable("person");
 
-        Term live_of_i_   = Term.compound("live_", Term.constant("i_"));
-        Term live_of_you_ = Term.compound("live_", Term.constant("you_"));
+        Term live_of_i_   = Term.compound("live_", Term.constant("I"));
+        Term live_of_you_ = Term.compound("live_", Term.constant("you"));
 
         Term good_Person  = Term.compound("good_", vP);
         Term live_Person  = Term.compound("live_", vP);
