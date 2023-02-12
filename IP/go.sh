@@ -5,7 +5,7 @@ mkdir -p out/production/IP
 export TARGET="out/production/IP"
 mkdir -p "$TARGET"
 rm -r -f $TARGET/iProlog
-rm -f progs/*.pl.nl
+# rm -f progs/*.pl.nl
 echo "starting java compilations"
 if javac -J-Duser.language=en \
 	-O -d "$TARGET" src/iProlog/core/src/main/java/org/iprolog/*.java; then

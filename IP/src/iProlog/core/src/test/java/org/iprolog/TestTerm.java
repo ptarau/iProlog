@@ -92,8 +92,21 @@ public class TestTerm {
         P.ppCode();
 
         System.out.println ("\n===<<< Starting to run >>>===");
+
+            long ctr = 0L;
+            int MAX_OUTPUT_LINES = 5;
         
-        P.run();
+            for (;; ctr++) {
+              final Object A = P.ask();
+              if (null == A) {
+                break;
+              }
+              if(ctr<MAX_OUTPUT_LINES)
+                Prog.println("[" + ctr + "] " + "*** ANSWER=" + P.showTerm(A));
+            }
+            if(ctr>MAX_OUTPUT_LINES)
+              Prog.println("...");
+            Prog.println("TOTAL ANSWERS=" + ctr);
     }
 
     private void try_add() {
@@ -169,16 +182,10 @@ public class TestTerm {
         the_sum_of.takes_this (s_of_s_of_0);
         the_sum_of.takes_this (s_of_s_of_0);
         the_sum_of.takes_this (vR);
-        // emit_as_expr (the_sum_of, Term.clause_end);
 
-        // System.out.println ("... and flattening that:");
         Term.reset_gensym();
 
         LinkedList<Term> add_s_s_0_s_s_0_R = the_sum_of.flatten();
-
-          ////////////
-         /// should be "emit_as_body" I guess:
-        ////////////
 
         emit_as_body(add_s_s_0_s_s_0_R);
 

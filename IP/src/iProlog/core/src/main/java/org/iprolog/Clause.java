@@ -31,8 +31,8 @@ class Clause {
 // and querying of RAM-only logic programs built from
 // NSM/Minimal language specs
 
-String functor;  // String just a start; this really needs to index into some symbol table
-List<String> terms;
+// String functor;  // String just a start; this really needs to index into some symbol table
+// List<String> terms;
 
   Clause(final int len, final int[] hgs, final int base, final int neck, final int[] xs) {
     this.hgs = hgs;

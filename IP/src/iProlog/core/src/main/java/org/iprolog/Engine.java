@@ -505,8 +505,9 @@ class Engine {
    * Raw display of an externalized term.
    */
   String showTerm(final Object O) {
-    if (O instanceof Object[])
+    if (O instanceof Object[]) {
       return Arrays.deepToString((Object[]) O);
+    }
     return O.toString();
   }
 
@@ -521,9 +522,13 @@ class Engine {
   }
 
   /**
-   * Builds an array of embedded arrays from a heap cell
+   * Object returned could be java
+   *    Integer,
+   *    String (if constant or variable),
+   *    Object[] recursively rendered by exportTerm().
+   * "Builds an array of embedded arrays from a heap cell
    * representing a term for interaction with an external function
-   * including a displayer.
+   * including a displayer." - P. Tarau
    */
   Object exportTerm(int x) {
     x = deref(x);
@@ -544,7 +549,6 @@ class Engine {
         res = "V" + w;
       break;
       case R: { // reference
-
         final int a = heap[w];
         assert A == tagOf(a);
         final int n = detag(a);
@@ -741,7 +745,7 @@ class Engine {
     final int len = cells.length;
     pushCells(b, 0, len, cells);
 
-System.out.println ("---- putClause: hgs.length="+hgs.length+" -----");
+// System.out.println ("---- putClause: hgs.length="+hgs.length+" -----");
 
     for (int i = 0; i < hgs.length; i++) {
       hgs[i] = relocate(b, hgs[i]);
