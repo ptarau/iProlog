@@ -22,6 +22,7 @@ class IntList {
   }
 
   static final int head(final IntList Xs) {
+    assert Xs != null;
     return Xs.head;
   }
 

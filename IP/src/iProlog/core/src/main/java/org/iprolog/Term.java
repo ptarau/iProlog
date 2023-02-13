@@ -138,8 +138,19 @@ public class Term {
         and_op = " and ";
         args_start = " ";
         args_end = " ";
+        clause_end = ".";
         if_sym = "\nif ";
         holds_op = " holds ";
+    }
+
+    public static void set_Prolog() {
+        arg_sep = ",";
+        and_op = ",";
+        args_start = "(";
+        args_end = ")";
+        clause_end = ".";
+        if_sym = ":-";
+        holds_op = "=";
     }
 
     public String as_fact() { return this + clause_end; }

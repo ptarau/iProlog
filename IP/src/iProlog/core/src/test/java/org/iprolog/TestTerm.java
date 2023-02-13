@@ -69,6 +69,8 @@ public class TestTerm {
         out = "";
         Term.reset_gensym();
 
+        Main.println ("\n Construct data structures for try_t() case ===");
+
         Term vP = Term.variable("person");
 
         Term live_of_i_   = Term.compound("live_", Term.constant("I"));
@@ -77,6 +79,8 @@ public class TestTerm {
         Term good_Person  = Term.compound("good_", vP);
         Term live_Person  = Term.compound("live_", vP);
         Term goal_Person  = Term.compound("goal", vP);
+
+        Main.println ("\n===Generate Tarau assembly language from it ===");
 
         Term.set_TarauLog();
         
@@ -89,28 +93,19 @@ public class TestTerm {
 
         Prog P = new Prog(out, false);
 
+        Main.println ("\n=== Pretty-print Prolog from it ===");
+
+        Term.set_Prolog();
+
         P.ppCode();
 
         System.out.println ("\n===<<< Starting to run >>>===");
 
-            long ctr = 0L;
-            int MAX_OUTPUT_LINES = 5;
-        
-            for (;; ctr++) {
-              final Object A = P.ask();
-              if (null == A) {
-                break;
-              }
-              if(ctr<MAX_OUTPUT_LINES)
-                Prog.println("[" + ctr + "] " + "*** ANSWER=" + P.showTerm(A));
-            }
-            if(ctr>MAX_OUTPUT_LINES)
-              Prog.println("...");
-            Prog.println("TOTAL ANSWERS=" + ctr);
+        P.run();
     }
 
     private void try_add() {
-        System.out.println ("\n==== try_add ====");
+        System.out.println ("\n==== try_add() ====");
         /*
         the_sum_of(0,X,X).
         the_sum_of(the_successor_of(X),Y,the_successor_of(Z)):-the_sum_of(X,Y,Z).
@@ -136,6 +131,11 @@ public class TestTerm {
 
         out = "";
         Term.reset_gensym();
+
+        Main.println ("\n=== Try adding 2+2 in unary, generating TarauLog ===");
+
+        Term.set_TarauLog();
+
         LinkedList<Term> args_0_X_X = new LinkedList<Term>();
         Term c0 = Term.constant("0");
         args_0_X_X.add (c0);
@@ -157,10 +157,9 @@ public class TestTerm {
         args_list.add (succ_X);
         args_list.add (vY);
         args_list.add (succ_Z);
-        Term hd_start = Term.compound("the_sum_of",args_list);
-        System.out.println ("hd_start = "+ hd_start);
 
-        System.out.println ("------");
+        Term hd_start = Term.compound("the_sum_of",args_list);
+ 
         LinkedList<Term> ll = hd_start.flatten();
         emit_as_head(ll);
         Term body = Term.compound("the_sum_of");
@@ -168,7 +167,6 @@ public class TestTerm {
         body.takes_this (vY);
         body.takes_this (vZ);
         emit_as_fact(body);
-        System.out.println ("------");
 
         Term vR = Term.variable("R");
         Term goal = Term.compound("goal");
@@ -192,18 +190,17 @@ public class TestTerm {
         // comes out with different gensym sequencing
         // maybe because of DFS rather than BFS?
 
-        System.out.println ("===<<< as a single String >>>===");
-        System.out.println (out);
-
         Prog P = new Prog(out, false);
+
+        Term.set_Prolog();
+
+        System.out.println ("\n=== Pretty-print as Prolog ===");
 
         P.ppCode();
 
         System.out.println ("\n===<<< Starting to run >>>===");
         
         P.run();
-        
-        Term.set_TarauLog();  // His "assembly language" for virtual machine
     }
 
     @Test

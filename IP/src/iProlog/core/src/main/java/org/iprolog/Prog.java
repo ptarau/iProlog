@@ -28,15 +28,15 @@ public class Prog extends Engine implements Spliterator<Object> {
   @Override
   String showTerm(final Object O) {
     if (O instanceof Object[])
-      return st0((Object[]) O);
+      return make_string_from((Object[]) O);
     return O.toString();
   }
 
   static String maybeNull(final Object O) {
     if (null == O)
-      return "$null";
+      return "$null";   // meaningful? or should raise exception?
     if (O instanceof Object[])
-      return st0((Object[]) O);
+      return make_string_from((Object[]) O);
     return O.toString();
   }
 
@@ -44,38 +44,36 @@ public class Prog extends Engine implements Spliterator<Object> {
     return ".".equals(name) || "[|]".equals(name) || "list".equals(name);
   }
 
-  static boolean isOp(final Object name) {
+  static boolean isInfixOp(final Object name) {
     return "/".equals(name) || "-".equals(name) || "+".equals(name) || "=".equals(name);
   }
 
-  static String st0(final Object[] args) {
+  static String make_string_from(final Object[] f_of_args) {
     final StringBuffer buf = new StringBuffer();
-    final String name = args[0].toString();
-    if (args.length == 3 && isOp(name)) {
-      buf.append("(");
-      buf.append(maybeNull(args[0]));
-      buf.append(" " + name + " ");
-      buf.append(maybeNull(args[1]));
-      buf.append(")");
-    } else if (args.length == 3 && isListCons(name)) {
+    final String name = f_of_args[0].toString();
+
+    if (f_of_args.length == 3 && isInfixOp(name)) {
+         ////////////////////////////////////
+        /// Doesn't look right.
+       /// Seems like it should be args 1 0 2.
+      //////////////////////////////////////
+      Main.println ("+++++++++++++ isInfixOp case ++++++++++++++");
+      buf.append(Term.args_start + maybeNull(f_of_args[0]) + name + Term.args_end);
+    } else if (f_of_args.length == 3 && isListCons(name)) {
       buf.append('[');
       {
-        buf.append(maybeNull(args[1]));
-        Object tail = args[2];
+        buf.append(maybeNull(f_of_args[1]));
+        Object tail = f_of_args[2];
         for (;;) {
-
-          if ("[]".equals(tail) || "nil".equals(tail)) {
+          if ("[]".equals(tail) || "nil".equals(tail))
             break;
-          }
           if (!(tail instanceof Object[])) {
-            buf.append('|');
-            buf.append(maybeNull(tail));
+            buf.append("|" + maybeNull(tail));
             break;
           }
           final Object[] list = (Object[]) tail;
           if (!(list.length == 3 && isListCons(list[0]))) {
-            buf.append('|');
-            buf.append(maybeNull(tail));
+            buf.append("|" + maybeNull(tail));
             break;
           } else {
             //if (i > 1)
@@ -86,18 +84,15 @@ public class Prog extends Engine implements Spliterator<Object> {
         }
       }
       buf.append(']');
-    } else if (args.length == 2 && "$VAR".equals(name)) {
-      buf.append("_" + args[1]);
+    } else if (f_of_args.length == 2 && "$VAR".equals(name)) { // when?
+      Main.println("$$$$$$$$$$ $VAR $$$$$$$$$$$$$$");
+      buf.append("_" + f_of_args[1]);
     } else {
-      final String qname = maybeNull(args[0]);
-      buf.append(qname);
-      buf.append("(");
-      for (int i = 1; i < args.length; i++) {
-        final Object O = args[i];
-        buf.append(maybeNull(O));
-        if (i < args.length - 1) {
-          buf.append(",");
-        }
+      buf.append(maybeNull(f_of_args[0]) + Term.args_start);
+      String sep = "";
+      for (int i = 1; i < f_of_args.length; i++) {
+        buf.append(sep + maybeNull(f_of_args[i]));
+        sep = Term.arg_sep;
       }
       buf.append(")");
     }

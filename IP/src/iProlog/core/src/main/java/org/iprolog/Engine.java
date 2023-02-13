@@ -913,7 +913,7 @@ class Engine {
     final int trail_top = trail.getTop();
     final int heap_top = getTop();
     final int base = heap_top + 1;
-
+    assert G.goal_stack != null;
     final int goal = IntList.head(G.goal_stack);
 
     makeIndexArgs(G, goal);
