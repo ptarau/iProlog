@@ -8,11 +8,10 @@ import java.util.*;
 public class Toks extends StreamTokenizer {
 
   // reserved words - with syntactic function
-  // See Term class (or whatever I'm calling it now.)
-  public static String IF = "if";
-  public static String AND = "and";
-  public static String DOT = ".";
-  public static String HOLDS = "holds";
+  public static String IF = Term.if_sym.trim(); // "if";
+  public static String AND = Term.and_op.trim(); // "and";
+  public static String DOT = Term.clause_end.trim(); // ".";
+  public static String HOLDS = Term.holds_op.trim(); // "holds";
 
   public static String LISTS = "lists"; // todo
   public static String IS = "is"; // todo
@@ -21,14 +20,12 @@ public class Toks extends StreamTokenizer {
     try {
       Reader R;
       if (fromFile) {
-        System.out.println ("fromFile s = " + s);
         R = new FileReader(s);
       } else {
         R = new StringReader(s);
       }
       final Toks T = new Toks(R);
       return T;
-
     } catch (final IOException e) {
       e.printStackTrace();
       return null;
@@ -53,6 +50,10 @@ public class Toks extends StreamTokenizer {
     ordinaryChar('%');
   }
 
+  // To support deviation from Prolog conventions for
+  // variables and constants, I have calls here to Term's
+  // remove_any_Var_prefix and remove_any_Const_prefix.
+
   public String getWord() {
     String t = null;
 
@@ -75,13 +76,13 @@ public class Toks extends StreamTokenizer {
         } else {
           try {
             final int n = Integer.parseInt(sval);
-            if (Math.abs(n) < 1 << 28) {   // to allow for 3 bits of tag + 1 bit of sign?
+            if (Math.abs(n) < Engine.MAX_N) {
               t = "n:" + sval;              // N: int constant
             } else {
-              t = "c:" + sval;              // C: constant (see Engine.java)
+              t = "c:" + sval;              // C: constant (see Engine)
             }
           } catch (final Exception e) {
-            t = "c:" + Term.remove_any_Const_prefix(sval);                // C: constant (see Engine.java)
+            t = "c:" + Term.remove_any_Const_prefix(sval);
           }
         }
       }
@@ -119,21 +120,23 @@ public class Toks extends StreamTokenizer {
       // System.out.println (" -- getword -> " + t);
 
       if (DOT.equals(t)) {
-        Structures.add(Tokens);      // add this finished (?) structure
-        Clauses.add(Structures);    // add it to this finished clause
-                          // prepare for (possible) new clause and structure
-        Structures = new ArrayList<ArrayList<String>>();
-        Tokens = new ArrayList<String>();
+
+          Structures.add(Tokens);      // add this finished (?) structure
+          Clauses.add(Structures);    // add it to this finished clause
+                            // prepare for (possible) new clause and structure
+          Structures = new ArrayList<ArrayList<String>>();
+          Tokens = new ArrayList<String>();
+
       } else if (("c:" + IF).equals(t)
               || ("c:" + AND).equals(t)) {
 
-                Structures.add(Tokens);  // finished with this structure
-                Tokens = new ArrayList<String>();
+          Structures.add(Tokens);  // finished with this structure
+          Tokens = new ArrayList<String>();
 
       } else if (("c:" + HOLDS).equals(t)) {
 
-        final String w = Tokens.get(0);
-        Tokens.set(0, "h:" + w.substring(2));
+          final String w = Tokens.get(0);
+          Tokens.set(0, "h:" + w.substring(2));
 
       } else 
       
@@ -141,16 +144,16 @@ public class Toks extends StreamTokenizer {
       
       if (("c:" + LISTS).equals(t)) {
 
-        final String w = Tokens.get(0);
-        Tokens.set(0, "l:" + w.substring(2));
+          final String w = Tokens.get(0);
+          Tokens.set(0, "l:" + w.substring(2));
 
       } else if (("c:" + IS).equals(t)) {
 
-        final String w = Tokens.get(0);
-        Tokens.set(0, "f:" + w.substring(2));  // why "f"???
+          final String w = Tokens.get(0);
+          Tokens.set(0, "f:" + w.substring(2));  // why "f"???
 
       } else {
-        Tokens.add(t);
+          Tokens.add(t);
       }
     }
     return Clauses;

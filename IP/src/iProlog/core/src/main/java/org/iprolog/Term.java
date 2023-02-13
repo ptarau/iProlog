@@ -123,6 +123,10 @@ public class Term {
         return terms.peekLast();
     }
 
+    // The following differences in lexicalization
+    // may be better managed with a class for
+    // lexicals + subclassing.
+
     // Prolog-ish defaults: 
     public static String arg_sep = ",";
     public static String and_op = ",";
@@ -132,7 +136,8 @@ public class Term {
     public static String if_sym = ":-";
     public static String holds_op = "=";
 
-    // See Toks, though:
+    // See Toks; there, I squeeze out whitespace
+    // from these.
     public static void set_TarauLog() {
         arg_sep = " ";
         and_op = " and ";

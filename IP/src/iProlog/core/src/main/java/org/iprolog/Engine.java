@@ -124,10 +124,12 @@ class Engine {
                                   // "(of size 1 + number of arguments, to also
                                   // make room for the function symbol --
                                   // that could be an atom or a variable.)" -- HHG doc
-
-  // G - ground?
+    // G - ground?
 
   final private static int BAD = 7;
+  final public static int n_tag_bits = 3;
+  final public static int MAX_N = 1 << (Integer.SIZE-(n_tag_bits+1));
+  // to allow for tag & 1 sign bit -----------------------^
 
   /**
    * Tags an integer value while flipping it into a negative
