@@ -127,15 +127,16 @@ public class Term {
     // may be better managed with a class for
     // lexicals + subclassing.
 
-    // Prolog-ish defaults: 
-    public static String arg_sep = ",";
-    public static String and_op = ",";
-    public static String args_start = "(";
-    public static String args_end = ")";
-    public static String clause_end = ".";
-    public static String if_sym = ":-";
-    public static String holds_op = "=";
-
+    public static boolean in_Prolog_mode = set_Prolog();
+    
+    public static String arg_sep;
+    public static String and_op; 
+    public static String args_start;
+    public static String args_end;
+    public static String clause_end;
+    public static String if_sym;
+    public static String holds_op;
+    
     // See Toks; there, I squeeze out whitespace
     // from these.
     public static void set_TarauLog() {
@@ -146,9 +147,10 @@ public class Term {
         clause_end = ".";
         if_sym = "\nif ";
         holds_op = " holds ";
+        in_Prolog_mode = false;
     }
 
-    public static void set_Prolog() {
+    public static boolean set_Prolog() {
         arg_sep = ",";
         and_op = ",";
         args_start = "(";
@@ -156,6 +158,7 @@ public class Term {
         clause_end = ".";
         if_sym = ":-";
         holds_op = "=";
+        return in_Prolog_mode = true;
     }
 
     public String as_fact() { return this + clause_end; }
