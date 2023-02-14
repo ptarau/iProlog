@@ -129,16 +129,18 @@ public class Term {
 
     public static boolean in_Prolog_mode = set_Prolog();
     
-    public static String arg_sep;
-    public static String and_op; 
-    public static String args_start;
-    public static String args_end;
-    public static String clause_end;
-    public static String if_sym;
-    public static String holds_op;
+    protected static String arg_sep;
+    protected static String and_op; 
+    protected static String args_start;
+    protected static String args_end;
+    protected static String clause_end;
+    protected static String if_sym;
+    protected static String holds_op;
     
     // See Toks; there, I squeeze out whitespace
-    // from these.
+    // from these. Used for pretty-printing the
+    // Tarau "assembly language" and (indirectly)
+    // in the toSentences lexeme tagger.
     public static void set_TarauLog() {
         arg_sep = " ";
         and_op = " and ";
