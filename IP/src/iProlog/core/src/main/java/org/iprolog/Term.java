@@ -36,8 +36,7 @@ public class Term {
     final private static int Variable = 1;   // correponds to Engine.U (unbound variable)
     final private static int Compound = 2;   // correponds to Engine.R (reference)
     final private static int Constant = 3;   // correponds to Engine.C (constant)
-    final private static int Equation = 4;   // special for Term = Term
-    final private static int MaxTag = Equation;
+    final private static int MaxTag = Constant;
 
     // hacky: if a variable presented through the API doesn't
     // start with upper case or underscore, prefix it with
@@ -60,15 +59,12 @@ public class Term {
         assert (tag > 0 && tag <= MaxTag);
         assert (thing != null);
 
-        if (tag == Compound || tag == Equation) {
-            assert (terms != null);
+        if (tag == Compound) {
+            assert terms != null;
+            if (thing == "=")
+                assert terms.size() == 2;
         } else {
             assert (terms == null);
-        }
-
-        if (tag == Equation) {
-            assert thing == "=";
-            assert terms.size() == 2;
         }
 
         this.tag = tag;
@@ -77,7 +73,6 @@ public class Term {
             case Variable: this.v = thing; this.terms = null;  this.c = null;  return;
             case Compound: this.v = null;  this.terms = terms; this.c = thing; return;
             case Constant: this.v = null;  this.terms = null;  this.c = thing; return;
-            case Equation: this.v = null;  this.terms = terms; this.c = thing; return;
         }
 
 // should really raise some exception here
@@ -86,10 +81,10 @@ public class Term {
         this.terms = null;
     }
 
-    public Boolean is_a_variable() {  return this.tag == Variable;  }
-    public Boolean is_a_compound() {  return this.tag == Compound;  }
-    public Boolean is_a_constant() {  return this.tag == Constant;  }
-    public Boolean is_an_equation(){  assert c == "="; return this.tag == Equation;  }
+    public Boolean is_a_variable() {  return tag == Variable;  }
+    public Boolean is_a_compound() {  return tag == Compound;  }
+    public Boolean is_a_constant() {  return tag == Constant;  }
+    public Boolean is_an_equation(){  return tag == Compound && terms.size() == 2 && c == "=";  }
 
     public static String remove_any_Var_prefix(String s) {
         if (s.startsWith(Var_prefix))
@@ -133,7 +128,7 @@ public class Term {
         LinkedList<Term> ll = new LinkedList<Term>();
         ll.add (lhs);
         ll.add (rhs);
-        return new Term(Equation, "=", ll);
+        return new Term(Compound, "=", ll);
     }
 
     public Term lhs() {
@@ -219,7 +214,6 @@ public class Term {
                                  return   lhs()
                                         + holds_op
                                         + rhs();
-            case Equation: return lhs() + holds_op + rhs();
         }
         return "<should've thrown exception here>";
     }
@@ -240,12 +234,8 @@ public class Term {
     public Boolean is_flat() {
         if (this.is_simple()) return true;
 
-//        System.out.println ("In is_flat: this=" + this);
-
-        if (tag == Equation) {
-            assert c == "=";
+        if (c == "=")
             return lhs().is_flat() && rhs().is_flat();
-        }
 
         //depends on representing lhs+rhs as terms list in eqns:
         for (Term t : terms)
@@ -264,9 +254,8 @@ public class Term {
             eqn_form.add (this);
             return eqn_form;
         }
-        if (tag == Equation) {
+        if (c == "=") {
             // System.out.println ("flattening an equation: " + this);
-            assert c == "=";
             LinkedList<Term> Lhs = lhs().flatten();
             Term eqn_lhs = Lhs.pop();
             LinkedList<Term> Rhs = rhs().flatten();
