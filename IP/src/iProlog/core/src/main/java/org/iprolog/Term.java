@@ -4,30 +4,47 @@ import java.util.LinkedList;
 
 // Prolog "term", with lexical conventions abstracted away.
 // E.g., variables don't have to start with a capital letter
-// or underscore, and can have embedded blanks.
+// or underscore, and can have embedded blanks. Myabe better
+// to call it a Structure, which may align better with some
+// established Prolog nomenclature.
 
-// Consistent with Paul Tarau's strategy of
+// To be consistent with Paul Tarau's strategy of
 // pretending Java classes are like C structs,
 // I won't try to make this an interface
 // for free-standing Java classes for constants,
 // variables and compound terms.
 
-// In C it could probably contain a tagged union.
-// Because this is just for building up a semi-compiled form, however,
-// its size doesn't matter much.
-// It'll be used once then garbage-collected or paged out of caches/RAM
-// during any long logic-program execution.
+// In C it could probably contain a tagged union. However,
+// because the members built up through the API get
+// turned into Tarau's compiled form, their size doesn't
+// matter much. They'll be used once paged out of caches/RAM
+// during any long logic-program execution; if their size
+// somehow becomes a memory or speed bottleneck, the
+// can be garbage-collected; as long as the symbol
+// table info is retained, something similar enough
+// to the original can be reconstructed from Tarau's
+// compiled form.
 
 // For tags, note the correpondence to Engine's V, R, and C.
 // There may be a reason to merge the tags in Engine with the tags here.
-// For now, tolerate smelly redundancy.
+// For now, tolerate smelly redundancy. I need to look at whether
+// the equations (e.g., "_1=x") can be Compounds (like ""=(_1,x)"")
+// internally; if so, this redundancy in coding types could be
+// eliminated.
 
 public class Term {
-    final public static int Variable = 1;   // correponds to Engine.U (unbound variable)
-    final public static int Compound = 2;   // correponds to Engine.R (reference)
-    final public static int Constant = 3;   // correponds to Engine.C (constant)
-    final public static int Equation = 4;   // special for Term = Term
-    final public static int MaxTag = Equation;
+    final private static int Variable = 1;   // correponds to Engine.U (unbound variable)
+    final private static int Compound = 2;   // correponds to Engine.R (reference)
+    final private static int Constant = 3;   // correponds to Engine.C (constant)
+    final private static int Equation = 4;   // special for Term = Term
+    final private static int MaxTag = Equation;
+
+    // hacky: if a variable presented through the API doesn't
+    // start with upper case or underscore, prefix it with
+    // something that does; likewise, if a constant starts
+    // with upper case, prefix it with something lower case;
+    // filter these prefixes back out at a later stage of
+    // token processing.
 
     final public static String Var_prefix = "V__";
     final public static String Const_prefix = "c__";
@@ -49,14 +66,20 @@ public class Term {
             assert (terms == null);
         }
 
+        if (tag == Equation) {
+            assert thing == "=";
+            assert terms.size() == 2;
+        }
+
         this.tag = tag;
 
         switch (tag) {
             case Variable: this.v = thing; this.terms = null;  this.c = null;  return;
-            case Compound: this.c = thing; this.terms = terms; this.v = null;  return;
+            case Compound: this.v = null;  this.terms = terms; this.c = thing; return;
             case Constant: this.v = null;  this.terms = null;  this.c = thing; return;
-            case Equation: this.v = null;  this.terms = terms; this.c = null;  return;
+            case Equation: this.v = null;  this.terms = terms; this.c = thing; return;
         }
+
 // should really raise some exception here
         this.v = null;
         this.c = null;
@@ -66,7 +89,7 @@ public class Term {
     public Boolean is_a_variable() {  return this.tag == Variable;  }
     public Boolean is_a_compound() {  return this.tag == Compound;  }
     public Boolean is_a_constant() {  return this.tag == Constant;  }
-    public Boolean is_an_equation(){  return this.tag == Equation;  }
+    public Boolean is_an_equation(){  assert c == "="; return this.tag == Equation;  }
 
     public static String remove_any_Var_prefix(String s) {
         if (s.startsWith(Var_prefix))
@@ -187,10 +210,15 @@ public class Term {
         switch (tag) {
             case Variable: return v;
             case Constant: return c;
-            case Compound: return c
-                                + args_start
-                                + terms_to_str(arg_sep)
-                                + args_end;
+            case Compound: if (c != "=")
+                                 return   c
+                                        + args_start
+                                        + terms_to_str(arg_sep)
+                                        + args_end;
+                            else
+                                 return   lhs()
+                                        + holds_op
+                                        + rhs();
             case Equation: return lhs() + holds_op + rhs();
         }
         return "<should've thrown exception here>";
@@ -214,8 +242,10 @@ public class Term {
 
 //        System.out.println ("In is_flat: this=" + this);
 
-        if (tag == Equation)
+        if (tag == Equation) {
+            assert c == "=";
             return lhs().is_flat() && rhs().is_flat();
+        }
 
         //depends on representing lhs+rhs as terms list in eqns:
         for (Term t : terms)
@@ -236,6 +266,7 @@ public class Term {
         }
         if (tag == Equation) {
             // System.out.println ("flattening an equation: " + this);
+            assert c == "=";
             LinkedList<Term> Lhs = lhs().flatten();
             Term eqn_lhs = Lhs.pop();
             LinkedList<Term> Rhs = rhs().flatten();
