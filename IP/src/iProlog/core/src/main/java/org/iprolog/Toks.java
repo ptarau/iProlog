@@ -113,8 +113,6 @@ public class Toks extends StreamTokenizer {
     final Toks toks = makeToks(s, fromFile);
     String t = null;
 
-    System.out.println ("toSentences: ");
-
     while (null != (t = toks.getWord())) {
 
       // System.out.println (" -- getword -> " + t);
