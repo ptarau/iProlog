@@ -155,12 +155,29 @@ public class TestTerm {
 
         String expected[] = {"I", "you"};
 
-        
-
         Term vPerson = v_("person");
 
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+
+        for (String s : expected) {
+            Clause live_ = Clause.f_("live_");
+            live_.__(c_(s));
+            llc.add (live_);
+        }
+
+        Clause good_ = Clause.f_("good_");
+        good_.__(vPerson).if_().__(s_("live_", vPerson));
+        llc.add (good_);
+        Clause goal = Clause.f_("goal");
+        goal.__(vPerson).if_().__(s_("good_", vPerson));
+        llc.add (goal);
+
+        for (Clause cl : llc) {
+            Main.println (cl.toString());
+        }
+
         for (String s : expected)
-        emit_as_clause(s_("live_", c_(s)));
+            emit_as_clause(s_("live_", c_(s)));
 
         emit_as_clause(s_("good_", vPerson), s_("live_", vPerson));
         emit_as_clause(s_("goal", vPerson),  s_("good_", vPerson));

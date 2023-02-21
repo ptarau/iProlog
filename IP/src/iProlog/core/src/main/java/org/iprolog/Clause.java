@@ -33,7 +33,7 @@ class Clause {
   public static Clause f_(String fid) {
 
     Clause cl = new Clause(0,null,0,0,null);
-    Main.println ("new Clause worked");
+
     cl.head = Term.compound(fid);
 
     // cl.args = null;
@@ -54,6 +54,22 @@ class Clause {
   public Clause if_() {
     adding_args = false;
     return this;
+  }
+
+  public String toString() {
+    String s = "";
+    s += head.toString();
+    if (body.size() > 0) {
+      s += Term.if_sym;
+      String sep = "";
+      for (Term x : body) {
+        s += sep;
+        s += x.toString();
+        sep = Term.and_op;
+      }
+    }
+    s += Term.clause_end;
+    return s;
   }
 
 // Skeletal elements for compiled form:
