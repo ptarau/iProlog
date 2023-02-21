@@ -1,6 +1,7 @@
 
 package org.iprolog;
 //import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.stream.Stream;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -32,20 +33,95 @@ public class Prog extends Engine implements Spliterator<Object> {
     return O.toString();
   }
 
-  static String maybeNull(final Object O) {
-    if (null == O)
-      return "$null";   // meaningful? or should raise exception?
-    if (O instanceof Object[])
-      return make_string_from((Object[]) O);
-    return O.toString();
-  }
-
   static boolean isListCons(final Object name) {
     return ".".equals(name) || "[|]".equals(name) || "list".equals(name);
   }
 
   static boolean isInfixOp(final Object name) {
     return "/".equals(name) || "-".equals(name) || "+".equals(name) || "=".equals(name);
+  }
+
+  public static Term term_made_from(Object O) {
+    if (!(O instanceof Object[])) {
+      if (O instanceof String) 
+        return Term.constant (O.toString());
+    } else {
+      Object oa[] = (Object[]) O;
+      // should try to make sure oa[0] is a functor first
+      Term f = Term.compound(oa[0].toString());
+      for (int i = 1; i < oa.length; ++i)
+          f.takes_this (term_made_from(oa[i]));
+      return f;
+    }
+    return null;
+  }
+
+  static Term functor_and_args(final Object f_of_args[]) {
+
+    Term f = Term.compound(f_of_args[0].toString());
+    for (int i = 1; i < f_of_args.length; ++i) {
+      Prog.println("f.takes_this on term_made_from f_of_args["+i+"]:");
+      f.takes_this(term_made_from(f_of_args[i]));
+    }
+    return f;
+  }
+
+  // Trying to export via Java Object is annoying
+  // What about a binExportTerm()?
+
+  public static LinkedList<Term>
+  make_terms_from(final Object[] f_of_args) {
+
+    final LinkedList<Term> terms = new LinkedList<Term>();
+    final String name = f_of_args[0].toString();
+
+    if (f_of_args.length == 3 && isInfixOp(name)) {
+      Main.println ("~~~~~~~ isInfixOp case: "+name+" ~~~~~~~");
+      Term t = Term.compound(name);
+      t.takes_this(term_made_from(f_of_args[1]));
+      t.takes_this(term_made_from(f_of_args[2]));
+      terms.add(t);
+    } else
+    if (f_of_args.length == 3 && isListCons(name)) {
+        Main.println ("~~~~~~~ isInfixOp case: "+name+" ~~~~~~~");
+        terms.add(term_made_from(f_of_args[1]));
+        Object tail = f_of_args[2];
+        for (;;) {
+          if ("[]".equals(tail) || "nil".equals(tail))
+            break;
+          if (!(tail instanceof Object[])) {
+            terms.add(term_made_from(tail));
+            break;
+          }
+          final Object[] list = (Object[]) tail;
+          if (!(list.length == 3 && isListCons(list[0]))) {
+            terms.add(term_made_from(tail));
+            break;
+          } else {
+            //if (i > 1)
+            terms.add(term_made_from(list[1]));
+            tail = list[2];
+          }
+        }
+    } else if (f_of_args.length == 2 && "$VAR".equals(name)) { // when?
+      Main.println("$$$$$$$$$$ $VAR $$$$$$$$$$$$$$");
+      Term t = Term.variable("_" + f_of_args[1]);
+      terms.add(t);
+    } else {
+      Main.println ("~~~~~~~ compound(?) case: "+name+" ~~~~~~~");
+      Term f = functor_and_args(f_of_args);
+      Prog.println ("~~~~ compound f = " + f.toString());
+      terms.add(f);
+    }
+    return terms;
+  }
+
+  static String maybeNull(final Object O) {
+    if (null == O)
+      return null;  
+    if (O instanceof Object[])
+      return make_string_from((Object[]) O);
+    return O.toString();
   }
 
   static String make_string_from(final Object[] f_of_args) {

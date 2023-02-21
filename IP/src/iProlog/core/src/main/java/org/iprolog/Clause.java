@@ -1,12 +1,60 @@
 
 package org.iprolog;
 
-import java.util.List;
+import java.util.LinkedList;
 
 /**
- * representation of a clause
+ * "representation of a clause" (P.Tarau)
+ * 
+ * [MT]: I decided to pair my API-built in-RAM binary form
+ * with Tarau's original, which can hold unfolded
+ * programs.
+ *   The members "functor", "args", and
+ * "body" can be imported into, and exported from,
+ * his "compiled assembly language" representation.)
+ * In fact, these cleanly map one-for-one, as far
+ * as I can tell (i.e., the origina not-unfolded code
+ * can be decompiled from his compiled form), but
+ * I'll cross that bridge (if it looks sturdy enough)
+ * when I come to it.
  */
 class Clause {
+
+  // import/export version:
+
+  public Term head;
+/* 
+  String functor;
+  LinkedList<Term> args;
+*/
+  public LinkedList<Term> body;
+  boolean adding_args = true;
+
+  public static Clause f_(String fid) {
+
+    Clause cl = new Clause(0,null,0,0,null);
+    Main.println ("new Clause worked");
+    cl.head = Term.compound(fid);
+
+    // cl.args = null;
+    cl.body = new LinkedList<Term>();
+
+    return cl;
+  }
+
+  public Clause __(Term x) {
+    assert x != null;
+    if (adding_args)
+      head.takes_this(x);
+    else
+      body.add(x);
+    return this;
+  }
+
+  public Clause if_() {
+    adding_args = false;
+    return this;
+  }
 
 // Skeletal elements for compiled form:
 

@@ -495,6 +495,13 @@ class Engine {
     }
     return x;
   }
+/* 
+  // To be overridden:
+  static LinkedList<Term>
+  make_terms_from(final Object[] oa) {
+    return null;
+  }
+*/  
 
   /**
    * Raw display of a term - to be overridden.

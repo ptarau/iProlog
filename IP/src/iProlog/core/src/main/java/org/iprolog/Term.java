@@ -53,6 +53,10 @@ public class Term {
     String c;
     final private LinkedList<Term> terms;   // What's in "(...)" in a compound,
                                             // or (hacky) the list [lhs,rhs] if equation
+    LinkedList<Term> args() {
+        assert tag == Compound;
+        return terms;
+    }
 
     Term (int tag, String thing, LinkedList<Term> terms) {
     
@@ -203,8 +207,8 @@ public class Term {
     }
     public String toString() {
         switch (tag) {
-            case Variable: return v;
-            case Constant: return c;
+            case Variable: return (v);
+            case Constant: return (c);
             case Compound: if (c != "=")
                                  return   c
                                         + args_start
@@ -221,6 +225,11 @@ public class Term {
     public void takes_this(Term t) {
         assert tag == Compound;
         terms.add (t);
+    }
+
+    public void takes_this(LinkedList<Term> llt) {
+        assert llt != null;
+        terms.addAll(llt);
     }
 
     private static int    gensym_i = 0;
