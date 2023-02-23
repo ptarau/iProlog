@@ -22,30 +22,49 @@ class Clause {
 
   // import/export version:
 
-  public Term head;
-/* 
-  String functor;
-  LinkedList<Term> args;
-*/
+  public LinkedList<Term> head;  // equational form will make this plural
   public LinkedList<Term> body;
-  boolean adding_args = true;
+  boolean adding_args = true; // still needed?
 
-  public static Clause f_(String fid) {
+  public static Clause f_(String fid) { // still needed?
 
     Clause cl = new Clause(0,null,0,0,null);
 
-    cl.head = Term.compound(fid);
+    cl.head = new LinkedList<Term>();
+    cl.head.add (Term.compound(fid));
 
-    // cl.args = null;
     cl.body = new LinkedList<Term>();
 
     return cl;
   }
 
+  // equational form may need to add more heads;
+  // where to allow for this?
+  public static Clause f__(String fid, Term... ts) {
+
+    Clause cl = new Clause(0,null,0,0,null);
+
+    cl.head = new LinkedList<Term>();
+    Term hd = Term.compound(fid);
+    cl.head.add (hd);
+
+    for (Term t : ts) 
+      hd.takes_this (t);
+
+    cl.body = new LinkedList<Term>();
+
+    return cl;
+  }
+
+  // Maybe I need to keep this, to add equations to the head?
+  // Don't turn off adding_args until if_(...) is encountered?
+  // Maybe this is also needed for when body is being built
+  // incrementally?
+
   public Clause __(Term x) {
     assert x != null;
     if (adding_args)
-      head.takes_this(x);
+      head.peekFirst().takes_this(x); // Change to adding to head??
     else
       body.add(x);
     return this;
@@ -56,15 +75,24 @@ class Clause {
     return this;
   }
 
+  public Clause if__(Term... body_list) {
+    adding_args = false;
+    for (Term t : body_list) body.add(t);
+    return this;
+  }
+
   public String toString() {
     String s = "";
-    s += head.toString();
+    String sep = "";
+    for (Term x : head) {
+      s += sep + x.toString();
+      sep = Term.and_op;
+    }
     if (body.size() > 0) {
       s += Term.if_sym;
-      String sep = "";
+      sep = "";
       for (Term x : body) {
-        s += sep;
-        s += x.toString();
+        s += sep + x.toString();
         sep = Term.and_op;
       }
     }
@@ -104,5 +132,11 @@ class Clause {
     this.len = len;
     this.neck = neck;
     this.xs = xs;
+  }
+
+  public void foo() {  //
+    Term t = Term.constant("x");
+    Clause xf = Clause.f__("null", t);
+    Main.println (xf.toString());
   }
 }

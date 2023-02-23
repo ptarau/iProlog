@@ -15,23 +15,14 @@ public class TestTerm {
     private static Term v_(String s) { return Term.variable(s); }
     private static Term c_(String s) { return Term.constant(s); }
     private static Term s_(String s) { return Term.compound(s); }
-    private static Term s_(String s, Term t) { return Term.compound(s,t); }
+    private static Term s_(String s, Term... ts) {
+                                        Term xt = Term.compound(s); 
+                                        for (Term t : ts)
+                                            xt.takes_this(t);
+                                        return xt;
+                                    }
     private static Term s_(String s, LinkedList<Term> llt) { return Term.compound(s,llt); }
     private static Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
-
-
-    // Want to add arg for expected output, and compare
-    // Expected output could be Object or Object[]
-
-    // not clear whether Object.deepEquals would do all this . . . .
-    private boolean same (Object o1, Object o2)  {
-        Object[] a = new Object[1];
-        a[0] = o1;
-        Object[] e = new Object[1];
-        e[0] = o2;
-
-        return Arrays.deepEquals(a, e);
-    }
 
     /**
    * Initiator and consumer of the stream of answers
@@ -39,6 +30,14 @@ public class TestTerm {
    */
     private void expect_from(Prog P, String[] whats_expected) {
         Object A;
+
+        Main.println ("///////////// Entering expect_from /////////////");
+        Main.println ("whats_expected =");
+        for (String s : whats_expected) {
+            Main.println ("  " + s);
+        }
+
+        Main.println ("Entering expect_from loop:");
 
         while ((A = P.ask()) != null) {
             assert A instanceof Object[];  // because it'll be "[goal, <answer>]"
@@ -53,70 +52,31 @@ public class TestTerm {
              // Some of the asserts here will bomb for queries with tuple
             // return values; punting for now.
 
-            Prog.println ("llt = " + llt.toString());
-            Prog.println ("llt.size() = " + llt.size());
+            Prog.println ("  llt = " + llt.toString());
+            Prog.println ("  llt.size() = " + llt.size());
             assert (llt.size() == 1);
             Term x = llt.get(0);
-            Prog.println ("x = " + x.toString());
+            Prog.println ("  x = " + x.toString());
             assert x.is_a_compound();
-            Prog.println (" x.c  = " + x.c);
+            Prog.println ("  x.c  = " + x.c);
             assert x.c.compareTo("goal") == 0;
             LinkedList<Term> args = x.args();
-            Prog.println ("args = " + args.toString());
-            Prog.println ("args.size() = " + args.size());
+            Prog.println ("  args = " + args.toString());
+            Prog.println ("  args.size() = " + args.size());
             assert args.size() == 1;
             Term a = args.get(0);
-            Prog.println ("a = " + a.toString()); 
+            Prog.println ("  a = " + a.toString()); 
 
             String s1 = P.showTerm(oa[0]);
             assert s1.equals("goal");   // because it'll be "[goal, <answer>]"
             assert oa.length > 1;
             String so = P.showTerm(oa[1]);
 
-            if (whats_expected != null)
+            if (whats_expected != null) {
+                Main.println ("  +++ so = " + so);
                 assert Arrays.asList(whats_expected).contains(so);
+            }
         }
-    }
-
-    String out = "";
-
-    private void emit_as_fact(Term t) {
-        assert t != null;
-        out += t.as_fact() + "\n";
-    }
-    private void emit_as_head(Term t) {
-        assert t != null;
-        out += t.as_head() + "\n";
-    }
-    private void emit_as_head(LinkedList<Term> eqns) {
-        int n = eqns.size();
-        for (Term t : eqns) {
-            if (--n == 0)
-                emit_as_head (t);
-            else
-                emit_as_expr (t, Term.and_op);
-        }
-    }
-    private void emit_as_body(LinkedList<Term> eqns) {
-        int n = eqns.size();
-        for (Term t : eqns) {
-            if (--n == 0)
-                emit_as_fact (t);
-            else
-                emit_as_expr (t, Term.and_op);
-        }
-    }
-    private void emit_as_expr(Term t, String ended_with) {
-        assert t != null;
-        out += t.as_expr(ended_with) + "\n";
-    }
-
-    private void emit_as_clause(Term hd) {
-        emit_as_fact (hd);
-    }
-    private void emit_as_clause(Term hd, Term body) {
-        emit_as_head (hd);
-        emit_as_expr (body, Term.clause_end);
     }
 
     private void try_t() {
@@ -138,18 +98,9 @@ public class TestTerm {
                 *   good_ Person .
 
          */
-        out = "";
+
         Term.reset_gensym();
         Term.set_TarauLog();
-
-        // OK, construct a whole little program
-        // starting as a list of lists of terms,
-        // if necessary, then call all these "emit_*"
-        // from traversing it.
-        //
-        // Each could start as [<aTErm>, [Terms*]],
-        // which of course is pretty much Tarau's
-        // input to unfolding.
 
         Main.println ("\n Construct data structures for try_t() case and ...");
 
@@ -159,36 +110,17 @@ public class TestTerm {
 
         LinkedList<Clause> llc = new LinkedList<Clause>();
 
-        for (String s : expected) {
-            Clause live_ = Clause.f_("live_");
-            live_.__(c_(s));
-            llc.add (live_);
-        }
-
-        Clause good_ = Clause.f_("good_");
-        good_.__(vPerson).if_().__(s_("live_", vPerson));
-        llc.add (good_);
-        Clause goal = Clause.f_("goal");
-        goal.__(vPerson).if_().__(s_("good_", vPerson));
-        llc.add (goal);
-
-        for (Clause cl : llc) {
-            Main.println (cl.toString());
-        }
-
         for (String s : expected)
-            emit_as_clause(s_("live_", c_(s)));
+            llc.add (Clause.f__("live_", c_(s)));
 
-        emit_as_clause(s_("good_", vPerson), s_("live_", vPerson));
-        emit_as_clause(s_("goal", vPerson),  s_("good_", vPerson));
+        llc.add (Clause.f__("good_", vPerson).if__(s_("live_", vPerson)));
+        llc.add (Clause.f__("goal",  vPerson).if__(s_("good_", vPerson)));
 
-        Main.println ("\n===Generated Tarau assembly language from it ===");
+        String x_out = "";
+        for (Clause cl : llc)  x_out += cl.toString()+"\n";
+        Main.println (x_out);
 
-        Prog.println (out);
-
-        Main.println ("\n===go 'compile' that assembly language ===");
-
-        Prog P = new Prog(out, false);
+        Prog P = new Prog(x_out, false);
 
         Term.set_Prolog();
         Main.println ("\n=== Pretty-print Prolog from it ===");
@@ -222,76 +154,56 @@ public class TestTerm {
               _3 holds the_successor_of 0 .
          */
 
-        out = "";
+        // out = "";
         Term.reset_gensym();
+
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+        Term vX = v_("X");
+        Term vY = v_("Y");
+        Term vZ = v_("Z");
+        Term c0 = c_("0");
+        Term succ_X = s_("the_successor_of", vX);
+        Term succ_Z = s_("the_successor_of", vZ);
+        Term succ_0 = s_("the_successor_of", c0);
+
+        llc.add(Clause.f__("the_sum_of", c0, vX, vX));
+        // llc.add(Clause.f__("the_sum_of", succ_X,vY,succ_Z).if__(s_("the_sum_of",vX,vY,vZ)));
 
         Main.println ("\n=== Try adding 2+2 in unary, generating TarauLog ===");
 
         Term.set_TarauLog();
 
-        LinkedList<Term> args_0_X_X = new LinkedList<Term>();
-        Term c0 = c_("0");
-        args_0_X_X.add (c0);
-        Term vX = v_("X");
-        args_0_X_X.add (vX);
-        args_0_X_X.add (vX);
+        Clause f = Clause.f__("the_sum_of", succ_X, vY, succ_Z);
+        assert f.head.size() == 1;
+        f.head = f.head.peekFirst().flatten();
+        Main.println ("f.head = " + f.head.toString());
+        f = f.if__(s_("the_sum_of", vX, vY, vZ));
+        Main.println("f.toString() = " + f.toString());
+        llc.add(f);
 
-        Term the_sum_of_0_X_X = s_("the_sum_of",args_0_X_X);
-
-        emit_as_fact(the_sum_of_0_X_X);
-
-        // Build this then flatten it:
-        //  the_sum_of(the_successor_of(X),Y,the_successor_of(Z))
-        Term vY = v_("Y");
-        Term vZ = v_("Z");
-        Term succ_X = s_("the_successor_of", vX);
-        Term succ_Z = s_("the_successor_of", vZ);
-        LinkedList<Term> args_list = new LinkedList<>();
-        args_list.add (succ_X);
-        args_list.add (vY);
-        args_list.add (succ_Z);
-
-        Term hd_start = s_("the_sum_of",args_list);
- 
-        LinkedList<Term> ll = hd_start.flatten();
-        emit_as_head(ll);
-        Term body = s_("the_sum_of");
-        body.takes_this (vX);
-        body.takes_this (vY);
-        body.takes_this (vZ);
-        emit_as_fact(body);
-
+            // goal(R):-
+            //  the_sum_of(the_successor_of(the_successor_of(0)),the_successor_of(the_successor_of(0)),R).
+            
         Term vR = v_("R");
-        Term goal = s_("goal");
-        goal.takes_this(vR);
-        emit_as_head (goal);
+        Clause g = Clause.f__("goal", vR);
+        Term s_of_s_of_0 = s_("the_successor_of", succ_0);
+        g.if__(s_("the_sum_of", s_of_s_of_0, s_of_s_of_0, vR));
+        Main.println ("g.toString() = " + g.toString());
+        LinkedList<Term> g_flat = g.body.peekFirst().flatten();
+        g.body = g_flat;
+        llc.add(g);
 
-        // the_sum_of(the_successor_of(the_successor_of(0)),the_successor_of(the_successor_of(0)),R)
-        Term the_sum_of = s_("the_sum_of");
-        Term s_of_0 = s_("the_successor_of", c0);
-        Term s_of_s_of_0 = s_("the_successor_of", s_of_0);
-        the_sum_of.takes_this (s_of_s_of_0);
-        the_sum_of.takes_this (s_of_s_of_0);
-        the_sum_of.takes_this (vR);
+        Main.println ("----- Clause.f__ construction: --------");
+        String x_out = "";
+        for (Clause cl : llc)  x_out += cl.toString()+"\n";
+        Main.println (x_out);
 
-        Term.reset_gensym();
+        Prog P = new Prog(x_out, false);
 
-        LinkedList<Term> add_s_s_0_s_s_0_R = the_sum_of.flatten();
-
-        emit_as_body(add_s_s_0_s_s_0_R);
-
-        // comes out with different gensym sequencing
-        // maybe because of DFS rather than BFS?
-
-        Prog P = new Prog(out, false);
-
-        Term.set_Prolog();
-/* 
         Main.println ("\n=== Pretty-print as Prolog ===");
-
+        Term.set_Prolog();
         P.ppCode();
-        */
-
+        
         Main.println ("\n===<<< Starting to run >>>===");
 
         String[] these_answers = {

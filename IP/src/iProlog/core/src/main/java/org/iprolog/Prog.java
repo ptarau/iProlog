@@ -43,14 +43,21 @@ public class Prog extends Engine implements Spliterator<Object> {
 
   public static Term term_made_from(Object O) {
     if (!(O instanceof Object[])) {
-      if (O instanceof String) 
-        return Term.constant (O.toString());
+      if (O instanceof String || O instanceof Integer) {
+        Main.println (" term_made_from: O.toString() = " + O.toString());
+        Term t = Term.constant (O.toString());
+        assert t != null;
+        return t;
+      }
     } else {
       Object oa[] = (Object[]) O;
       // should try to make sure oa[0] is a functor first
       Term f = Term.compound(oa[0].toString());
-      for (int i = 1; i < oa.length; ++i)
+      Main.println ("f.toString() = " + f.toString());
+      for (int i = 1; i < oa.length; ++i) {
+          Main.println("      oa(" + i + ") = " + oa[i].toString());
           f.takes_this (term_made_from(oa[i]));
+      }
       return f;
     }
     return null;
