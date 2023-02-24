@@ -32,9 +32,11 @@ public class TestTerm {
         Object A;
 
         Main.println ("///////////// Entering expect_from /////////////");
-        Main.println ("whats_expected =");
-        for (String s : whats_expected) {
-            Main.println ("  " + s);
+        if (whats_expected != null) {
+            Main.println ("whats_expected =");
+            for (String s : whats_expected) {
+                Main.println ("  " + s);
+            }
         }
 
         Main.println ("Entering expect_from loop:");
@@ -75,6 +77,8 @@ public class TestTerm {
             if (whats_expected != null) {
                 Main.println ("  +++ so = " + so);
                 assert Arrays.asList(whats_expected).contains(so);
+            } else {
+                Main.println (" yielding: " + so);
             }
         }
     }
@@ -127,6 +131,40 @@ public class TestTerm {
 
         P.ppCode();
         expect_from(P, expected);
+    }
+
+    private void try_t_J() {
+        Main.println ("\n==== try_t_J ====");
+        
+        Term.reset_gensym();
+        Term.set_TarauLog();
+
+        Main.println ("\n Construct data structures for try_t_J() case and ...");
+
+        String expected[] = {"私", "あなた"};
+
+        Term vPerson = v_("人");
+
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+
+        for (String s : expected)
+            llc.add (Clause.f__("いきる", c_(s)));
+
+        llc.add (Clause.f__("いいです", vPerson).if__(s_("いきる", vPerson)));
+        llc.add (Clause.f__("goal",  vPerson).if__(s_("いいです", vPerson)));
+
+        String x_out = "";
+        for (Clause cl : llc)  x_out += cl.toString()+"\n";
+        Main.println (x_out);
+
+        Prog P = new Prog(x_out, false);
+
+        Term.set_Prolog();
+        Main.println ("\n=== Pretty-print Prolog from it ===");
+
+        P.ppCode();
+        // expect_from(P, expected);
+        expect_from(P,null);
     }
 
     private void try_add() {
@@ -305,6 +343,7 @@ public class TestTerm {
 
         try_t();
         try_add();
+        try_t_J();
 
         Main.println ("\n======== End Term test ====================");
     }

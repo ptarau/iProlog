@@ -134,9 +134,4 @@ class Clause {
     this.xs = xs;
   }
 
-  public void foo() {  //
-    Term t = Term.constant("x");
-    Clause xf = Clause.f__("null", t);
-    Main.println (xf.toString());
-  }
 }

@@ -115,7 +115,7 @@ public class Toks extends StreamTokenizer {
 
     while (null != (t = toks.getWord())) {
 
-      // System.out.println (" -- getword -> " + t);
+      System.out.println (" -- getword -> " + t);
 
       if (DOT.equals(t)) {
 
