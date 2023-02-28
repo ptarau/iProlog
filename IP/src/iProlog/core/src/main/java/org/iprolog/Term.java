@@ -36,7 +36,7 @@ public class Term {
     final private static int Variable = 1;   // correponds to Engine.U (unbound variable)
     final private static int Compound = 2;   // correponds to Engine.R (reference)
     final private static int Constant = 3;   // correponds to Engine.C (constant)
-    final private static int MaxTag = Constant;
+    final private static int TermList = 4;   // Not in Engine tags because lists expand
 
     // hacky: if a variable presented through the API doesn't
     // start with upper case or underscore, prefix it with
@@ -58,18 +58,14 @@ public class Term {
         return terms;
     }
 
-    Term (int tag, String thing, LinkedList<Term> terms) {
-    
-        assert (tag > 0 && tag <= MaxTag);
-        assert (thing != null);
+    Term a_term (int tag, String thing, Term... ts) {
+        LinkedList<Term> tl = new LinkedList<Term>();
+        for (Term t : ts)
+            tl.add (t);
+        return new Term (tag, thing, tl);
+    }
 
-        if (tag == Compound) {
-            assert terms != null;
-            if (thing == "=")
-                assert terms.size() == 2;
-        } else {
-            assert (terms == null);
-        }
+    Term (int tag, String thing, LinkedList<Term> terms) {
 
         this.tag = tag;
 
@@ -77,9 +73,10 @@ public class Term {
             case Variable: this.v = thing; this.terms = null;  this.c = null;  return;
             case Compound: this.v = null;  this.terms = terms; this.c = thing; return;
             case Constant: this.v = null;  this.terms = null;  this.c = thing; return;
+            case TermList: this.v = null;  this.terms = terms; this.c = null;  return;
         }
 
-// should really raise some exception here
+// I should really raise some exception here
         this.v = null;
         this.c = null;
         this.terms = null;
@@ -88,6 +85,7 @@ public class Term {
     public Boolean is_a_variable() {  return tag == Variable;  }
     public Boolean is_a_compound() {  return tag == Compound;  }
     public Boolean is_a_constant() {  return tag == Constant;  }
+    public Boolean is_a_termlist() {  return tag == TermList;}
     public Boolean is_an_equation(){  return tag == Compound && terms.size() == 2 && c == "=";  }
 
     public static String remove_any_Var_prefix(String s) {
@@ -135,6 +133,18 @@ public class Term {
         return new Term(Compound, "=", ll);
     }
 
+    public static Term termlist(Term... ts) {
+        Main.println ("Entering termlist(Term... ts) ...");
+        LinkedList<Term> ll = new LinkedList<Term>();
+        for (Term t : ts)
+            ll.add(t);
+        return termlist(ll);
+    }
+
+    public static Term termlist(LinkedList<Term> llt) {
+        return new Term (TermList, "[...]", llt);
+    }
+
     public Term lhs() {
         assert this.is_an_equation();
         return terms.peekFirst();
@@ -158,6 +168,8 @@ public class Term {
     protected static String clause_end;
     protected static String if_sym;
     protected static String holds_op;
+    protected static String list_start;
+    protected static String list_end;
     
     // See Toks; there, I squeeze out whitespace
     // from these. Used for pretty-printing the
@@ -171,6 +183,11 @@ public class Term {
         clause_end = ".";
         if_sym = "\nif ";
         holds_op = " holds ";
+
+        // irrelevant actually, but:
+        list_start = "[";
+        list_end = "]";
+
         in_Prolog_mode = false;
     }
 
@@ -182,6 +199,8 @@ public class Term {
         clause_end = ".";
         if_sym = ":-";
         holds_op = "=";
+        list_start = "[";
+        list_end = "]";
         return in_Prolog_mode = true;
     }
 
@@ -218,6 +237,7 @@ public class Term {
                                  return   lhs()
                                         + holds_op
                                         + rhs();
+            case TermList: return "[<list placeholder, add code!]";
         }
         return "<should've thrown exception here>";
     }

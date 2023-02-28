@@ -23,6 +23,14 @@ public class TestTerm {
                                     }
     private static Term s_(String s, LinkedList<Term> llt) { return Term.compound(s,llt); }
     private static Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
+    private static Term l_(Term... ts) {
+        LinkedList<Term> llt = new LinkedList<Term>();
+        for (Term t : ts)
+            llt.add(t);
+        Term x = Term.termlist (llt);
+        assert x != null;
+        return x;
+    }
 
     /**
    * Initiator and consumer of the stream of answers
@@ -31,15 +39,12 @@ public class TestTerm {
     private void expect_from(Prog P, String[] whats_expected) {
         Object A;
 
-        Main.println ("///////////// Entering expect_from /////////////");
         if (whats_expected != null) {
             Main.println ("whats_expected =");
             for (String s : whats_expected) {
                 Main.println ("  " + s);
             }
         }
-
-        Main.println ("Entering expect_from loop:");
 
         while ((A = P.ask()) != null) {
             assert A instanceof Object[];  // because it'll be "[goal, <answer>]"
@@ -54,20 +59,13 @@ public class TestTerm {
              // Some of the asserts here will bomb for queries with tuple
             // return values; punting for now.
 
-            Prog.println ("  llt = " + llt.toString());
-            Prog.println ("  llt.size() = " + llt.size());
             assert (llt.size() == 1);
             Term x = llt.get(0);
-            Prog.println ("  x = " + x.toString());
             assert x.is_a_compound();
-            Prog.println ("  x.c  = " + x.c);
             assert x.c.compareTo("goal") == 0;
             LinkedList<Term> args = x.args();
-            Prog.println ("  args = " + args.toString());
-            Prog.println ("  args.size() = " + args.size());
             assert args.size() == 1;
             Term a = args.get(0);
-            Prog.println ("  a = " + a.toString()); 
 
             String s1 = P.showTerm(oa[0]);
             assert s1.equals("goal");   // because it'll be "[goal, <answer>]"
@@ -75,7 +73,6 @@ public class TestTerm {
             String so = P.showTerm(oa[1]);
 
             if (whats_expected != null) {
-                Main.println ("  +++ so = " + so);
                 assert Arrays.asList(whats_expected).contains(so);
             } else {
                 Main.println (" yielding: " + so);
@@ -142,17 +139,12 @@ public class TestTerm {
         Main.println ("\n Construct data structures for try_t_J() case and ...");
 
         String expected[] = {"私", "あなた"};
-
         Term vPerson = v_("人");
-
         LinkedList<Clause> llc = new LinkedList<Clause>();
-
         for (String s : expected)
             llc.add (Clause.f__("いきる", c_(s)));
-
         llc.add (Clause.f__("いいです", vPerson).if__(s_("いきる", vPerson)));
         llc.add (Clause.f__("goal",  vPerson).if__(s_("いいです", vPerson)));
-
         String x_out = "";
         for (Clause cl : llc)  x_out += cl.toString()+"\n";
         Main.println (x_out);
@@ -165,6 +157,17 @@ public class TestTerm {
         P.ppCode();
         // expect_from(P, expected);
         expect_from(P,null);
+    }
+
+    private void list_test() {
+        Main.println ("list_test entered...");
+
+        Term c0 = c_("0");
+        Term c1 = c_("1");
+        Term l = l_(c0,c1);
+        assert l != null;
+
+        Main.println ("list_test exited...");       
     }
 
     private void try_add() {
@@ -214,9 +217,7 @@ public class TestTerm {
         Clause f = Clause.f__("the_sum_of", succ_X, vY, succ_Z);
         assert f.head.size() == 1;
         f.head = f.head.peekFirst().flatten();
-        Main.println ("f.head = " + f.head.toString());
         f = f.if__(s_("the_sum_of", vX, vY, vZ));
-        Main.println("f.toString() = " + f.toString());
         llc.add(f);
 
             // goal(R):-
@@ -226,12 +227,11 @@ public class TestTerm {
         Clause g = Clause.f__("goal", vR);
         Term s_of_s_of_0 = s_("the_successor_of", succ_0);
         g.if__(s_("the_sum_of", s_of_s_of_0, s_of_s_of_0, vR));
-        Main.println ("g.toString() = " + g.toString());
         LinkedList<Term> g_flat = g.body.peekFirst().flatten();
         g.body = g_flat;
         llc.add(g);
 
-        Main.println ("----- Clause.f__ construction: --------");
+        Main.println ("----- Clause construction through API: --------");
         String x_out = "";
         for (Clause cl : llc)  x_out += cl.toString()+"\n";
         Main.println (x_out);
@@ -344,6 +344,7 @@ public class TestTerm {
         try_t();
         try_add();
         try_t_J();
+        list_test();
 
         Main.println ("\n======== End Term test ====================");
     }

@@ -238,15 +238,54 @@ class Engine {
   * Expands "Xs lists .." statements to "Xs holds" statements.
   */
 
-  private final static ArrayList<String[]> expand_lists_to_holds(final ArrayList<String> Ws) {
+  private final static ArrayList<String[]>
+  expand_lists_to_holds(final ArrayList<String> Ws) {
     final String W = Ws.get(0);
     if (W.length() < 2 || !"l:".equals(W.substring(0, 2)))
       return null;
 
+Main.println ("expand_lists_to_holds: entering....");
+
     final int l = Ws.size();
+
+Main.println ("expand_lists_to_holds: l = " + l);
+
     final ArrayList<String[]> Rss = new ArrayList<String[]>();
     final String V = W.substring(2);
+
+Main.println ("expand_lists_to_holds: V = " + V);
+
     for (int i = 1; i < l; i++) {
+      final String[] Rs = new String[4];
+      final String Vi = 1 == i ? V : V + "__" + (i - 1);
+      final String Vii = V + "__" + i;
+      Rs[0] = "h:" + Vi;
+      Rs[1] = "c:list"; 
+      Rs[2] = Ws.get(i);
+      Rs[3] = i == l - 1 ? "c:nil" : "v:" + Vii;
+
+for (int j = 0; j < 4; ++j)
+  Main.println ("expand_lists_to_holds: Rs["+j+"] = " + Rs[j]);
+
+      Rss.add(Rs);
+    }
+
+    Main.println ("expand_lists_to_holds: exiting\n\n");
+
+    return Rss;
+
+  }
+ 
+  private final static LinkedList<Term>
+  expand_lists_to_holds(Term lt) {
+
+    if (!lt.is_a_termlist())
+      return null;
+
+    LinkedList<Term> xf = new LinkedList<Term>();
+
+    for (Term t : lt.args()) {
+      /*
       final String[] Rs = new String[4];
       final String Vi = 1 == i ? V : V + "__" + (i - 1);
       final String Vii = V + "__" + i;
@@ -255,15 +294,20 @@ class Engine {
       Rs[2] = Ws.get(i);
       Rs[3] = i == l - 1 ? "c:nil" : "v:" + Vii;
       Rss.add(Rs);
-    }
-    return Rss;
+       * 
+       */
 
+    }
+
+    return xf;
   }
+  
 
   /**
    * Expands, if needed, "lists" statements in sequence of statements.
    */
-  private final static ArrayList<String[]> expand_lists_stmts(final ArrayList<ArrayList<String>> Wss) {
+  private final static ArrayList<String[]>
+  expand_lists_stmts(final ArrayList<ArrayList<String>> Wss) {
     final ArrayList<String[]> Rss = new ArrayList<String[]>();
     for (final ArrayList<String> Ws : Wss) {
 
@@ -299,16 +343,13 @@ class Engine {
   /**
    * Loads a program from a .nl file (or a String) of
    * "natural language" equivalents of Prolog/HiLog statements.
-   *
-
    */
+      // "W" seems to be an abbreviation of "Word". Each "s" indicates a level
+      // of pluralization.
   Clause[] dload(final String s) {
     return dload_from_x(s, true);
   }
   Clause[] dload_from_x(final String s, Boolean fromFile) {
-
-    // "W" seems to be an abbreviation of "Word". Each "s" indicates a level
-    // of pluralization.
 
     final ArrayList<ArrayList<ArrayList<String>>> Wsss = Toks.toSentences(s, fromFile);
 
@@ -355,55 +396,8 @@ class Engine {
         } // end element
       } // end clause
 
-      // linker
-      final Iterator<IntStack> K = refs.values().iterator();
-
-      while (K.hasNext()) {
-        final IntStack Is = K.next();
-
-        // finding the A among refs
-        int leader = -1;
-        for (final int j : Is.toArray()) {
-          if (A == tagOf(cells.get(j))) {
-            leader = j;
-
-            break;
-          }
-        }
-        if (-1 == leader) {
-          // for vars, first V others U
-          leader = Is.get(0);
-          for (final int i : Is.toArray()) {
-            if (i == leader) {
-              cells.set(i, tag(V, i));
-            } else {
-              cells.set(i, tag(U, leader));
-            }
-
-          }
-        } else {
-          for (final int i : Is.toArray()) {
-            if (i == leader) {
-              continue;
-            }
-            cells.set(i, tag(R, leader));
-          }
-        }
-      }
-
-      final int neck;
-      if (1 == goals.size())
-        neck = cells.size();
-      else
-        neck = detag(goals.get(1));
-
-      final int[] hgs = goals.toArray();
-
-      final Clause C = putClause(cells.toArray(), hgs, neck);
-
-      Clauses.add(C);
-
-    } // end clause set
+      linker(refs, cells, goals, Clauses);
+    }  // end clause set
 
     final int clause_count = Clauses.size();
     final Clause[] clauses = new Clause[clause_count];
@@ -411,6 +405,59 @@ class Engine {
       clauses[i] = Clauses.get(i);
     }
     return clauses;
+  }
+  
+  void linker(  LinkedHashMap<String,IntStack> refs,
+                IntStack cells,
+                IntStack goals,
+                ArrayList<Clause> Clauses) {
+    final Iterator<IntStack> K = refs.values().iterator();
+
+    while (K.hasNext()) {
+      final IntStack Is = K.next();
+
+      // finding the A among refs
+      int leader = -1;
+      for (final int j : Is.toArray()) {
+        if (A == tagOf(cells.get(j))) {
+          leader = j;
+
+          break;
+        }
+      }
+      if (-1 == leader) {
+        // for vars, first V others U
+        leader = Is.get(0);
+        for (final int i : Is.toArray()) {
+          if (i == leader) {
+            cells.set(i, tag(V, i));
+          } else {
+            cells.set(i, tag(U, leader));
+          }
+
+        }
+      } else {
+        for (final int i : Is.toArray()) {
+          if (i == leader) {
+            continue;
+          }
+          cells.set(i, tag(R, leader));
+        }
+      }
+    }
+
+    final int neck;
+    if (1 == goals.size())
+      neck = cells.size();
+    else
+      neck = detag(goals.get(1));
+
+    final int[] hgs = goals.toArray();
+
+    final Clause C = putClause(cells.toArray(), hgs, neck);
+
+    Clauses.add(C);
+
   }
 
   private static final int[] toNums(final Clause[] clauses) {
@@ -922,7 +969,11 @@ class Engine {
     final int trail_top = trail.getTop();
     final int heap_top = getTop();
     final int base = heap_top + 1;
-    assert G.goal_stack != null;
+    ///////////////////////////////////////////////
+    if (G.goal_stack == null) {
+      return null;
+    }
+    ///////////////////////////////////////////////
     final int goal = IntList.head(G.goal_stack);
 
     makeIndexArgs(G, goal);

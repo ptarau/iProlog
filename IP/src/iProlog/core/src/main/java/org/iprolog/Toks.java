@@ -4,10 +4,13 @@ import java.util.*;
 
 /**
  * Reads chars from char streams using the current default encoding
+ * 
+ * Most of the tokenization is for standard(?) Prolog
  */
 public class Toks extends StreamTokenizer {
 
   // reserved words - with syntactic function
+  // Need to Term.set_Taraulog to get the reserved words.
   public static String IF = Term.if_sym.trim(); // "if";
   public static String AND = Term.and_op.trim(); // "and";
   public static String DOT = Term.clause_end.trim(); // ".";
@@ -114,9 +117,6 @@ public class Toks extends StreamTokenizer {
     String t = null;
 
     while (null != (t = toks.getWord())) {
-
-      System.out.println (" -- getword -> " + t);
-
       if (DOT.equals(t)) {
 
           Structures.add(Tokens);      // add this finished (?) structure

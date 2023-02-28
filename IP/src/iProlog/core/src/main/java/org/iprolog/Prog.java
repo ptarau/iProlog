@@ -44,7 +44,6 @@ public class Prog extends Engine implements Spliterator<Object> {
   public static Term term_made_from(Object O) {
     if (!(O instanceof Object[])) {
       if (O instanceof String || O instanceof Integer) {
-        Main.println (" term_made_from: O.toString() = " + O.toString());
         Term t = Term.constant (O.toString());
         assert t != null;
         return t;
@@ -53,9 +52,7 @@ public class Prog extends Engine implements Spliterator<Object> {
       Object oa[] = (Object[]) O;
       // should try to make sure oa[0] is a functor first
       Term f = Term.compound(oa[0].toString());
-      Main.println ("f.toString() = " + f.toString());
       for (int i = 1; i < oa.length; ++i) {
-          Main.println("      oa(" + i + ") = " + oa[i].toString());
           f.takes_this (term_made_from(oa[i]));
       }
       return f;
@@ -115,9 +112,7 @@ public class Prog extends Engine implements Spliterator<Object> {
       Term t = Term.variable("_" + f_of_args[1]);
       terms.add(t);
     } else {
-      Main.println ("~~~~~~~ compound(?) case: "+name+" ~~~~~~~");
       Term f = functor_and_args(f_of_args);
-      Prog.println ("~~~~ compound f = " + f.toString());
       terms.add(f);
     }
     return terms;
@@ -160,7 +155,7 @@ public class Prog extends Engine implements Spliterator<Object> {
             break;
           } else {
             //if (i > 1)
-            buf.append(',');
+            buf.append(Term.arg_sep);
             buf.append(maybeNull(list[1]));
             tail = list[2];
           }
@@ -177,7 +172,7 @@ public class Prog extends Engine implements Spliterator<Object> {
         buf.append(sep + maybeNull(f_of_args[i]));
         sep = Term.arg_sep;
       }
-      buf.append(")");
+      buf.append(Term.args_end);
     }
     return buf.toString();
   }
@@ -202,7 +197,7 @@ public class Prog extends Engine implements Spliterator<Object> {
     buf.append("\n ");
     buf.append(showTerm(s.hgs[0]));
     if (l > 1) {
-      buf.append(" :- \n");
+      buf.append(Term.if_sym + "\n");
       for (int i = 1; i < l; i++) {
         final int e = s.hgs[i];
         buf.append("   ");
