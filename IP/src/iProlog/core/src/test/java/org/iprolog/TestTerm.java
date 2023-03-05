@@ -47,6 +47,7 @@ public class TestTerm {
         }
 
         while ((A = P.ask()) != null) {
+            Main.println ("In P.ask loop....");
             assert A instanceof Object[];  // because it'll be "[goal, <answer>]"
             Object[] oa = (Object[]) A;
 
@@ -78,6 +79,7 @@ public class TestTerm {
                 Main.println (" yielding: " + so);
             }
         }
+        Main.println ("... expect_from exiting.");
     }
 
     private void try_t() {
@@ -162,10 +164,41 @@ public class TestTerm {
     private void list_test() {
         Main.println ("list_test entered...");
 
+        Term.reset_gensym();
+        Term.set_TarauLog();
+
         Term c0 = c_("0");
         Term c1 = c_("1");
         Term l = l_(c0,c1);
         assert l != null;
+
+        Main.println ("l = " + l);
+
+        Main.println ("\n Construct data structures for try_t() case and ...");
+
+        // String expected[] = {"I", "you"};
+        String expected[] = null;
+
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+
+        Term V = v_("V");
+        // Would prefer if this worked by itself:
+        // llc.add (Clause.f__("zero_and_one", l));
+        llc.add (Clause.f__("zero_and_one", V).if__(e_(V,l)));
+        llc.add (Clause.f__("zero_and_one", V).if__(e_(V,l_(c1,c0))));
+        llc.add (Clause.f__("goal",  V).if__(s_("zero_and_one", V)));
+
+        String x_out = "";
+        for (Clause cl : llc)  x_out += cl.toString()+"\n";
+        Main.println (x_out);
+
+        Prog P = new Prog(x_out, false);
+
+        Term.set_Prolog();
+        Main.println ("\n=== Pretty-print Prolog from it ===");
+
+        P.ppCode();
+        expect_from(P, expected);
 
         Main.println ("list_test exited...");       
     }

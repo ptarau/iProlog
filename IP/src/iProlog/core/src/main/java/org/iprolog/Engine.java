@@ -234,46 +234,72 @@ class Engine {
     }
   }
 
+  private static Clause[] condensed_clauses(ArrayList<Clause> compiled_clauses) {
+    final int clause_count = compiled_clauses.size();
+    final Clause[] clauses = new Clause[clause_count];
+    for (int i = 0; i < clause_count; i++) {
+      clauses[i] = compiled_clauses.get(i);
+    }
+    return clauses;
+  }
+
+
   /**
   * Expands "Xs lists .." statements to "Xs holds" statements.
   */
 
   private final static ArrayList<String[]>
-  expand_lists_to_holds(final ArrayList<String> Ws) {
-    final String W = Ws.get(0);
-    if (W.length() < 2 || !"l:".equals(W.substring(0, 2)))
+  expand_lists_to_holds(final ArrayList<String> words) {
+    final String first_word = words.get(0);
+
+    if (first_word.length() < 2)
+      return null;
+
+    String asm_prefix_tag = first_word.substring(0, 2);
+
+    if(!"l:".equals(asm_prefix_tag))
       return null;
 
 Main.println ("expand_lists_to_holds: entering....");
 
-    final int l = Ws.size();
+    final int l = words.size();
+    final int n_elts = l-1;
+    final ArrayList<String[]> an_expansion = new ArrayList<String[]>();
+    final String V = first_word.substring(2);
 
 Main.println ("expand_lists_to_holds: l = " + l);
-
-    final ArrayList<String[]> Rss = new ArrayList<String[]>();
-    final String V = W.substring(2);
-
 Main.println ("expand_lists_to_holds: V = " + V);
 
+String s = "[";
+String sep = "";
+for (int i = 1; i < l; ++i) { s += (sep + words.get(i)); sep = ","; }
+s += "]";
+Main.println ("expand_lists_to_holds: list = " + s);
+
+    String subscript = "";
+    String sub = "_sub_";
+
     for (int i = 1; i < l; i++) {
-      final String[] Rs = new String[4];
-      final String Vi = 1 == i ? V : V + "__" + (i - 1);
-      final String Vii = V + "__" + i;
-      Rs[0] = "h:" + Vi;
-      Rs[1] = "c:list"; 
-      Rs[2] = Ws.get(i);
-      Rs[3] = i == l - 1 ? "c:nil" : "v:" + Vii;
+      final String[] a_subexpansion = new String[4];
+      a_subexpansion[0] = "h:" + V + subscript;      // 'h' -> "holds" -> "="
+      a_subexpansion[1] = "c:list";
+      a_subexpansion[2] = words.get(i);
+      if (i == n_elts)  a_subexpansion[3] = "c:nil";
+      else              a_subexpansion[3] = "v:" +  V + sub + i;
 
+      subscript = sub + i;
+
+Main.println("\n");
 for (int j = 0; j < 4; ++j)
-  Main.println ("expand_lists_to_holds: Rs["+j+"] = " + Rs[j]);
+  Main.println ("expand_lists_to_holds: a_subexpansion["+j+"] = " + a_subexpansion[j]);
+Main.println ("for next, subscript = " + subscript);
 
-      Rss.add(Rs);
+      an_expansion.add(a_subexpansion);
     }
 
     Main.println ("expand_lists_to_holds: exiting\n\n");
 
-    return Rss;
-
+    return an_expansion;
   }
  
   private final static LinkedList<Term>
@@ -283,13 +309,14 @@ for (int j = 0; j < 4; ++j)
       return null;
 
     LinkedList<Term> xf = new LinkedList<Term>();
+    int l = lt.args().size();
 
-    for (Term t : lt.args()) {
+    for (int i = 1; i < l; i++) {
       /*
       final String[] Rs = new String[4];
       final String Vi = 1 == i ? V : V + "__" + (i - 1);
       final String Vii = V + "__" + i;
-      Rs[0] = "h:" + Vi;
+      Rs[0] = "h:" + Vi;      // 'h' -> "holds" -> "="
       Rs[1] = "c:list";
       Rs[2] = Ws.get(i);
       Rs[3] = i == l - 1 ? "c:nil" : "v:" + Vii;
@@ -308,24 +335,29 @@ for (int j = 0; j < 4; ++j)
    */
   private final static ArrayList<String[]>
   expand_lists_stmts(final ArrayList<ArrayList<String>> Wss) {
-    final ArrayList<String[]> Rss = new ArrayList<String[]>();
+    Main.println("\n\nexpand_lists_stmts: entered....");
+    final ArrayList<String[]> Results = new ArrayList<String[]>();
     for (final ArrayList<String> Ws : Wss) {
 
-      final ArrayList<String[]> Hss = expand_lists_to_holds(Ws);
+      final ArrayList<String[]> any_expansion = expand_lists_to_holds(Ws);
 
-      if (null == Hss) {
+      if (null == any_expansion) {
+        Main.println("expand_lists_stmts: no list expansion....");
         final String[] ws = new String[Ws.size()];
         for (int i = 0; i < ws.length; i++) {
           ws[i] = Ws.get(i);
+          Main.println("expand_lists_stmts: ws[i] = " + ws[i]);
         }
-        Rss.add(ws);
+        Results.add(ws);
       } else {
-        for (final String[] X : Hss) {
-          Rss.add(X);
+        for (final String[] X : any_expansion) {
+          for (String elt : X)
+            Main.println("expand_lists_stmts:   adding elt " + elt);
+          Results.add(X);
         }
       }
     }
-    return Rss;
+    return Results;
   }
 
   final static IntStack put_ref(String arg,
@@ -351,19 +383,19 @@ for (int j = 0; j < 4; ++j)
   }
   Clause[] dload_from_x(final String s, Boolean fromFile) {
 
-    final ArrayList<ArrayList<ArrayList<String>>> Wsss = Toks.toSentences(s, fromFile);
+    final ArrayList<ArrayList<ArrayList<String>>> clause_asm_list = Toks.toSentences(s, fromFile);
 
-    final ArrayList<Clause> Clauses = new ArrayList<Clause>();
+    final ArrayList<Clause> compiled_clauses = new ArrayList<Clause>();
 
-    for (final ArrayList<ArrayList<String>> Wss : Wsss) { // for each clause
+    for (final ArrayList<ArrayList<String>> clause_asm : clause_asm_list) {
 
       final LinkedHashMap<String, IntStack> refs = new LinkedHashMap<String, IntStack>();
       final IntStack cells = new IntStack();
       final IntStack goals = new IntStack();
 
-      final ArrayList<String[]> Rss = expand_lists_stmts(Wss);
+      final ArrayList<String[]> raw_asm = expand_lists_stmts(clause_asm);
       int k = 0;
-      for (final String[] ws : Rss) { // for each head or body element
+      for (final String[] ws : raw_asm) { // for each head or body element
 
         final int l = ws.length;
         goals.push(tag(R, k++));
@@ -396,15 +428,108 @@ for (int j = 0; j < 4; ++j)
         } // end element
       } // end clause
 
-      linker(refs, cells, goals, Clauses);
+      linker(refs, cells, goals, compiled_clauses);
     }  // end clause set
 
-    final int clause_count = Clauses.size();
-    final Clause[] clauses = new Clause[clause_count];
+    final int clause_count = compiled_clauses.size();
+    final Clause[] all_clauses = new Clause[clause_count];
     for (int i = 0; i < clause_count; i++) {
-      clauses[i] = Clauses.get(i);
+      all_clauses[i] = compiled_clauses.get(i);
     }
-    return clauses;
+    return all_clauses;
+  }
+
+  private int do_it ( int k,
+                      Term t,
+                      LinkedHashMap<String, IntStack> refs,
+                      IntStack cells,
+                      IntStack goals,
+                      ArrayList<Clause> Clauses) {
+/* 
+    for (final String[] ws : Rss) { // for each head or body element
+
+      final int l = ws.length;
+      goals.push(tag(R, k++));
+      cells.push(tag(A, l));
+
+      for (String w : ws) { // gen code for 'element' (= head/body subterm)
+
+        if (1 == w.length())  // when would this be?
+          w = "c:" + w;
+
+        final String arg = w.substring(2);
+
+        switch (w.charAt(0)) {  // gen code for subterm:
+          // Constant
+          case 'c': cells.push(encode(C, arg));              k++; break;
+          // small iNt
+          case 'n': cells.push(encode(N, arg));              k++; break;
+          // Variable
+          case 'v': put_ref (arg, refs, k);
+                    // "just in case we miss this:" ??
+                    //  P. Tarau comment
+                    cells.push(tag(BAD, k));                 k++; break;
+          // 'Holds' ('=')
+          case 'h': put_ref (arg, refs, k - 1);
+                    cells.set(k - 1, tag(A, l - 1));
+                    goals.pop();
+                                                                  break;
+          default: Main.pp("FORGOTTEN=" + w);
+        } // end subterm
+      } // end element
+    }
+    */
+    return k;
+  }
+
+  static LinkedList<Term>
+  expand_list_stmt (LinkedList<Term> head_or_body) {
+    LinkedList<Term> llt = new LinkedList<Term>();
+
+    for (Term t : head_or_body) {
+      final LinkedList<Term> any_expansion = expand_lists_to_holds(t);
+      if (any_expansion == null)
+        llt.add (t);
+      else
+        llt.addAll (any_expansion);
+    }
+
+    return llt;
+  }
+
+  private final static Clause
+  expand_lists_stmts(final Clause cl) {
+    Main.println("\n\nexpand_lists_stmts(cl): entered....");
+
+    cl.head = expand_list_stmt(cl.head);
+    cl.body = expand_list_stmt(cl.body);
+
+    return cl;
+  }
+
+  Clause[] dload_from_x(LinkedList<Clause> these_clauses) {
+
+    final ArrayList<Clause> compiled_clauses = new ArrayList<Clause>();
+
+    for (final Clause cl : these_clauses) { // for each clause
+
+      final LinkedHashMap<String, IntStack> refs = new LinkedHashMap<String, IntStack>();
+      final IntStack cells = new IntStack();
+      final IntStack goals = new IntStack();
+
+      final Clause xcl = expand_lists_stmts(cl);
+      int k = 0;
+
+      for (Term t : xcl.head)
+        k = do_it(k, t, refs, cells, goals, compiled_clauses);
+
+      for (Term t : xcl.body)
+        k = do_it(k, t, refs, cells, goals, compiled_clauses);
+
+      linker(refs, cells, goals, compiled_clauses);
+    }  // end clause set
+
+    return condensed_clauses (compiled_clauses);
   }
   
   void linker(  LinkedHashMap<String,IntStack> refs,
@@ -460,7 +585,8 @@ for (int j = 0; j < 4; ++j)
 
   }
 
-  private static final int[] toNums(final Clause[] clauses) {
+  private static final int[]
+  toNums(final Clause[] clauses) {
     final int l = clauses.length;
     final int[] cls = new int[l];
     for (int i = 0; i < l; i++) {

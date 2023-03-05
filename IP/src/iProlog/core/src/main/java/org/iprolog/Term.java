@@ -183,10 +183,8 @@ public class Term {
         clause_end = ".";
         if_sym = "\nif ";
         holds_op = " holds ";
-
-        // irrelevant actually, but:
-        list_start = "[";
-        list_end = "]";
+        list_start = "list ";
+        list_end = " ";
 
         in_Prolog_mode = false;
     }
@@ -201,6 +199,7 @@ public class Term {
         holds_op = "=";
         list_start = "[";
         list_end = "]";
+        
         return in_Prolog_mode = true;
     }
 
@@ -237,9 +236,9 @@ public class Term {
                                  return   lhs()
                                         + holds_op
                                         + rhs();
-            case TermList: return "[<list placeholder, add code!]";
+            case TermList: return list_start + terms_to_str(arg_sep) + list_end;
         }
-        return "<should've thrown exception here>";
+        return "<should've thrown exception here in Term.toString()>";
     }
 
     public void takes_this(Term t) {
