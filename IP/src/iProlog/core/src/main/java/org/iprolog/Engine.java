@@ -305,6 +305,8 @@ Main.println ("for next, subscript = " + subscript);
   private final static LinkedList<Term>
   expand_lists_to_holds(Term lt) {
 
+    assert (false);
+
     if (!lt.is_a_termlist())
       return null;
 
@@ -335,7 +337,9 @@ Main.println ("for next, subscript = " + subscript);
    */
   private final static ArrayList<String[]>
   expand_lists_stmts(final ArrayList<ArrayList<String>> Wss) {
+
     Main.println("\n\nexpand_lists_stmts: entered....");
+
     final ArrayList<String[]> Results = new ArrayList<String[]>();
     for (final ArrayList<String> Ws : Wss) {
 
@@ -394,14 +398,19 @@ Main.println ("for next, subscript = " + subscript);
       final IntStack goals = new IntStack();
 
       final ArrayList<String[]> raw_asm = expand_lists_stmts(clause_asm);
+      assert raw_asm.size() > 0;
       int k = 0;
       for (final String[] ws : raw_asm) { // for each head or body element
+Main.println ("Stepping through raw_asm arraylist...");
 
         final int l = ws.length;
         goals.push(tag(R, k++));
+        assert goals.size() > 0;
         cells.push(tag(A, l));
 
         for (String w : ws) { // gen code for 'element' (= head/body subterm)
+
+        Main.println ("at w = " + w);
 
           if (1 == w.length())  // when would this be?
             w = "c:" + w;
@@ -422,11 +431,14 @@ Main.println ("for next, subscript = " + subscript);
             case 'h': put_ref (arg, refs, k - 1);
                       cells.set(k - 1, tag(A, l - 1));
                       goals.pop();
-                                                                    break;
+                                                               /**/ break;
             default: Main.pp("FORGOTTEN=" + w);
           } // end subterm
         } // end element
       } // end clause
+
+      assert cells.size() > 0;
+      assert goals.size() > 0;
 
       linker(refs, cells, goals, compiled_clauses);
     }  // end clause set
@@ -499,10 +511,15 @@ Main.println ("for next, subscript = " + subscript);
 
   private final static Clause
   expand_lists_stmts(final Clause cl) {
-    Main.println("\n\nexpand_lists_stmts(cl): entered....");
+    Main.println("\nexpand_lists_stmts(cl): calling on cl.head....");
 
     cl.head = expand_list_stmt(cl.head);
+    Main.println("\nexpand_lists_stmts(cl): calling on cl.body....");
     cl.body = expand_list_stmt(cl.body);
+
+    Main.println ("\nResulting clause:\n" + cl.toString());
+
+    Main.println ("...exiting expand_lists_stmts(Clause cl)");
 
     return cl;
   }
@@ -536,6 +553,10 @@ Main.println ("for next, subscript = " + subscript);
                 IntStack cells,
                 IntStack goals,
                 ArrayList<Clause> Clauses) {
+
+    // assert goals.size() > 0;
+    assert cells.size() > 0;
+
     final Iterator<IntStack> K = refs.values().iterator();
 
     while (K.hasNext()) {
@@ -574,10 +595,17 @@ Main.println ("for next, subscript = " + subscript);
     final int neck;
     if (1 == goals.size())
       neck = cells.size();
-    else
+    else {
+      int gi = goals.get(1);
+      Main.println ("gi=" + gi + " goals.size()=" + goals.size());
+      assert goals.size() > 0;
+
       neck = detag(goals.get(1));
+    }
 
     final int[] hgs = goals.toArray();
+
+    assert hgs.length > 0;
 
     final Clause C = putClause(cells.toArray(), hgs, neck);
 
@@ -927,7 +955,7 @@ Main.println ("for next, subscript = " + subscript);
     final int len = cells.length;
     pushCells(b, 0, len, cells);
 
-// System.out.println ("---- putClause: hgs.length="+hgs.length+" -----");
+ System.out.println ("---- putClause: hgs.length="+hgs.length+" -----");
 
     for (int i = 0; i < hgs.length; i++) {
       hgs[i] = relocate(b, hgs[i]);

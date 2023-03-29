@@ -2,6 +2,9 @@ package org.iprolog;
 
 import java.util.LinkedList;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.util.ElementScanner6;
+
 // Prolog "term", with lexical conventions abstracted away.
 // E.g., variables don't have to start with a capital letter
 // or underscore, and can have embedded blanks. Myabe better
@@ -48,10 +51,12 @@ public class Term {
     final public static String Var_prefix = "V__";
     final public static String Const_prefix = "c__";
 
-    final private int tag;
+    /*final*/ private int tag;      // mutable for in-place rewriting
+                                    // which I admit may turn out to be
+                                    // a bad idea
     String v;
     String c;
-    final private LinkedList<Term> terms;   // What's in "(...)" in a compound,
+    private LinkedList<Term> terms;   // What's in "(...)" in a compound,
                                             // or (hacky) the list [lhs,rhs] if equation
     LinkedList<Term> args() {
         assert tag == Compound;
@@ -142,7 +147,11 @@ public class Term {
     }
 
     public static Term termlist(LinkedList<Term> llt) {
-        return new Term (TermList, "[...]", llt);
+        Term t = new Term (TermList, "[...]", llt);
+
+        // Main.println ("New termlist: " + t.toString());
+
+        return t;
     }
 
     public Term lhs() {
@@ -161,14 +170,16 @@ public class Term {
 
     public static boolean in_Prolog_mode = set_Prolog();
     
-    protected static String arg_sep;
+
     protected static String and_op; 
     protected static String args_start;
+    protected static String arg_sep;
     protected static String args_end;
     protected static String clause_end;
     protected static String if_sym;
     protected static String holds_op;
     protected static String list_start;
+    protected static String list_elt_sep;
     protected static String list_end;
     
     // See Toks; there, I squeeze out whitespace
@@ -176,30 +187,34 @@ public class Term {
     // Tarau "assembly language" and (indirectly)
     // in the toSentences lexeme tagger.
     public static void set_TarauLog() {
-        arg_sep = " ";
+
         and_op = " and ";
         args_start = " ";
+        arg_sep = " ";
         args_end = " ";
         clause_end = ".";
         if_sym = "\nif ";
         holds_op = " holds ";
-        list_start = "list ";
+        list_start = "lists ";
+        list_elt_sep = " ";
         list_end = " ";
 
         in_Prolog_mode = false;
     }
 
     public static boolean set_Prolog() {
-        arg_sep = ",";
+
         and_op = ",";
         args_start = "(";
+        arg_sep = ",";
         args_end = ")";
         clause_end = ".";
         if_sym = ":-";
         holds_op = "=";
         list_start = "[";
+        list_elt_sep = ",";
         list_end = "]";
-        
+
         return in_Prolog_mode = true;
     }
 
@@ -223,22 +238,36 @@ public class Term {
         }
         return s;
     }
+
+    private boolean is_lists() {
+        return tag == Compound && this.c == "lists";
+    }
+
     public String toString() {
+        String r = "<unassigned>";
+
         switch (tag) {
-            case Variable: return (v);
-            case Constant: return (c);
+            case Variable: r = v; break;
+            case Constant: r = c; break;
             case Compound: if (c != "=")
-                                 return   c
+                                 r =      c
                                         + args_start
                                         + terms_to_str(arg_sep)
                                         + args_end;
-                            else
-                                 return   lhs()
+                            else {
+                                if (rhs().is_lists()) {
+                                    r = lhs().toString() + " " + rhs().toString();
+                                    Main.println ("holds lists reduced to r = " + r);
+                                } else
+                                    r =   lhs()
                                         + holds_op
                                         + rhs();
-            case TermList: return list_start + terms_to_str(arg_sep) + list_end;
+                            }
+                            break;
+            case TermList:  r =  list_start + terms_to_str(list_elt_sep) + list_end;
+                            break;
         }
-        return "<should've thrown exception here in Term.toString()>";
+        return r;
     }
 
     public void takes_this(Term t) {
@@ -272,7 +301,7 @@ public class Term {
 
         return true;
     }
-
+/* 
     public LinkedList<Term> flatten() {
 
 // COULD BE LEAKY:
@@ -282,7 +311,22 @@ public class Term {
             eqn_form.add (this);
             return eqn_form;
         }
-        if (c == "=") {
+
+        if (tag == TermList) {  // this should be something like Compound
+                                // except each list/sublist functor is "lists"
+            // First, generate a variable Vroot to substitute for the list
+            // for each term
+            //    if the term was a list
+            //       convert it to "lists(<elts>)"
+            //       R = flatten that
+            // generate "Vroot, Vroot = <R>"
+            // PROBLEM WITH THIS:
+            //   if you have 2+ lists of args
+            // SO:
+            //   need to keep substituting in expansion
+        }
+
+        if (c == "=") {  // special kind of compound
             // System.out.println ("flattening an equation: " + this);
             LinkedList<Term> Lhs = lhs().flatten();
             Term eqn_lhs = Lhs.pop();
@@ -301,22 +345,33 @@ public class Term {
             return eqn_form;
         }
 
-        // System.out.println ("Flattening a compound: " + this);
+        System.out.println ("Flattening a compound or a list: " + this);
 
-        Term nC = compound(c);                      // make a new compound
-        eqn_form.add(nC);
+        Term nX;
+Main.println("tag="+tag);
+        assert (tag == Compound);
+        nX = compound(c);                      // make a new compound
+Main.println("tag="+tag);
 
         for (Term t : terms) {                      // for each elt in this compound's arg list
             if (t.tag == Variable
              || t.tag == Constant) {                 // if elt is var or const,
                 // System.out.println ("  flatten sees t = " + t);
-                nC.takes_this (t);                  //      emit elt to new compound
-             } else {                                  // else
-                // System.out.println ("  flatten sees t = " + t);
+                nX.takes_this (t);                  //      emit elt to new compound
+            } else
+            if (t.tag == Compound) {                                  // else
+                 System.out.println ("  flatten sees t = " + t);
                 Term nV = variable(gensym());       //      add new variable
-                nC.takes_this (nV);                 //      add it to args for new compound
+                nX.takes_this (nV);                 //      add it to args for new compound
                 Term nEq = Term.equation(nV,t);
                 eqn_form.addAll (nEq.flatten());
+            } else 
+            if (t.tag == TermList) {
+                System.out.println ("  flatten sees t = " + t);
+                Term nV = variable(gensym());       //      add new variable
+                nX.takes_this (nV);                 //      add it to args for new compound
+                Term nTL = Term.termlist(t.terms);
+                eqn_form.addAll (nTL.flatten());
             }
         }
         // while queue not empty
@@ -325,4 +380,191 @@ public class Term {
         
         return eqn_form;
     }
+
+*/
+    
+
+// a flatten that returns residue "squeezed out"
+// this transforms clause structures
+// it's applied first to the head, then to the body
+// Making it DFS in what it flattens.
+// Trying to make it work in-place -- i.e., it
+// rewrites the structure given to it.
+// The original should be recoverable (P. Tarau)
+// Not sure any of this is right.
+// Basically, loop until residue gone.
+
+public static void fatten (Clause cl) {
+
+    Main.println ("\n\nEntering fatten(Clause cl) ...");
+
+    // flatten head -
+    //      loop through args
+    //              add flatten of each to residue
+    //      add residue to head
+
+    LinkedList<Term> headlist = new LinkedList<Term>();
+    assert cl.head.size() == 1;
+    for (Term hh : cl.head.peekFirst().args()) {
+        Main.println ("  hh arg before = " + hh.toString());
+        LinkedList<Term> llt = hh.fatten();
+        Main.println ("  hh arg after = " + hh.toString());
+        Main.println ("    llt = " + llt);
+        headlist.addAll(llt);
+    }
+
+    assert cl.head.size() == 1;
+    headlist.addFirst(cl.head.getFirst());
+    cl.head = headlist;
+    Main.println ("head => " + cl.head);
+    Main.println ("headlist = " + headlist);
+
+    // flatten body
+    //      loop through expressions/conditions
+    //              do flattening of each
+    //              add the residue to each
+    LinkedList<Term> bodylist = new LinkedList<Term>();
+
+    for (Term bb : cl.body) {
+        Main.println ("  bb before = " + bb.toString());
+        LinkedList<Term> llt = bb.fatten();
+        Main.println ("  bb after = " + bb.toString());
+        Main.println ("    llt = " + llt);
+        bodylist.addAll(llt);
+    }
+
+    bodylist.addAll (cl.body);
+    cl.body = bodylist;
+    Main.println ("body = " + cl.body);
+    Main.println ("bodylist = " + bodylist);
+
+    Main.println ("...exit from fatten (Clause cl)\n");
 }
+
+/*
+ * https://stackoverflow.com/questions/64814365/flattened-form-in-wam
+ * ... build the arguments before you build the outer terms.
+ * For example, you must build a(K, C) before you can build h(..., a(K, C), ...),
+ * and you must build that before you can build p(..., h(..., a(K, C), ...), ...).
+ * Here is one legal order for p(Z,h(Y,a(K,C),K),f(C)):
+
+          _4 = a(K, C)
+     _2 = h(Y, _4, K)
+     _3 = f(C)
+_1 = p(Z, _2, _3)
+
+flatten this:
+    residue list = empty
+    if this is a compound
+        args list = empty
+        f = this.c
+        for t in terms
+            if t is a variable or a constant
+                add t to args list
+            else
+                add flatten t to residue list
+        Term e = equation "<gensym> = f(<args list>)"
+        add e to residue list
+    return residue list
+ */
+
+private static LinkedList<Term>
+fatten (LinkedList<Term> tl) {
+        LinkedList<Term> residue = new LinkedList<Term>();
+
+        for (Term t : tl) {
+                residue.addAll (t.fatten());
+        }
+        return residue;
+}
+
+private static int indent_level = 0;
+private static String tab() {
+    String s = "";
+    for (int i = 0; i < indent_level; ++i) s += "|  ";
+    return s;
+}
+
+public boolean is_not_flat() { return this.is_a_compound() || this.is_a_termlist(); }
+
+LinkedList<Term>
+fatten() {
+    ++indent_level;
+        LinkedList<Term> residue = new LinkedList<Term>();
+
+        if (this.is_a_termlist()) {
+           Main.println (tab() + "fatten: this is termlist " + this);
+           tag = Variable;
+           this.v = gensym(); // replace with a var
+           this.c = null;
+           Term e = equation(this, compound ("lists", terms));
+
+           for (Term t : terms)
+            if (t.is_not_flat()) {
+                LinkedList<Term> ft = t.fatten();
+                Main.println (tab()+"ft.peekFirst()=" + ft.peekFirst());
+                assert ft.peekFirst().is_an_equation();
+                residue.addAll (ft);
+            }
+           Main.println (tab()+"e = " + e);
+           Main.println (tab()+"this now = " + this);
+           residue.addFirst(e);
+        } else
+        if (this.is_an_equation()) { /* special compound */
+            Main.println (tab() + "fatten: this is equation " + this);
+            residue.addAll(this.lhs().fatten());
+            residue.addAll(this.rhs().fatten());
+        } else
+        if (this.is_a_compound()) {
+                Main.println (tab() + "fatten: this is compound " + this);
+                LinkedList<Term> args_list = new LinkedList<Term>();
+                // String f = this.c;     // a functor_of(t) or t.s_functor() would be nice here
+                // this.c = null;
+                // this.v = gensym();
+                // this.tag = Variable;
+
+                // rewrite args of compound:
+                for (Term t : terms) {
+                    if (t.is_a_variable() || t.is_a_constant()) 
+                        args_list.add(t);
+                    else {
+                        // here we need to add a variable derived from flattening t
+                        LinkedList<Term> ft = t.fatten();
+
+                        if (ft.size() != 0) {
+                            Term vvv = ft.peekFirst();
+                            Main.println ("ft.peekFirst()=" + vvv);
+                            assert vvv.is_an_equation();
+                            args_list.add (vvv.lhs());
+                        }
+                        residue.addAll (ft);
+                    }
+                }
+
+                // Term c = compound (f, args_list);
+                // Term e = equation (this, c);
+                // residue.add (e);
+                // this.terms = null;
+                this.terms = args_list;
+         }
+         else
+         if (this.is_a_variable()) {
+            Main.println (tab() + "fatten: this is variable " + this);
+         } else 
+         if (this.is_a_constant()) {
+            Main.println (tab() + "fatten: this is constant " + this);
+         } else
+            assert(false);
+
+            Main.println (tab()+"fatten: this changed to " + this);
+            Main.println (tab()+"fatten: residue to return is now " + residue);
+    --indent_level;
+         return residue;
+ }
+ 
+
+
+}
+
+
+

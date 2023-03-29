@@ -64,7 +64,7 @@ public class Prog extends Engine implements Spliterator<Object> {
 
     Term f = Term.compound(f_of_args[0].toString());
     for (int i = 1; i < f_of_args.length; ++i) {
-      Prog.println("f.takes_this on term_made_from f_of_args["+i+"]:");
+      // Prog.println("f.takes_this on term_made_from f_of_args["+i+"]:");
       f.takes_this(term_made_from(f_of_args[i]));
     }
     return f;

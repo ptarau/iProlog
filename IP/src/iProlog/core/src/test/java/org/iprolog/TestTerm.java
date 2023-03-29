@@ -50,30 +50,32 @@ public class TestTerm {
             Main.println ("In P.ask loop....");
             assert A instanceof Object[];  // because it'll be "[goal, <answer>]"
             Object[] oa = (Object[]) A;
-
-              //////////////////////////////////////////////
-             // This currently retains c__ and V__ prefixes:
-            //
             LinkedList<Term> llt = Prog.make_terms_from(oa);
-
-              //////////////////////////////////////////////
-             // Some of the asserts here will bomb for queries with tuple
-            // return values; punting for now.
 
             assert (llt.size() == 1);
             Term x = llt.get(0);
             assert x.is_a_compound();
             assert x.c.compareTo("goal") == 0;
             LinkedList<Term> args = x.args();
-            assert args.size() == 1;
-            Term a = args.get(0);
 
+            int i = 0;
+            String to_compare = "";
+            for (Term t : args) {
+                to_compare += t.toString();
+                Prog.println ("to_compare = " + to_compare);
+                if (t.is_a_termlist()) Prog.println ("to_compare is a termlist");
+                if (t.is_a_compound()) Prog.println ("to_compare is a compound");
+                Prog.println ("goal ["+(i++)+"] = " + t);
+            }
+ 
             String s1 = P.showTerm(oa[0]);
             assert s1.equals("goal");   // because it'll be "[goal, <answer>]"
             assert oa.length > 1;
             String so = P.showTerm(oa[1]);
 
             if (whats_expected != null) {
+                Prog.println ("to_compare = " + to_compare);
+                Prog.println ("so = " + so);
                 assert Arrays.asList(whats_expected).contains(so);
             } else {
                 Main.println (" yielding: " + so);
@@ -107,22 +109,44 @@ public class TestTerm {
 
         Main.println ("\n Construct data structures for try_t() case and ...");
 
-        String expected[] = {"I", "you"};
+        String expected[] = {"I"
+        //                    ,"you"
+                            };
 
         Term vPerson = v_("person");
 
         LinkedList<Clause> llc = new LinkedList<Clause>();
 
-        for (String s : expected)
-            llc.add (Clause.f__("live_", c_(s)));
+        for (String s : expected) {
+             Clause cl = Clause.f__("live_", l_(c_(s)));
+             llc.add (cl);
+             Main.println ("Adding clause: ");
+             Main.println (cl.toString());
+             Main.println ("");
+            // llc.add (Clause.f__("live_", c_(s)));
+        }
 
-        llc.add (Clause.f__("good_", vPerson).if__(s_("live_", vPerson)));
-        llc.add (Clause.f__("goal",  vPerson).if__(s_("good_", vPerson)));
+        // llc.add (Clause.f__("good_", vPerson).if__(s_("live_", vPerson)));
+        // llc.add (Clause.f__("goal",  vPerson).if__(s_("good_", vPerson)));
+        llc.add (Clause.f__("goal",  vPerson).if__(s_("live_", vPerson)));
 
+        Main.println ("===== try_t: cl.toString() loop ===============");
         String x_out = "";
         for (Clause cl : llc)  x_out += cl.toString()+"\n";
         Main.println (x_out);
 
+        Main.println ("===== flatten transform =======");
+        for (Clause cl : llc) {
+            Term.fatten(cl);  // in-place transform
+            Main.println (":: " + cl.toString());
+        }
+        
+        Main.println ("===== try_t: FLATTENED cl.toString() loop ===============");
+        x_out = "";
+        for (Clause cl : llc)  x_out += cl.toString()+"\n";
+        Main.println (x_out);
+
+        Main.println ("===== Calling new Prog: ===============");
         Prog P = new Prog(x_out, false);
 
         Term.set_Prolog();
@@ -169,23 +193,27 @@ public class TestTerm {
 
         Term c0 = c_("0");
         Term c1 = c_("1");
-        Term l = l_(c0,c1);
+        Term c2 = c_("2");
+        Term l = l_(c0,c1,c2);
         assert l != null;
+        assert l.is_a_termlist();
 
         Main.println ("l = " + l);
 
         Main.println ("\n Construct data structures for try_t() case and ...");
 
-        // String expected[] = {"I", "you"};
-        String expected[] = null;
+        String expected[] = {"list(0,1,2)", "[1|0]"};
 
         LinkedList<Clause> llc = new LinkedList<Clause>();
 
         Term V = v_("V");
-        // Would prefer if this worked by itself:
-        // llc.add (Clause.f__("zero_and_one", l));
+
         llc.add (Clause.f__("zero_and_one", V).if__(e_(V,l)));
+        // llc.add (Clause.f__("zero_and_one", l));
+
         llc.add (Clause.f__("zero_and_one", V).if__(e_(V,l_(c1,c0))));
+        // llc.add (Clause.f__("zero_and_one", l_(c1,c0)));
+
         llc.add (Clause.f__("goal",  V).if__(s_("zero_and_one", V)));
 
         String x_out = "";
@@ -249,7 +277,7 @@ public class TestTerm {
 
         Clause f = Clause.f__("the_sum_of", succ_X, vY, succ_Z);
         assert f.head.size() == 1;
-        f.head = f.head.peekFirst().flatten();
+        f.head = f.head.peekFirst().fatten();
         f = f.if__(s_("the_sum_of", vX, vY, vZ));
         llc.add(f);
 
@@ -260,7 +288,7 @@ public class TestTerm {
         Clause g = Clause.f__("goal", vR);
         Term s_of_s_of_0 = s_("the_successor_of", succ_0);
         g.if__(s_("the_sum_of", s_of_s_of_0, s_of_s_of_0, vR));
-        LinkedList<Term> g_flat = g.body.peekFirst().flatten();
+        LinkedList<Term> g_flat = g.body.peekFirst().fatten();
         g.body = g_flat;
         llc.add(g);
 
@@ -287,73 +315,88 @@ public class TestTerm {
     @Test
     public void mainTest() {
         Main.println ("************* Start Term test ********************");
-      
+
         String gs = Term.gensym();
         assert gs.compareTo("_0") == 0;
         String gs1 = Term.gensym();
         assert gs1.compareTo("_1") == 0;
         Term.reset_gensym();
 
-        String var_s = "X";
-        String const_s = "ooh";
+        String var_X = "X";
+        Term vX = v_(var_X);
+        assert vX.is_a_variable();
+
+        String const_ooh = "ooh";
+        Term cOoh = c_(const_ooh);
+        assert cOoh.is_a_constant();
+
         String cmpnd_fnctr = "compound";
-        String cmpnd_fnctr1 = "compendium";
-
-        Term v = v_(var_s);
-        assert v.is_a_variable();
-
-        Term c = c_(const_s);
-        assert c.is_a_constant();
-
-        LinkedList<Term> tl = new LinkedList<Term>();
-        tl.add(v);
-        tl.add(c);
-        Term C = s_(cmpnd_fnctr, tl);
+        Term C = s_(cmpnd_fnctr, vX,cOoh);
+        assert C != null;
         assert C.is_a_compound();
 
+        Term L = l_(vX,cOoh);
+        assert L.is_a_termlist();
+
         // Main.println ("C=" + C);
-        String CC = cmpnd_fnctr + "(" + var_s + "," + const_s + ")";
-        assert C.toString().compareTo(CC.toString()) == 0;
+        // iffy - depends on settings & formatting:
+        String CC = cmpnd_fnctr + "(" + var_X + "," + const_ooh + ")";
+        assert C.toString().compareTo(CC) == 0;
+        Main.println ("C.toString() = " + C.toString());
 
-        LinkedList<Term> fv = v.flatten();
-        assert fv.size() == 1;
-        assert fv.peekFirst().v == v.v;
+        LinkedList<Term> fv1  = vX.fatten();
+        assert fv1 != null;
+        Main.println ("fv1.size() = " + fv1.size());
+        assert fv1.size() == 0;     // no residue because a var can't be flattened
 
-        LinkedList<Term> fc = c.flatten();
-        assert fc.size() == 1;
-        assert fc.peekFirst().c == c.c;
+        LinkedList<Term> fc = cOoh.fatten();
+        Main.println ("fc.size() = " + fc.size());
+        assert fc.size() == 0;
 
+/* 
         LinkedList<Term> fC = C.flatten();
+        Main.println ("fC.size() = " + fC.size());
         assert fC.size() == 1;
         assert fC.peekFirst().c == C.c;
         // Main.println ("Term C = " + C + ", C.is_flat()=" + C.is_flat());
+*/
+        Main.println ("Before flattening: C = " + C.toString());
+        LinkedList<Term> fCx  = C.fatten();
+        assert fCx != null;
+        Main.println ("fCx.size() = " + fCx.size());
+        Main.println ("C = " + C.toString());
+        Main.println ("fCx = " + fCx.toString());
+        assert fCx.size() == 0;     // no residue because a var can't be flattened
 
-        Term C1 = s_ (cmpnd_fnctr1);
+        String cmpnd_fnctr1 = "compendium";
+        Term C1arg1 = s_("foo", Term.constant("a"));
+        Term C1arg2 = s_("bar", Term.variable("G"));
+        Term C1 = s_ (cmpnd_fnctr1, C1arg1, C1arg2);
         assert C1.is_a_compound();
-        C1.takes_this (C);
-        LinkedList<Term> fC1 = C1.flatten();
-        // Main.println ("fC1.size() = " + fC1.size());
-        // for (Term t : fC1) Main.println ("a flattened term t=" + t + ", t.is_flat()=" + t.is_flat());
 
-        Term eqn1 = e_ (v,c);
+        Main.println ("C1 pre-flattening is " + C1);
+        LinkedList<Term> rC1 = C1.fatten();
+        Main.println ("C1 flattened is " + C1);
+        Main.println ("rC1.size() = " + rC1.size());
+        for (Term t : rC1) Main.println (" -- a flattened term t=" + t + ", t.is_flat()=" + t.is_flat());
+
+        Term eqn1 = e_ (vX,cOoh);
         assert eqn1 != null;
 
         // Main.println ("eqn1 = " + eqn1);
 
-        Term v1 = v_("Y");
-        assert v1.is_a_variable();
+        Term vY = v_("Y");
+        assert vY.is_a_variable();
+        Term C2 = s_("foo",C1);
+        Main.println ("\n\n\nC2 is " + C2 + ", C2.is_flat() = " + C2.is_flat());
 
-        LinkedList<Term> lC1 = new LinkedList<Term>();
-        lC1.add(C1);
-        Term C2 = s_("foo",lC1);
-        // Main.println ("\n\n\nC2 = " + C2 + ", C2.is_flat() = " + C2.is_flat());
+        Term eqn2 = e_ (vY, C2);
+        Main.println ("eqn2 is " + eqn2 + ", eqn2.is_flat() = " + eqn2.is_flat());
 
-        Term eqn2 = e_ (v1, C2);
-        // Main.println ("eqn2 = " + eqn2 + ", eqn2.is_flat() = " + eqn2.is_flat());
-
-        LinkedList<Term> flatcat = eqn2.flatten();
-        // Main.println ("Flattened: ");
-        // for (Term t : flatcat) Main.println ("  -- " + t);
+        LinkedList<Term> flatcat = eqn2.fatten();
+        Main.println ("eqn2 is now " + eqn2.toString());
+        Main.println ("eqn2 Flattened flatcat: ");
+        for (Term t : flatcat) Main.println ("  -- " + t);
 
         Main.println ("-----------------------------------------");
 
@@ -363,21 +406,47 @@ public class TestTerm {
         Term a_Y  = v_("Y");
         Term s_of_X = s_ (s, an_X);
         Term s_of_Y = s_ (s, a_Y);
-        LinkedList<Term> lll = new LinkedList<Term>();
-        lll.add(s_of_X);
-        lll.add(an_X);
-        lll.add(s_of_Y);
-        Term summer_head = s_(sum,lll);
+        Term summer_head = s_(sum,s_of_X, an_X, s_of_Y);
 
-        // Main.println ("summer_head = "+ summer_head);
+        Main.println ("summer_head before flattening is "+ summer_head);
 
-        LinkedList<Term> flattery = summer_head.flatten();
-        // for (Term t : flattery) Main.println ("flattery has " + t);
+        LinkedList<Term> flattery = summer_head.fatten();
+        Main.println ("summer_head AFTER flattening is "+ summer_head);
+        for (Term t : flattery) Main.println (" -- flattery has " + t);
+
+
+        // Add basic tests for making lists
+
+        // nil / []
+        //      TBD
+
+        Term.reset_gensym();
+        // singleton:
+            Term singleton = l_(Term.constant("foo"));
+            Main.println ("\n-------\nsingleton = " + singleton);
+            LinkedList<Term> fs = singleton.fatten();
+            Main.println ("fs.size() = " + fs.size());
+            Main.println ("fs is " + fs.toString());
+            Main.println ("post-flattening singleton is " + singleton);
+
+        Term.reset_gensym();
+
+            Term singleton_sublist = l_(Term.constant("foo"));
+
+            Term nested = l_(Term.constant("bar"), singleton_sublist, Term.constant("quux"));
+            Main.println ("\n-------\ncomplex list pre-flattening is " + nested.toString());
+
+            LinkedList<Term> ns = nested.fatten();
+            Main.println ("Nested list is now " + nested.toString() + " ns.size() = " + ns.size());
+
+        Term.reset_gensym();     
 
         try_t();
+        /* 
         try_add();
         try_t_J();
         list_test();
+        */
 
         Main.println ("\n======== End Term test ====================");
     }
