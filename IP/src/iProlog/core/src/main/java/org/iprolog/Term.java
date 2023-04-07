@@ -257,7 +257,7 @@ public class Term {
                             else {
                                 if (rhs().is_lists()) {
                                     r = lhs().toString() + " " + rhs().toString();
-                                    Main.println ("holds lists reduced to r = " + r);
+                                    // Main.println ("holds lists reduced to r = " + r);
                                 } else
                                     r =   lhs()
                                         + holds_op
@@ -384,7 +384,7 @@ Main.println("tag="+tag);
 */
     
 
-// a flatten that returns residue "squeezed out"
+// an in-place flatten that returns residue "squeezed out"
 // this transforms clause structures
 // it's applied first to the head, then to the body
 // Making it DFS in what it flattens.
@@ -396,7 +396,7 @@ Main.println("tag="+tag);
 
 public static void fatten (Clause cl) {
 
-    Main.println ("\n\nEntering fatten(Clause cl) ...");
+    // Main.println ("\n\nEntering fatten(Clause cl) ...");
 
     // flatten head -
     //      loop through args
@@ -406,18 +406,18 @@ public static void fatten (Clause cl) {
     LinkedList<Term> headlist = new LinkedList<Term>();
     assert cl.head.size() == 1;
     for (Term hh : cl.head.peekFirst().args()) {
-        Main.println ("  hh arg before = " + hh.toString());
+       //  Main.println ("  hh arg before = " + hh.toString());
         LinkedList<Term> llt = hh.fatten();
-        Main.println ("  hh arg after = " + hh.toString());
-        Main.println ("    llt = " + llt);
+        // Main.println ("  hh arg after = " + hh.toString());
+        // Main.println ("    llt = " + llt);
         headlist.addAll(llt);
     }
 
     assert cl.head.size() == 1;
     headlist.addFirst(cl.head.getFirst());
     cl.head = headlist;
-    Main.println ("head => " + cl.head);
-    Main.println ("headlist = " + headlist);
+    // Main.println ("head => " + cl.head);
+    // Main.println ("headlist = " + headlist);
 
     // flatten body
     //      loop through expressions/conditions
@@ -426,19 +426,37 @@ public static void fatten (Clause cl) {
     LinkedList<Term> bodylist = new LinkedList<Term>();
 
     for (Term bb : cl.body) {
-        Main.println ("  bb before = " + bb.toString());
-        LinkedList<Term> llt = bb.fatten();
-        Main.println ("  bb after = " + bb.toString());
-        Main.println ("    llt = " + llt);
-        bodylist.addAll(llt);
+        // Main.println ("  bb before = " + bb);
+        if (bb.is_flat()) {
+            // Main.println ("**** bb IS FLAT ALREADY ****");
+            bodylist.add(bb);
+        }
+        else {
+            LinkedList<Term> llt = bb.fatten();
+            // Main.println ("  bb after = " + bb);
+            Term first = llt.removeFirst();
+            assert first != null;
+            assert (first.is_an_equation());
+            Term lhs = first.terms.removeFirst();
+            assert lhs.is_a_variable();
+            assert lhs.v.charAt(0) == '_';
+            Term rhs = first.terms.removeFirst();
+            assert rhs != null;
+            llt.addFirst(rhs);
+            bodylist.addAll(llt);
+
+            // Main.println ("    bodylist now = " + bodylist);
+        }
     }
 
-    bodylist.addAll (cl.body);
+    // Main.println ("bodylist now = " + bodylist);
+    // Main.println ("cl.body before that addAll = " + cl.body);
+    // bodylist.addAll (cl.body);
     cl.body = bodylist;
-    Main.println ("body = " + cl.body);
-    Main.println ("bodylist = " + bodylist);
+    // Main.println ("body = " + cl.body);
+    // Main.println ("bodylist = " + bodylist);
 
-    Main.println ("...exit from fatten (Clause cl)\n");
+    // Main.println ("...exit from fatten (Clause cl)\n");
 }
 
 /*
@@ -472,9 +490,13 @@ private static LinkedList<Term>
 fatten (LinkedList<Term> tl) {
         LinkedList<Term> residue = new LinkedList<Term>();
 
+        // Main.println ("entered fatten on linked list of terms ...");
+
         for (Term t : tl) {
                 residue.addAll (t.fatten());
         }
+
+        // Main.println ("... exiting fatten on linked list of terms ...");
         return residue;
 }
 
@@ -493,7 +515,7 @@ fatten() {
         LinkedList<Term> residue = new LinkedList<Term>();
 
         if (this.is_a_termlist()) {
-           Main.println (tab() + "fatten: this is termlist " + this);
+           // Main.println (tab() + "fatten: this is termlist " + this);
            tag = Variable;
            this.v = gensym(); // replace with a var
            this.c = null;
@@ -502,32 +524,40 @@ fatten() {
            for (Term t : terms)
             if (t.is_not_flat()) {
                 LinkedList<Term> ft = t.fatten();
-                Main.println (tab()+"ft.peekFirst()=" + ft.peekFirst());
+                // Main.println (tab()+"ft.peekFirst()=" + ft.peekFirst());
                 assert ft.peekFirst().is_an_equation();
                 residue.addAll (ft);
             }
-           Main.println (tab()+"e = " + e);
-           Main.println (tab()+"this now = " + this);
+           // Main.println (tab()+"e = " + e);
+           // Main.println (tab()+"this now = " + this);
            residue.addFirst(e);
         } else
         if (this.is_an_equation()) { /* special compound */
-            Main.println (tab() + "fatten: this is equation " + this);
+            // Main.println (tab() + "fatten: this is equation " + this);
             residue.addAll(this.lhs().fatten());
             residue.addAll(this.rhs().fatten());
         } else
         if (this.is_a_compound()) {
-                Main.println (tab() + "fatten: this is compound " + this);
+                // Main.println (tab() + "fatten: this is compound " + this);
                 LinkedList<Term> args_list = new LinkedList<Term>();
-                // String f = this.c;     // a functor_of(t) or t.s_functor() would be nice here
-                // this.c = null;
-                // this.v = gensym();
-                // this.tag = Variable;
+                
+                String f = this.c;     // a functor_of(t) or t.s_functor() would be nice here
+                this.c = null;
+                this.v = gensym();
+                this.tag = Variable;
+                for (Term t : terms) {
+                    residue.addAll (t.fatten());
+                    args_list.add (t);
+                   // Main.println (tab() + "fatten: residue is now " + residue);
+                }
 
+                /*
                 // rewrite args of compound:
                 for (Term t : terms) {
-                    if (t.is_a_variable() || t.is_a_constant()) 
+                    if (t.is_a_variable() || t.is_a_constant()) {
                         args_list.add(t);
-                    else {
+                        Main.println (tab() + "added to args_list: t = " + t);
+                    } else {
                         // here we need to add a variable derived from flattening t
                         LinkedList<Term> ft = t.fatten();
 
@@ -540,24 +570,30 @@ fatten() {
                         residue.addAll (ft);
                     }
                 }
+                */
 
-                // Term c = compound (f, args_list);
-                // Term e = equation (this, c);
-                // residue.add (e);
-                // this.terms = null;
-                this.terms = args_list;
+                Term c = compound (f, args_list);
+                Term e = equation (this, c);
+                residue.addFirst(e);
+                this.terms = null;
+                
+                // Main.println (tab() + "fatten compound: this is now " + this);
+                // Main.println (tab() + "fatten compound: ... and residue is finally " + residue);
+                // this.terms = args_list;
          }
          else
          if (this.is_a_variable()) {
-            Main.println (tab() + "fatten: this is variable " + this);
+            // Main.println (tab() + "fatten: this is variable " + this)
+            ;
          } else 
          if (this.is_a_constant()) {
-            Main.println (tab() + "fatten: this is constant " + this);
+            // Main.println (tab() + "fatten: this is constant " + this)
+            ;
          } else
             assert(false);
 
-            Main.println (tab()+"fatten: this changed to " + this);
-            Main.println (tab()+"fatten: residue to return is now " + residue);
+        // Main.println (tab()+"fatten: this changed to " + this);
+        // Main.println (tab()+"fatten: residue to return is now " + residue);
     --indent_level;
          return residue;
  }
