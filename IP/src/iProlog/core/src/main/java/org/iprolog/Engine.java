@@ -604,7 +604,7 @@ s += "]";
     if (1 == goals.size())
       neck = cells.size();
     else {
-      int gi = goals.get(1);
+      // int gi = goals.get(1);
       // Main.println ("gi=" + gi + " goals.size()=" + goals.size());
       assert goals.size() > 0;
 
@@ -1283,7 +1283,7 @@ s += "]";
    * consisting of recursively embedded arrays hosting as leaves,
    * an external representation of symbols, numbers and variables." [HHG doc]
    */
-  Object ask() {
+  Object POJO_ask() {
     query = yield();
     if (null == query)
       return null;
