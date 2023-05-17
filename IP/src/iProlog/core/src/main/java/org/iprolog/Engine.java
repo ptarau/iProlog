@@ -1302,7 +1302,7 @@ s += "]";
     int MAX_OUTPUT_LINES = 5;
 
     for (;; ctr++) {
-      final Object A = ask();
+      final Object A = POJO_ask();
       if (null == A) {
         break;
       }

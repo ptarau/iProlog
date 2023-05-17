@@ -280,7 +280,7 @@ public class Prog extends Engine implements Spliterator<Object> {
 
   @Override
   public boolean tryAdvance(final Consumer<Object> action) {
-    final Object R = ask();
+    final Object R = POJO_ask();
     final boolean ok = null != R;
     if (ok) {
       action.accept(R);
