@@ -466,73 +466,7 @@ private LinkedList<Term> flatten1 (Boolean first) {
     return r;
 }
 
-public static void fatten (Clause cl) {
 
-    // Main.println ("\n\nEntering fatten(Clause cl) ...");
-
-    // flatten head -
-    //      loop through args
-    //              add flatten of each to residue
-    //      add residue to head
-
-    LinkedList<Term> headlist = new LinkedList<Term>();
-    assert cl.head.size() == 1;
-
-    for (Term hh : cl.head.peekFirst().args()) {
-       //  Main.println ("  hh arg before = " + hh.toString());
-        if (hh == null)
-            continue;
-        LinkedList<Term> llt = hh.fatten();
-        // Main.println ("  hh arg after = " + hh.toString());
-        // Main.println ("    llt = " + llt);
-        headlist.addAll(llt);
-    }
-
-    assert cl.head.size() == 1;
-    headlist.addFirst(cl.head.getFirst());
-    cl.head = headlist;
-    // Main.println ("head => " + cl.head);
-    // Main.println ("headlist = " + headlist);
-
-    // flatten body
-    //      loop through expressions/conditions
-    //              do flattening of each
-    //              add the residue to each
-    LinkedList<Term> bodylist = new LinkedList<Term>();
-
-    for (Term bb : cl.body) {
-        // Main.println ("  bb before = " + bb);
-        if (bb.is_flat()) {
-            // Main.println ("**** bb IS FLAT ALREADY ****");
-            bodylist.add(bb);
-        }
-        else {
-            LinkedList<Term> llt = bb.fatten();
-            // Main.println ("  bb after = " + bb);
-            Term first = llt.removeFirst();
-            assert first != null;
-            assert (first.is_an_equation());
-            Term lhs = first.terms.removeFirst();
-            assert lhs.is_a_variable();
-            assert lhs.v.charAt(0) == '_';
-            Term rhs = first.terms.removeFirst();
-            assert rhs != null;
-            llt.addFirst(rhs);
-            bodylist.addAll(llt);
-
-            // Main.println ("    bodylist now = " + bodylist);
-        }
-    }
-
-    // Main.println ("bodylist now = " + bodylist);
-    // Main.println ("cl.body before that addAll = " + cl.body);
-    // bodylist.addAll (cl.body);
-    cl.body = bodylist;
-    // Main.println ("body = " + cl.body);
-    // Main.println ("bodylist = " + bodylist);
-
-    // Main.println ("...exit from fatten (Clause cl)\n");
-}
 
 /*
  * https://stackoverflow.com/questions/64814365/flattened-form-in-wam
