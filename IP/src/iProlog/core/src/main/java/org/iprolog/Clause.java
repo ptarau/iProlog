@@ -100,6 +100,18 @@ class Clause {
     return s;
   }
 
+  public void flatten() {
+    assert !head.isEmpty();
+    assert head.getFirst() != null;
+    
+    head = head.getFirst().flatten();
+    LinkedList<Term> new_body = new LinkedList<Term>();
+    for (Term t : body)
+        new_body.addAll (t.flatten());
+    body = new_body;
+    Main.println ("\n After flatten of clause:\n " + this);
+  }
+
 // Skeletal elements for compiled form:
 
   final int len; // length of heap slice

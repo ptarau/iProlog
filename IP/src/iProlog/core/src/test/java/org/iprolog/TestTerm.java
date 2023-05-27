@@ -25,6 +25,11 @@ public class TestTerm {
     private static Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
     private static Term l_(Term... ts) {
         LinkedList<Term> llt = new LinkedList<Term>();
+        if (ts.length == 0) {
+            Main.println ("    l_() empty list but ok let's try");
+            // return llt;
+        }
+
         for (Term t : ts)
             llt.add(t);
         Term x = Term.termlist (llt);
@@ -105,10 +110,6 @@ public class TestTerm {
                 *   good_ Person .
 
          */
-
-        Term.reset_gensym();
-        Term.set_TarauLog();
-
         Main.println ("\n try_t: Construct data structures for try_t() case and ...");
 
         String expected[] = {"I"
@@ -125,40 +126,133 @@ public class TestTerm {
              Main.println ("try_t: Adding clause: ");
              Main.println ("try_t: " + cl.toString());
              Main.println ("");
-            // llc.add (Clause.f__("live_", c_(s)));
+            llc.add (Clause.f__("live_", c_(s)));
         }
 
         // llc.add (Clause.f__("good_", vPerson).if__(s_("live_", vPerson)));
         // llc.add (Clause.f__("goal",  vPerson).if__(s_("good_", vPerson)));
         llc.add (Clause.f__("goal",  vPerson).if__(s_("live_", vPerson)));
 
-        Main.println ("===== try_t: cl.toString() loop ===============");
-        String x_out = "";
-        for (Clause cl : llc)  x_out += cl.toString()+"\n";
-        Main.println (x_out);
+        try_it (llc, expected);
+    }
 
-        Main.println ("===== try_t: flatten transform =======");
-        for (Clause cl : llc) {
-            // Main.println ("cl before flatten = " + cl);
-            Term.fatten(cl);  // in-place transform
-            // Main.println ("cl after flatten = " + cl);
-        }
-        
-        Main.println ("===== try_t: FLATTENED cl.toString() loop ===============");
+    private void try_it(LinkedList<Clause> llc, String[] whats_expected) {
+        Main.println ("  try_it() entering....");
+        String s = "[";
+        if (whats_expected == null) s += "<null>";
+        else for (int i = 0; i < whats_expected.length; ++i) s += whats_expected[i];
+        s += "]";
+        Main.println ("     whats_expected = " + s);
+
+        String x_out;
+        Term.reset_gensym();
+        Term.set_TarauLog();
+
+        Main.println ("   ===== try_it: flatten transform =======");
         x_out = "";
-        for (Clause cl : llc)  x_out += cl.toString()+"\n";
-        Main.println (x_out);
+        for (Clause cl : llc) {
+            Main.println ("   cl before flatten = " + cl);
+            cl.flatten();
+            Main.println ("   cl after flatten = " + cl);
+            x_out += cl.toString()+"\n";
+        }
 
-        Main.println ("===== try_t: Calling new Prog: ===============");
+        Main.println ("   ===== try_it: Calling new Prog: ===============");
         Prog P = new Prog(x_out, false);
+        expect_from(P, whats_expected);
+        Main.println ("  exiting try_it()");
+    }
 
-        Term.set_Prolog();
-        /* 
-        Main.println ("\n=== try_t: Pretty-print Prolog from it ===");
-        P.ppCode();
-        */
+    private void try_simple() {
+        Main.println ("try_simple() entering....");
 
-        expect_from(P, expected);
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+    // dookie([]).
+        llc.add(Clause.f__("dookie", l_()));
+    // dookie(0).
+    //    llc.add(Clause.f__("dookie", c_("0")));
+        Term Foo = v_("Foo");
+    // goal([]).
+        llc.add(Clause.f__("goal", Foo).if__(s_("dookie", Foo)));
+
+        try_it (llc, null);
+    }
+
+    private void try_big() {  // based on Tarau's original progs/big.pl
+        Main.println ("\n===== try_big() entering ....");
+
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+        String expected[] = { "[a,b,c]" };
+
+        Term Ys = v_("Ys");  Term X = v_("X");  Term Xs = v_("Xs");  Term Zs = v_("Zs");
+    // append([],Ys,Ys).
+        llc.add (Clause.f__("append", l_(), Ys, Ys));
+
+
+
+    // append([X|Xs],Ys,[X|Zs]):-append(Xs,Ys,Zs).
+
+    /* INPUT
+     *      append([X|Xs],Ys,[X|Zs]):-append(Xs,Ys,Zs).
+     * 
+     * MY OUTPUT
+     *    cl before flatten = 
+     *       append lists X Xs  Ys lists X Zs
+     *          if append Xs Ys Zs .
+     * 
+     *    cl after flatten = 
+     *       append _0 Ys _1  and
+     *          _0 lists X Xs  and
+     *          _1 lists X Zs
+     *    if
+     *          append Xs Ys Zs .
+     * 
+     * TARAU OUTPUT:
+     *      append _0 Ys _1 and
+     *          _0 holds list X Xs and
+     *          _1 holds list X Zs
+     *      if
+     *          append Xs Ys Zs .
+     *
+     * 
+     */
+        llc.add (Clause.f__("append", l_(X, Xs), Ys, l_(X,Zs)).
+                            if__(s_("append",Xs,Ys,Zs)));
+    // nrev([],[]).
+        llc.add (Clause.f__("nrev", l_(), l_()));
+    // nrev([X|Xs],Zs):-nrev(Xs,Ys),append(Ys,[X],Zs).
+        llc.add (Clause.f__("nrev", l_(X,Xs),Zs).
+                            if__(s_("nrev",Xs,Ys),
+                                 s_("append",Ys,l_(X),Zs)
+                            ));
+    
+        for (Integer i = 0; i < 18; ++i) {
+            Term it = c_(i.toString());
+            Integer i_next = i + 1;
+            Term it_next = c_(i_next.toString());
+            llc.add(Clause.f__ ("next_number_after", it, it_next));
+        }
+
+    // dup(0,X,X).
+        llc.add(Clause.f__("dup", c_("0"), X,X));
+
+        Term R = v_("R");  Term XX = v_("XX");  Term N = v_("N");  Term N1 = v_("N1");
+    // dup(N,X,R):-next_number_after(N1,N),append(X,X,XX),dup(N1,XX,R).
+        llc.add(Clause.f__("dup", N,X,R).
+                            if__(s_("next_number_after", N1, N),
+                                 s_("append",X,X,XX),
+                                 s_("dup",N1,XX,R)));
+
+        Term Y = v_("Y");
+
+    // goal([X,Y]):-dup(18,[a,b,c,d],[X,Y|_]).
+        Term l_a_b_c_d = l_(c_("a"),c_("b"),c_("c"),c_("d"));
+        llc.add (Clause.f__("goal", l_(X,Y)).
+                            if__(s_("dup", c_("18"), l_a_b_c_d, l_(X,l_(Y,v_("_"))))));
+
+        try_it (llc, expected);
+
+        Main.println ("... try_big() exiting.");
     }
 
     private void try_t_J() {
@@ -269,95 +363,103 @@ public class TestTerm {
         Term.reset_gensym();
 
         LinkedList<Clause> llc = new LinkedList<Clause>();
-        Term vX = v_("X");
-        Term vY = v_("Y");
-        Term vZ = v_("Z");
-        Term c0 = c_("0");
+        Term vX = v_("X");  Term vY = v_("Y"); Term vZ = v_("Z"); Term c0 = c_("0");
         Term succ_X = s_("the_successor_of", vX);
         Term succ_Z = s_("the_successor_of", vZ);
         Term succ_0 = s_("the_successor_of", c0);
         Term vR = v_("R");
 
         llc.add(Clause.f__("the_sum_of", c0, vX, vX));
-   
+        llc.add(Clause.f__("the_sum_of", succ_X,vY,succ_Z).if__(s_("the_sum_of",vX,vY,vZ)));        
 
-        Main.println ("\n=== try_add: Try adding 2+2 in unary, generating TarauLog ===");
-
-        Term.set_TarauLog();
-
-        Clause adder = Clause.f__("the_sum_of", succ_X,vY,succ_Z).if__(s_("the_sum_of",vX,vY,vZ));
-
-        Main.println ("\n  try_add: adder before calling Term.fatten(adder) = \n" + adder + "\n");
-
-        Term.fatten(adder);
-
-        Main.println ("\n  try_add: adder AFTER calling Term.fatten(x) = \n" + adder + "\n");
-
-        llc.add(adder);
-/*
-        // llc.add(Clause.f__("the_sum_of", succ_X,vY,succ_Z).if__(s_("the_sum_of",vX,vY,vZ)));
-
-        // bodyless head to start
-        Clause adder = Clause.f__("the_sum_of", succ_X, vY, succ_Z);
-        assert adder.head.size() == 1;
-        Main.println ("adder as just head so far = " + adder);
-        // flatten it
-        Term h = adder.head.peekFirst();
-        Main.println ("adder head term extracted = " + h);
-        LinkedList<Term> residue = h.fatten();
-        assert adder.head != null;
-        assert adder.head.size() > 0;
-        assert residue != null;
-        Main.println ("residue = " + residue);
- 
-        Main.println ("adder after flattening head = " + adder);
-        // add the body
-        adder = adder.if__(s_("the_sum_of", vX, vY, vZ));
-        Main.println ("adder = " + adder);
-        llc.add (adder);
-*/
-            // goal(R):-
-            //  the_sum_of(the_successor_of(the_successor_of(0)),the_successor_of(the_successor_of(0)),R).
-        
-        Term.reset_gensym();
         Term two = s_("the_successor_of", succ_0);
-        Clause g = Clause.f__("goal", vR).if__(s_("the_sum_of", two, two, vR));
-        Term.fatten(g);
-        Main.println ("  try_add: g AFTER flattening = " + g);
-        llc.add(g);
+        llc.add(Clause.f__("goal", vR).if__(s_("the_sum_of", two, two, vR)));
 
-        Main.println ("\n----- try_add: Clause construction through API: show x_out: --------");
-        String x_out = "";
-        for (Clause cl : llc)  x_out += cl.toString()+"\n";
-        Main.println (x_out);
-
-        Main.println ("----- try_add: Calling new Prog on x_out: --------");
-        Prog P = new Prog(x_out, false);
-
-        Term.set_Prolog();
-        /*
-        Main.println ("\n=== Pretty-print as Prolog ===");
-        P.ppCode();
-        */
-        
-        Main.println ("\n===<<< try_add: Starting to run >>>===");
-
+        Main.println ("----- try_add: Calling new Prog: --------");
         String[] these_answers = {
             "the_successor_of(the_successor_of(the_successor_of(the_successor_of(0))))"
         };
+        try_it(llc,these_answers);
+        Main.println ("...exiting try_add");
+    }
 
-        expect_from(P, these_answers);
+    private void test_gensym() {
+        String gs = Term.gensym();
+        assert gs.compareTo("_0") == 0;
+        String gs1 = Term.gensym();
+        assert gs1.compareTo("_1") == 0;
+        Term.reset_gensym();
+    }
+
+    private void do_it_all (Term t) {
+        LinkedList<Term> r = t.flatten();
+
+        for (Term tf : r)
+            Main.println ("  .... " + tf);
+    }
+
+    private void before_and_after_flattening (Term x, Boolean reset) {
+        Main.println ("\nBefore:" + x);
+
+        do_it_all (x);
+
+        Main.println ("\nAfter:");
+
+        Main.println (" before_and_after_flattening, x = " + x);
+
+        if (reset) Term.reset_gensym();
+    }
+
+    private void test_flatten() {
+        Main.println ("\n-----====< test_flatten entered >====-----");
+ 
+        Main.println ("\nglom a: ");
+        before_and_after_flattening (s_("glom", c_("a")), true);
+
+
+        // quux(blah(a)).
+        Term blah_a = s_("blah", c_("a"));
+        Term quux_blah_a = s_("quux", blah_a);
+        Main.println ("\nquux_blah_a:");
+        before_and_after_flattening (quux_blah_a, true);
+
+        // whiz([a,a]).
+        Term whiz_a_a = s_("whiz", l_(c_("a"), c_("a")));
+        Main.println ("\nwhiz_a_a");
+        before_and_after_flattening (whiz_a_a, true);
+
+        // foo(bar(X),r).
+        Term foo_bar_X_r = s_("foo", s_("bar", v_("X")), c_("r"));
+        Main.println ("foo_bar_X_r");
+        before_and_after_flattening (foo_bar_X_r, true);
+
+
+       // foo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]).
+        Main.println ("\nfoo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]):");
+        Clause cl = Clause.f__("foo", s_("bar", v_("X"), c_("r"))).
+                                if__(s_("glom", v_("X")),
+                                     s_("quux", s_("blah", v_("X"))),
+                                     s_("whiz", l_(c_("a"), c_("a"))));
+        before_and_after_flattening (cl.head.getFirst(), false);
+        for (Term t : cl.body) {
+            before_and_after_flattening (t, false);
+        }
+        Term.reset_gensym();
+        
+        Term nnn = s_("moo", l_(l_(l_(c_("a")))));
+        before_and_after_flattening(nnn,true);
+
+        Term mmm = s_("goo", s_("x", s_("y", c_("a"))));
+        before_and_after_flattening(mmm,true);
+
+        Main.println ("\n-----====< test_flatten exiting... >====-----\n");
     }
 
     @Test
     public void mainTest() {
         Main.println ("************* Start Term test ********************");
 
-        String gs = Term.gensym();
-        assert gs.compareTo("_0") == 0;
-        String gs1 = Term.gensym();
-        assert gs1.compareTo("_1") == 0;
-        Term.reset_gensym();
+        test_gensym();
 
         String var_X = "X";
         Term vX = v_(var_X);
@@ -375,35 +477,35 @@ public class TestTerm {
         Term L = l_(vX,cOoh);
         assert L.is_a_termlist();
 
+        test_flatten();
+
         // Main.println ("C=" + C);
         // iffy - depends on settings & formatting:
         String CC = cmpnd_fnctr + "(" + var_X + "," + const_ooh + ")";
         assert C.toString().compareTo(CC) == 0;
-        // Main.println ("C.toString() = " + C.toString());
+        Main.println ("C.toString() = " + C.toString());
 
-        // Main.println ("vX = " + vX);
-        LinkedList<Term> fv1  = vX.fatten();
+        Main.println ("vX = " + vX);
+        LinkedList<Term> fv1  = vX.flatten();
         assert fv1 != null;
-        // Main.println ("vX flattened is " + vX);
-        // Main.println ("fv1.size() = " + fv1.size());
-        assert fv1.size() == 0;     // no residue because a var can't be flattened
+        Main.println ("vX flattened is " + vX);
+        Main.println ("fv1.size() = " + fv1.size());
+        assert fv1.size() == 1;
 
-        // Main.println ("cOoh = " + cOoh);
-        LinkedList<Term> fc = cOoh.fatten();
-        // Main.println ("fc.size() = " + fc.size());
-        // Main.println ("cOoh is now " + cOoh);
-        assert fc.size() == 0;
+        Main.println ("cOoh = " + cOoh);
+        LinkedList<Term> fc = cOoh.flatten();
+        Main.println ("fc.size() = " + fc.size());
+        Main.println ("cOoh is now " + cOoh);
+        assert fc.size() == 1;
 
     Term.reset_gensym();
-        // Main.println ("\nBefore flattening: C = " + C);
-        LinkedList<Term> fCx  = C.fatten();
+        Main.println ("\nBefore flattening: C = " + C);
+        LinkedList<Term> fCx  = C.flatten();
         assert fCx != null;
-        // Main.println ("fCx.size() = " + fCx.size());
-        // Main.println ("C is now " + C);
-        // Main.println ("residue of flattening C, fCx = " + fCx);
+        Main.println ("fCx.size() = " + fCx.size());
+        Main.println ("C is now " + C);
+        Main.println ("result of flattening C, fCx = " + fCx);
         assert fCx.size() == 1;
-        assert C.is_a_variable();
-        assert fCx.peekFirst().is_an_equation();
 
     Term.reset_gensym();
         String cmpnd_fnctr1 = "compendium";
@@ -412,29 +514,29 @@ public class TestTerm {
         Term C1 = s_ (cmpnd_fnctr1, C1arg1, C1arg2);
         assert C1.is_a_compound();
 
-        // Main.println ("\nC1 pre-flattening is " + C1);
-        LinkedList<Term> rC1 = C1.fatten();
-        // Main.println ("C1 flattened is " + C1);
-        // Main.println ("rC1.size() = " + rC1.size());
-        // for (Term t : rC1) Main.println (" -- a flattened term t=" + t + ", t.is_flat()=" + t.is_flat());
+        Main.println ("\nC1 pre-flattening is " + C1);
+        LinkedList<Term> rC1 = C1.flatten();
+        Main.println ("C1 flattened is " + C1);
+        Main.println ("rC1.size() = " + rC1.size());
+        for (Term t : rC1) Main.println (" -- a flattened term t=" + t + ", t.is_flat()=" + t.is_flat());
 
         Term eqn1 = e_ (vX,cOoh);
         assert eqn1 != null;
 
-        // Main.println ("eqn1 = " + eqn1);
+        Main.println ("eqn1 = " + eqn1);
 
         Term vY = v_("Y");
         assert vY.is_a_variable();
         Term C2 = s_("foo",C1);
-        // Main.println ("\n\n\nC2 is " + C2 + ", C2.is_flat() = " + C2.is_flat());
+        Main.println ("\n\n\nC2 is " + C2 + ", C2.is_flat() = " + C2.is_flat());
 
         Term eqn2 = e_ (vY, C2);
-        // Main.println ("eqn2 is " + eqn2 + ", eqn2.is_flat() = " + eqn2.is_flat());
+        Main.println ("eqn2 is " + eqn2 + ", eqn2.is_flat() = " + eqn2.is_flat());
 
-        LinkedList<Term> flatcat = eqn2.fatten();
-        // Main.println ("eqn2 is now " + eqn2.toString());
-        // Main.println ("eqn2 Flattened flatcat: ");
-        // for (Term t : flatcat) Main.println ("  -- " + t);
+        LinkedList<Term> flatcat = eqn2.flatten();
+        Main.println ("eqn2 is now " + eqn2.toString());
+        Main.println ("eqn2 Flattened flatcat: ");
+        for (Term t : flatcat) Main.println ("  -- " + t);
 
         // Main.println ("-----------------------------------------");
 
@@ -448,7 +550,7 @@ public class TestTerm {
 
         // Main.println ("summer_head before flattening is "+ summer_head);
 
-        LinkedList<Term> flattery = summer_head.fatten();
+        LinkedList<Term> flattery = summer_head.flatten();
         // Main.println ("summer_head AFTER flattening is "+ summer_head);
         // for (Term t : flattery) Main.println (" -- flattery has " + t);
 
@@ -462,7 +564,7 @@ public class TestTerm {
         // singleton:
             Term singleton = l_(Term.constant("foo"));
             // Main.println ("\n-------\nsingleton = " + singleton);
-            LinkedList<Term> fs = singleton.fatten();
+            LinkedList<Term> fs = singleton.flatten();
             // Main.println ("fs.size() = " + fs.size());
             // Main.println ("fs is " + fs.toString());
             // Main.println ("post-flattening singleton is " + singleton);
@@ -472,21 +574,29 @@ public class TestTerm {
             Term singleton_sublist = l_(Term.constant("foo"));
 
             Term nested = l_(Term.constant("bar"), singleton_sublist, Term.constant("quux"));
-            // Main.println ("\n-------\ncomplex list pre-flattening is " + nested.toString());
+            Main.println ("\n-------\ncomplex list pre-flattening is " + nested.toString());
 
-            LinkedList<Term> ns = nested.fatten();
-            // Main.println ("Nested list is now " + nested.toString() + " ns.size() = " + ns.size());
+            LinkedList<Term> ns = nested.flatten();
+            Main.println ("After flattening list is now " + nested.toString());
+            for (Term t : ns) Main.println ("   " + t);
+            Main.println (" ns.size() = " + ns.size());
 
-        Term.reset_gensym();     
+        Term.reset_gensym();
+        
+        try_simple();
+        
+  
 
         try_t();
-        
+
         try_add();
-        
+  
+        try_big();
+     
         try_t_J();
         
         list_test();
-        
+      
 
         Main.println ("\n======== End Term test ====================");
     }
