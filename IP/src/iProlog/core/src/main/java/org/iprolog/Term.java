@@ -148,7 +148,6 @@ public class Term {
     }
 
     public static Term termlist(Term... ts) {
-        Main.println ("Entering termlist(Term... ts) ...");
         LinkedList<Term> ll = new LinkedList<Term>();
         for (Term t : ts)
             ll.add(t);
@@ -284,12 +283,7 @@ public class Term {
         switch (tag) {
             case Variable: r = v; break;
             case Constant: r = c; break;
-            case Compound: if (is_lists()) {
-
-                            }
-                            // Main.println ("  Term.toString:    c = " + c);
-                            // Main.println ("  Term.toString:    terms = " + terms_to_str(arg_sep));
-                            if (c != "=") {
+            case Compound: if (c != "=") {
                                 
                                 if (c == "lists") {
                                     // Main.println("  Term.toString:      seeing lists case  !!!!!!!!!!!!!!");
@@ -355,19 +349,32 @@ public class Term {
     public Boolean is_flat() {
         if (this.is_simple()) return true;
 
-        // with lhs and rhs coded in Term as two-element list
+        // With lhs and rhs coded in Term as two-element list
         // this step is not even really necessary; you've
-        // got either a compound, or a list
+        // got either a compound, or a list:
         // if (c == "=")
         //    return lhs().is_flat() && rhs().is_flat();
 
-        //depends on representing lhs+rhs as terms list in eqns:
+        // depends on representing lhs+rhs as terms list in eqns:
         for (Term t : terms)
             if (!t.is_simple())
                 return false;
 
         return true;
     }
+
+    /*
+ * https://stackoverflow.com/questions/64814365/flattened-form-in-wam
+ * ... build the arguments before you build the outer terms.
+ * For example, you must build a(K, C) before you can build h(..., a(K, C), ...),
+ * and you must build that before you can build p(..., h(..., a(K, C), ...), ...).
+ * Here is one legal order for p(Z,h(Y,a(K,C),K),f(C)):
+
+          _4 = a(K, C)
+     _2 = h(Y, _4, K)
+     _3 = f(C)
+_1 = p(Z, _2, _3)
+ */
 
 // A flatten that returns residue "squeezed out".
 // this transforms clause structures.
@@ -397,93 +404,54 @@ public class Term {
  */
 
  /* flatten this */
-private static int tablevel;
-private String tb() { return tab1 (tablevel); }
-private String tab1(int n) { String t = "| ";
-                             if (n > 0) return t + tab1(n-1);
-                             else return ""; }
-public LinkedList<Term> flatten() {  tablevel = 0; return this.flatten1 (true); }
-private LinkedList<Term> flatten1 (Boolean first) {
-    // ++tablevel;
-    // Main.println (tb() + "flatten1 (" + this + "):");
-    LinkedList<Term> r = new LinkedList<Term>();
 
-    if (this.is_simple()) {
-        // Main.println (tb() + "=== this is simple: " + this);
-        r.add (this);
-        // Main.println (tb() + "flatten1 exiting....");
-        // --tablevel;
-        return r;
+    public LinkedList<Term> flatten() {
+        return this.flatten1 (true);
     }
+    private LinkedList<Term> flatten1 (Boolean first) {
 
-    LinkedList<Term> todo = new LinkedList<Term>();
-    LinkedList<Term> new_terms = new LinkedList<Term>();
+        LinkedList<Term> r = new LinkedList<Term>();
 
-    if (this.is_an_equation()) {
-        // Main.println (tb() + "Seeing equation, this: " + this);
-        for (Term t : terms) {   // will traverse lhs and rhs
-            if (!t.is_flat())
-                todo.addAll (t.flatten1(false));
-            new_terms.add (t);
+        if (this.is_simple()) {
+            r.add (this);
+            return r;
         }
-        terms = new_terms;
-        r.add (this);
-        assert this.is_an_equation();
-        // Main.println (tb() + "  -- added eqn  " + this + " to r");
-    }
-    else {
-        // Main.println (tb() + "Seeing non-equation. this: "+this);
-        for (Term t : terms) {
-            assert t != null;
-            if (t.is_simple()) {
+
+        LinkedList<Term> todo = new LinkedList<Term>();
+        LinkedList<Term> new_terms = new LinkedList<Term>();
+
+        if (this.is_an_equation()) {
+            for (Term t : terms) {   // will traverse lhs and rhs
+                if (!t.is_flat())
+                    todo.addAll (t.flatten1(false));
                 new_terms.add (t);
-                // Main.println (tb() + "  -- added simple " + t + " to new_terms");
-            } 
-            else {
-                Term v = variable(Term.gensym());
-                new_terms.add(v);
-                // Main.println (tb() + "  -- added " + v + " to new_terms because of " + t);
-                Term e = equation (v, t);
-                todo.add(e);
-                // Main.println (tb() + "-- added eqn " + e + " to todo");
             }
-        }
-        terms = new_terms;
-
-        assert !this.is_an_equation();
-
-        if (first) {
-            // Main.println (tb() + "-- adding NON-eqn " + this + " to r");
+            terms = new_terms;
             r.add (this);
         }
+        else {
+            for (Term t : terms) {
+                if (t.is_simple()) {
+                    new_terms.add (t);
+                } 
+                else {
+                    Term v = variable(Term.gensym());
+                    new_terms.add(v);
+                    Term e = equation (v, t);
+                    todo.add(e);
+                }
+            }
+            terms = new_terms;
+
+            if (first)
+                r.add (this);
+        }
+        
+        for (Term t :  todo)
+            r.addAll (t.flatten1(false));
+
+        return r;
     }
-     
-     for (Term t :  todo) {
-        r.addAll (t.flatten1(false));
-     }
-    // --tablevel;
-    // Main.println (tb() + "flatten1 exiting....");
-    return r;
-}
-
-
-
-/*
- * https://stackoverflow.com/questions/64814365/flattened-form-in-wam
- * ... build the arguments before you build the outer terms.
- * For example, you must build a(K, C) before you can build h(..., a(K, C), ...),
- * and you must build that before you can build p(..., h(..., a(K, C), ...), ...).
- * Here is one legal order for p(Z,h(Y,a(K,C),K),f(C)):
-
-          _4 = a(K, C)
-     _2 = h(Y, _4, K)
-     _3 = f(C)
-_1 = p(Z, _2, _3)
-
-
- */
-
-
 
 }
 
