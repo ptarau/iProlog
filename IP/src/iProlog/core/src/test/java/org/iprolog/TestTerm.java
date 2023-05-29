@@ -25,11 +25,6 @@ public class TestTerm {
     private static Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
     private static Term l_(Term... ts) {
         LinkedList<Term> llt = new LinkedList<Term>();
-        if (ts.length == 0) {
-            Main.println ("    l_() empty list but ok let's try");
-            // return llt;
-        }
-
         for (Term t : ts)
             llt.add(t);
         Term x = Term.termlist (llt);
@@ -151,9 +146,7 @@ public class TestTerm {
         Main.println ("   ===== try_it: flatten transform =======");
         x_out = "";
         for (Clause cl : llc) {
-            Main.println ("   cl before flatten = " + cl);
             cl.flatten();
-            Main.println ("   cl after flatten = " + cl);
             x_out += cl.toString()+"\n";
         }
 
@@ -391,42 +384,94 @@ public class TestTerm {
         Term.reset_gensym();
     }
 
-    private void do_it_all (Term t) {
+    private LinkedList<Term> do_it_all (Term t) {
         LinkedList<Term> r = t.flatten();
 
         for (Term tf : r)
             Main.println ("  .... " + tf);
+
+        return r;
     }
 
-    private void before_and_after_flattening (Term x, Boolean reset) {
-        Main.println ("\nBefore:" + x);
+    private LinkedList<Term> before_and_after_flattening (Term x, Boolean reset) {
+        Main.println ("\nBefore flattening: " + x);
 
-        do_it_all (x);
+        LinkedList<Term> r = do_it_all (x);
 
-        Main.println ("\nAfter:");
-
-        Main.println (" before_and_after_flattening, x = " + x);
+        Main.println ("\nAfter: ");
 
         if (reset) Term.reset_gensym();
+
+        return r;
+    }
+
+    private void test_is_same_as() {
+        Term a = c_("a");
+        Term a1 = c_("a");
+
+        assert a1.is_same_as(a);
+        assert a.is_same_as(a1);
+
+        Term v = v_("X");
+        Term v1 = v_("X");
+        Term v2 = v_("Y");
+        assert (v.is_same_as (v1));
+        assert (v1.is_same_as(v));
+        assert (!v1.is_same_as(v2));
+        assert (!v2.is_same_as(v));
+
+        Term l = l_(a,a1);
+        Term l1 = l_(a,a1);
+        Term l2 = l_(a,v);
+        assert l.is_same_as(l1);
+        assert !l2.is_same_as(l1);
+
+        Term s = s_("foo");
+        Term s1 = s_("foo");
+        Term s2 = s_("bar");
+        Term s3 = s_("bar", s);
+        Term s4 = s_("bar", s_("foo"));
+        assert s.is_same_as (s1);
+        assert !s1.is_same_as (s2);
+        assert !s3.is_same_as (s2);
+        assert s3.is_same_as (s4);
     }
 
     private void test_flatten() {
         Main.println ("\n-----====< test_flatten entered >====-----");
- 
-        Main.println ("\nglom a: ");
-        before_and_after_flattening (s_("glom", c_("a")), true);
+        LinkedList<Term> llts;
 
+        test_is_same_as();
+ 
+        Term a = c_("a");
+        Term glom_a = s_("glom", a);
+        llts = before_and_after_flattening (glom_a, true);
+        assert llts.size() == 1;
+        assert glom_a.is_same_as (s_("glom", c_("a")));
 
         // quux(blah(a)).
-        Term blah_a = s_("blah", c_("a"));
+        Term blah_a = s_("blah", a);
         Term quux_blah_a = s_("quux", blah_a);
-        Main.println ("\nquux_blah_a:");
-        before_and_after_flattening (quux_blah_a, true);
+        llts = before_and_after_flattening (quux_blah_a, true);
+        assert llts.size() == 2;
+        Term v_0 = v_(Term.gensym());
+        assert quux_blah_a.is_same_as (s_("quux",v_0));
+        Term b_a = llts.get(1);
+        assert (b_a.is_same_as (e_(v_0, blah_a)));
 
         // whiz([a,a]).
         Term whiz_a_a = s_("whiz", l_(c_("a"), c_("a")));
-        Main.println ("\nwhiz_a_a");
-        before_and_after_flattening (whiz_a_a, true);
+        Term.reset_gensym();
+        llts = before_and_after_flattening (whiz_a_a, true);
+        assert llts.size() == 2;
+        v_0 = v_(Term.gensym());
+        Term q = llts.getFirst();
+        assert q.is_same_as (s_("whiz", v_0));
+        Term q1 = llts.get(1);
+        assert (q1.is_an_equation());
+        assert q1.args().getFirst().is_same_as(v_0);
+        Term rhs = q1.rhs();
+        assert rhs.is_same_as (l_(a,a));
 
         // foo(bar(X),r).
         Term foo_bar_X_r = s_("foo", s_("bar", v_("X")), c_("r"));

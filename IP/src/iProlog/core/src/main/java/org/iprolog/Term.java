@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import javax.lang.model.element.Element;
 import javax.lang.model.util.ElementScanner6;
 
+import java.util.Iterator;
+
 // Prolog "term", with lexical conventions abstracted away.
 // E.g., variables don't have to start with a capital letter
 // or underscore, and can have embedded blanks. Maybe better
@@ -70,6 +72,37 @@ public class Term {
         return terms;
     }
 
+    // compares two terms
+    // really need to sort out what null list means
+    // is it empty list?
+    // null pointer?
+    // either?
+    Boolean is_same_as (Term t) {
+        if (tag != t.tag
+         || (c != null && c.compareTo(t.c) != 0)
+         || (v != null && v.compareTo(t.v) != 0)) return false;
+
+        if (terms != null && t.terms == null) return false;
+        if (terms == null && t.terms != null) return false;
+
+        if (t.terms == null) {
+            assert terms == null;
+            return true;
+        }
+        Iterator<Term> itl = t.terms.iterator();
+        if (!itl.hasNext() && (terms == null || terms.isEmpty()))  return true;
+        if (!itl.hasNext() && (terms != null || !terms.isEmpty())) return false;
+        Term tt = itl.next();
+
+        for (Term t1 : terms) {
+            if (tt == null) return false;
+            if (!t1.is_same_as(tt)) return false;
+            if (itl.hasNext()) tt = itl.next();
+            else tt = null;
+        }
+        return true;
+    }
+
     Term a_term (int tag, String thing, Term... ts) {
         LinkedList<Term> tl = new LinkedList<Term>();
         for (Term t : ts)
@@ -115,7 +148,6 @@ public class Term {
         return s;
     }
     
-
     // Embarrassingly hacky Prolog fakeout:
     //  Var_prefix is prepended when a variable ID is lower case.
     // Maybe in getword() this could be detected and removed,
@@ -156,8 +188,6 @@ public class Term {
 
     public static Term termlist(LinkedList<Term> llt) {
         Term t = new Term (TermList, "[...]", llt);
-
-        // Main.println ("New termlist: " + t.toString());
 
         return t;
     }
@@ -258,16 +288,13 @@ public class Term {
 
         String delim = "";
         String s = "";
-        if (terms.size() == 0)
-            Main.println ("terms_to_str -- terms.size() == 0");
+
         for (Term t : terms) {
             s = s + delim;
-          
             if (t == null)
                 s = s + " nil ";
             else
                 s = s + t;
-
             delim = sep;
         }
         return s;
@@ -416,7 +443,7 @@ _1 = p(Z, _2, _3)
             r.add (this);
             return r;
         }
-
+ 
         LinkedList<Term> todo = new LinkedList<Term>();
         LinkedList<Term> new_terms = new LinkedList<Term>();
 
