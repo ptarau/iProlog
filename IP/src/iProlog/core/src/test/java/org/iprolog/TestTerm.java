@@ -384,23 +384,23 @@ public class TestTerm {
         Term.reset_gensym();
     }
 
-    private LinkedList<Term> do_it_all (Term t) {
-        LinkedList<Term> r = t.flatten();
+    private LinkedList<Term> check_flattening (Term x, Term expected[]) {
 
-        for (Term tf : r)
-            Main.println ("  .... " + tf);
+        Term.reset_gensym();
+        LinkedList<Term> r = x.flatten();
+        Term.reset_gensym();
 
-        return r;
-    }
+        if (expected != null)
+            assert r.size() == expected.length;
 
-    private LinkedList<Term> before_and_after_flattening (Term x, Boolean reset) {
-        Main.println ("\nBefore flattening: " + x);
-
-        LinkedList<Term> r = do_it_all (x);
-
-        Main.println ("\nAfter: ");
-
-        if (reset) Term.reset_gensym();
+        if (expected != null) {
+            assert expected.length == r.size();
+            int i = 0;
+            for (Term t : r) {
+                assert t.is_same_as (expected[i]);
+                ++i;
+            }
+        }
 
         return r;
     }
@@ -439,63 +439,57 @@ public class TestTerm {
 
     private void test_flatten() {
         Main.println ("\n-----====< test_flatten entered >====-----");
-        LinkedList<Term> llts;
 
         test_is_same_as();
  
         Term a = c_("a");
         Term glom_a = s_("glom", a);
-        llts = before_and_after_flattening (glom_a, true);
-        assert llts.size() == 1;
-        assert glom_a.is_same_as (s_("glom", c_("a")));
+        Term exp0[] = {glom_a};
+        check_flattening (glom_a, exp0);
+
+        Term.reset_gensym();
+        Term v_0 = v_(Term.gensym());
+        Term v_1 = v_(Term.gensym());
+        Term v_2 = v_(Term.gensym());
 
         // quux(blah(a)).
         Term blah_a = s_("blah", a);
         Term quux_blah_a = s_("quux", blah_a);
-        llts = before_and_after_flattening (quux_blah_a, true);
-        assert llts.size() == 2;
-        Term v_0 = v_(Term.gensym());
-        assert quux_blah_a.is_same_as (s_("quux",v_0));
-        Term b_a = llts.get(1);
-        assert (b_a.is_same_as (e_(v_0, blah_a)));
+        Term exp1[] = { s_("quux", v_0), e_(v_0, blah_a) };
+        check_flattening (quux_blah_a, exp1);
 
         // whiz([a,a]).
-        Term whiz_a_a = s_("whiz", l_(c_("a"), c_("a")));
-        Term.reset_gensym();
-        llts = before_and_after_flattening (whiz_a_a, true);
-        assert llts.size() == 2;
-        v_0 = v_(Term.gensym());
-        Term q = llts.getFirst();
-        assert q.is_same_as (s_("whiz", v_0));
-        Term q1 = llts.get(1);
-        assert (q1.is_an_equation());
-        assert q1.args().getFirst().is_same_as(v_0);
-        Term rhs = q1.rhs();
-        assert rhs.is_same_as (l_(a,a));
+        Term l_a_a =  l_(c_("a"), c_("a"));
+        Term whiz_a_a = s_("whiz", l_a_a);
+        Term exp2[] = { s_("whiz", v_0), e_(v_0, l_a_a) };
+        check_flattening (whiz_a_a, exp2);
 
         // foo(bar(X),r).
-        Term foo_bar_X_r = s_("foo", s_("bar", v_("X")), c_("r"));
-        Main.println ("foo_bar_X_r");
-        before_and_after_flattening (foo_bar_X_r, true);
-
+        Term bar_X_r = s_("bar", v_("X"));
+        Term foo_bar_X_r = s_("foo", bar_X_r, c_("r"));
+        Term exp3[] = { s_("foo", v_0, c_("r")), e_(v_0,bar_X_r) };
+        check_flattening (foo_bar_X_r, exp3);
 
        // foo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]).
-        Main.println ("\nfoo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]):");
-        Clause cl = Clause.f__("foo", s_("bar", v_("X"), c_("r"))).
+        Clause cl = Clause.f__("foo", bar_X_r).
                                 if__(s_("glom", v_("X")),
                                      s_("quux", s_("blah", v_("X"))),
                                      s_("whiz", l_(c_("a"), c_("a"))));
-        before_and_after_flattening (cl.head.getFirst(), false);
+
+        check_flattening (cl.head.getFirst(), exp3);
+
+        // not really checking anything yet
         for (Term t : cl.body) {
-            before_and_after_flattening (t, false);
+            check_flattening (t, null);
         }
-        Term.reset_gensym();
         
         Term nnn = s_("moo", l_(l_(l_(c_("a")))));
-        before_and_after_flattening(nnn,true);
+        Term exp5[] = { s_("moo", v_0), e_(v_0,l_(v_1)), e_(v_1,l_(v_2)), e_(v_2,l_(c_("a"))) };
+        check_flattening(nnn, exp5);
 
         Term mmm = s_("goo", s_("x", s_("y", c_("a"))));
-        before_and_after_flattening(mmm,true);
+        Term exp6[] = { s_("goo", v_0), e_(v_0, s_("x", v_1)), e_(v_1,s_("y",a)) };
+        check_flattening(mmm, exp6);
 
         Main.println ("\n-----====< test_flatten exiting... >====-----\n");
     }
@@ -523,126 +517,14 @@ public class TestTerm {
         assert L.is_a_termlist();
 
         test_flatten();
-
-        // Main.println ("C=" + C);
-        // iffy - depends on settings & formatting:
-        String CC = cmpnd_fnctr + "(" + var_X + "," + const_ooh + ")";
-        assert C.toString().compareTo(CC) == 0;
-        Main.println ("C.toString() = " + C.toString());
-
-        Main.println ("vX = " + vX);
-        LinkedList<Term> fv1  = vX.flatten();
-        assert fv1 != null;
-        Main.println ("vX flattened is " + vX);
-        Main.println ("fv1.size() = " + fv1.size());
-        assert fv1.size() == 1;
-
-        Main.println ("cOoh = " + cOoh);
-        LinkedList<Term> fc = cOoh.flatten();
-        Main.println ("fc.size() = " + fc.size());
-        Main.println ("cOoh is now " + cOoh);
-        assert fc.size() == 1;
-
-    Term.reset_gensym();
-        Main.println ("\nBefore flattening: C = " + C);
-        LinkedList<Term> fCx  = C.flatten();
-        assert fCx != null;
-        Main.println ("fCx.size() = " + fCx.size());
-        Main.println ("C is now " + C);
-        Main.println ("result of flattening C, fCx = " + fCx);
-        assert fCx.size() == 1;
-
-    Term.reset_gensym();
-        String cmpnd_fnctr1 = "compendium";
-        Term C1arg1 = s_("foo", Term.constant("a"));
-        Term C1arg2 = s_("bar", Term.variable("G"));
-        Term C1 = s_ (cmpnd_fnctr1, C1arg1, C1arg2);
-        assert C1.is_a_compound();
-
-        Main.println ("\nC1 pre-flattening is " + C1);
-        LinkedList<Term> rC1 = C1.flatten();
-        Main.println ("C1 flattened is " + C1);
-        Main.println ("rC1.size() = " + rC1.size());
-        for (Term t : rC1) Main.println (" -- a flattened term t=" + t + ", t.is_flat()=" + t.is_flat());
-
-        Term eqn1 = e_ (vX,cOoh);
-        assert eqn1 != null;
-
-        Main.println ("eqn1 = " + eqn1);
-
-        Term vY = v_("Y");
-        assert vY.is_a_variable();
-        Term C2 = s_("foo",C1);
-        Main.println ("\n\n\nC2 is " + C2 + ", C2.is_flat() = " + C2.is_flat());
-
-        Term eqn2 = e_ (vY, C2);
-        Main.println ("eqn2 is " + eqn2 + ", eqn2.is_flat() = " + eqn2.is_flat());
-
-        LinkedList<Term> flatcat = eqn2.flatten();
-        Main.println ("eqn2 is now " + eqn2.toString());
-        Main.println ("eqn2 Flattened flatcat: ");
-        for (Term t : flatcat) Main.println ("  -- " + t);
-
-        // Main.println ("-----------------------------------------");
-
-        String sum = "the_sum_of";
-        String s = "the_successor_of";
-        Term an_X = v_("X");
-        Term a_Y  = v_("Y");
-        Term s_of_X = s_ (s, an_X);
-        Term s_of_Y = s_ (s, a_Y);
-        Term summer_head = s_(sum,s_of_X, an_X, s_of_Y);
-
-        // Main.println ("summer_head before flattening is "+ summer_head);
-
-        LinkedList<Term> flattery = summer_head.flatten();
-        // Main.println ("summer_head AFTER flattening is "+ summer_head);
-        // for (Term t : flattery) Main.println (" -- flattery has " + t);
-
-
-        // Add basic tests for making lists
-
-        // nil / []
-        //      TBD
-
-        Term.reset_gensym();
-        // singleton:
-            Term singleton = l_(Term.constant("foo"));
-            // Main.println ("\n-------\nsingleton = " + singleton);
-            LinkedList<Term> fs = singleton.flatten();
-            // Main.println ("fs.size() = " + fs.size());
-            // Main.println ("fs is " + fs.toString());
-            // Main.println ("post-flattening singleton is " + singleton);
-
-        Term.reset_gensym();
-
-            Term singleton_sublist = l_(Term.constant("foo"));
-
-            Term nested = l_(Term.constant("bar"), singleton_sublist, Term.constant("quux"));
-            Main.println ("\n-------\ncomplex list pre-flattening is " + nested.toString());
-
-            LinkedList<Term> ns = nested.flatten();
-            Main.println ("After flattening list is now " + nested.toString());
-            for (Term t : ns) Main.println ("   " + t);
-            Main.println (" ns.size() = " + ns.size());
-
-        Term.reset_gensym();
         
         try_simple();
-        
-  
-
         try_t();
-
         try_add();
-  
         try_big();
-     
         try_t_J();
-        
         list_test();
       
-
         Main.println ("\n======== End Term test ====================");
     }
 }
