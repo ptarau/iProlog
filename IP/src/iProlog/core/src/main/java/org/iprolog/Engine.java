@@ -304,36 +304,6 @@ s += "]";
     return an_expansion;
   }
  
-  private final static LinkedList<Term>
-  expand_lists_to_holds(Term lt) {
-
-    assert (false);
-
-    if (!lt.is_a_termlist())
-      return null;
-
-    LinkedList<Term> xf = new LinkedList<Term>();
-    int l = lt.args().size();
-
-    for (int i = 1; i < l; i++) {
-      /*
-      final String[] Rs = new String[4];
-      final String Vi = 1 == i ? V : V + "__" + (i - 1);
-      final String Vii = V + "__" + i;
-      Rs[0] = "h:" + Vi;      // 'h' -> "holds" -> "="
-      Rs[1] = "c:list";
-      Rs[2] = Ws.get(i);
-      Rs[3] = i == l - 1 ? "c:nil" : "v:" + Vii;
-      Rss.add(Rs);
-       * 
-       */
-
-    }
-
-    return xf;
-  }
-  
-
   /**
    * Expands, if needed, "lists" statements in sequence of statements.
    */
@@ -501,8 +471,40 @@ s += "]";
     return k;
   }
 
+  // NOT CALLED YET
+  private final static LinkedList<Term>
+  expand_lists_to_holds(Term lt) {
+
+    assert (false);
+
+    if (!lt.is_a_termlist())
+      return null;
+
+    LinkedList<Term> xf = new LinkedList<Term>();
+    int l = lt.args().size();
+
+    for (int i = 1; i < l; i++) {
+      /*
+      final String[] Rs = new String[4];
+      final String Vi = 1 == i ? V : V + "__" + (i - 1);
+      final String Vii = V + "__" + i;
+      Rs[0] = "h:" + Vi;      // 'h' -> "holds" -> "="
+      Rs[1] = "c:list";
+      Rs[2] = Ws.get(i);
+      Rs[3] = i == l - 1 ? "c:nil" : "v:" + Vii;
+      Rss.add(Rs);
+       */
+    }
+
+    return xf;
+  }
+
+  // NOT CALLED YET
   static LinkedList<Term>
   expand_list_stmt (LinkedList<Term> head_or_body) {
+
+    assert (false);
+
     LinkedList<Term> llt = new LinkedList<Term>();
 
     for (Term t : head_or_body) {
@@ -516,8 +518,12 @@ s += "]";
     return llt;
   }
 
+  // NOT CALLED YET
   private final static Clause
   expand_lists_stmts(final Clause cl) {
+
+    assert (false);
+
     Main.println("\nexpand_lists_stmts(cl): calling on cl.head....");
 
     cl.head = expand_list_stmt(cl.head);
@@ -531,7 +537,10 @@ s += "]";
     return cl;
   }
 
+  // NOT CALLED YET
   Clause[] dload_from_x(LinkedList<Clause> these_clauses) {
+
+    assert(false);
 
     final ArrayList<Clause> compiled_clauses = new ArrayList<Clause>();
 

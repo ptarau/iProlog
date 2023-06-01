@@ -21,7 +21,6 @@ public class TestTerm {
                                             xt.takes_this(t);
                                         return xt;
                                     }
-    private static Term s_(String s, LinkedList<Term> llt) { return Term.compound(s,llt); }
     private static Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
     private static Term l_(Term... ts) {
         LinkedList<Term> llt = new LinkedList<Term>();
@@ -182,33 +181,6 @@ public class TestTerm {
         llc.add (Clause.f__("append", l_(), Ys, Ys));
 
 
-
-    // append([X|Xs],Ys,[X|Zs]):-append(Xs,Ys,Zs).
-
-    /* INPUT
-     *      append([X|Xs],Ys,[X|Zs]):-append(Xs,Ys,Zs).
-     * 
-     * MY OUTPUT
-     *    cl before flatten = 
-     *       append lists X Xs  Ys lists X Zs
-     *          if append Xs Ys Zs .
-     * 
-     *    cl after flatten = 
-     *       append _0 Ys _1  and
-     *          _0 lists X Xs  and
-     *          _1 lists X Zs
-     *    if
-     *          append Xs Ys Zs .
-     * 
-     * TARAU OUTPUT:
-     *      append _0 Ys _1 and
-     *          _0 holds list X Xs and
-     *          _1 holds list X Zs
-     *      if
-     *          append Xs Ys Zs .
-     *
-     * 
-     */
         llc.add (Clause.f__("append", l_(X, Xs), Ys, l_(X,Zs)).
                             if__(s_("append",Xs,Ys,Zs)));
     // nrev([],[]).
@@ -246,6 +218,14 @@ public class TestTerm {
         try_it (llc, expected);
 
         Main.println ("... try_big() exiting.");
+    }
+
+    private void try_perms() {
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+
+        Term X  = v_("X");  Term Y  = v_("Y");
+        Term Xs = v_("Xs"); Term Ys = v_("Ys");
+        llc.add (Clause.f__("sel"));
     }
 
     private void try_t_J() {
@@ -516,14 +496,14 @@ public class TestTerm {
         Term L = l_(vX,cOoh);
         assert L.is_a_termlist();
 
-        test_flatten();
-        
         try_simple();
+        list_test();
+        test_flatten();
         try_t();
         try_add();
         try_big();
+        try_perms();
         try_t_J();
-        list_test();
       
         Main.println ("\n======== End Term test ====================");
     }
