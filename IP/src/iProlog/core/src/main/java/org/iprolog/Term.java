@@ -37,7 +37,26 @@ import java.util.Iterator;
 // internally; if so, this redundancy in coding types could be
 // eliminated.
 
-public class Term {
+public class Term implements Iterable<Term> {
+
+    class CustomIterator implements Iterator<Term> {
+        Term start;
+        Term cursor;
+        CustomIterator(Term obj) {      // constructor -- initialize cursor
+            start = cursor = obj;
+        }
+        public boolean hasNext() {      // Checks if the next element exists
+            return cursor.next != null;
+        }
+        public Term next() {            // moves the cursor/iterator to next element
+            // should probably throw exception if !hasnext() 
+            return cursor.next;
+        }
+    }
+    public Iterator<Term> iterator() {
+        return new Term.CustomIterator(this);
+    }
+
     final private static int Variable = 1;   // correponds to Engine.U (unbound variable)
     final private static int Compound = 2;   // correponds to Engine.R (reference)
     final private static int Constant = 3;   // correponds to Engine.C (constant)
@@ -63,13 +82,24 @@ public class Term {
     /*final*/ private int tag;      // mutable for in-place rewriting
                                     // which I admit may turn out to be
                                     // a bad idea
-    String v;
-    String c;
-    private LinkedList<Term> terms;   // What's in "(...)" in a compound,
-                                            // or (hacky) the list [lhs,rhs] if equation
+    
+    
+    public String v() { return V_; };
+    private String V_;
+    String set_v(String v) { V_ = v; return V_; }
+    public String c() { return C_; }
+    private String C_;
+    String set_c(String c) { C_ = c; return C_; }
+    private LinkedList<Term> terms() { return Terms; }   // What's in "(...)" in a compound,
+                                            //  or (hacky) the list [lhs,rhs] if equation
+    private LinkedList<Term> Terms;
+    private LinkedList<Term> set_terms(LinkedList<Term> Ts) { Terms = Ts; return Ts; }
+
+    Term next;
+
     LinkedList<Term> args() {
         assert tag == Compound;
-        return terms;
+        return terms();
     }
 
     // compares two terms
@@ -79,22 +109,22 @@ public class Term {
     // either?
     Boolean is_same_as (Term t) {
         if (tag != t.tag
-         || (c != null && c.compareTo(t.c) != 0)
-         || (v != null && v.compareTo(t.v) != 0)) return false;
+         || (c() != null && c().compareTo(t.c()) != 0)
+         || (v() != null && v().compareTo(t.v()) != 0)) return false;
 
-        if (terms != null && t.terms == null) return false;
-        if (terms == null && t.terms != null) return false;
+        if (terms() != null && t.terms() == null) return false;
+        if (terms() == null && t.terms() != null) return false;
 
-        if (t.terms == null) {
-            assert terms == null;
+        if (t.terms() == null) {
+            assert terms() == null;
             return true;
         }
-        Iterator<Term> itl = t.terms.iterator();
-        if (!itl.hasNext() && (terms == null || terms.isEmpty()))  return true;
-        if (!itl.hasNext() && (terms != null || !terms.isEmpty())) return false;
+        Iterator<Term> itl = t.terms().iterator();
+        if (!itl.hasNext() && (terms() == null || terms().isEmpty()))  return true;
+        if (!itl.hasNext() && (terms() != null || !terms().isEmpty())) return false;
         Term tt = itl.next();
 
-        for (Term t1 : terms) {
+        for (Term t1 : terms()) {
             if (tt == null) return false;
             if (!t1.is_same_as(tt)) return false;
             if (itl.hasNext()) tt = itl.next();
@@ -110,29 +140,29 @@ public class Term {
         return new Term (tag, thing, tl);
     }
 
-    Term (int tag, String thing, LinkedList<Term> terms) {
+    Term (int tag, String thing, LinkedList<Term> Ts) {
 
         this.tag = tag;
 
         switch (tag) {
-            case Variable: this.v = thing; this.terms = null;  this.c = null;  return;
-            case Compound: this.v = null;  this.terms = terms; this.c = thing; return;
-            case Constant: this.v = null;  this.terms = null;  this.c = thing; return;
-            case TermList: this.v = null;  this.terms = terms; this.c = null;  return;
-            case TermPair: this.v = null;  this.terms = terms; this.c = null;  return;
+            case Variable: set_v(thing); set_terms(null); set_c(null);  return;
+            case Compound: set_v(null); set_terms(Ts); set_c(thing); return;
+            case Constant: set_v(null); set_terms(null); set_c(thing); return;
+            case TermList: set_v(null); set_terms(Ts); set_c(null);  return;
+            case TermPair: set_v(null); set_terms(Ts); set_c(null);  return;
         }
 
 // I should really raise some exception here
-        this.v = null;
-        this.c = null;
-        this.terms = null;
+        set_v(null);
+        set_c(null);
+        set_terms(null);
     }
 
     public Boolean is_a_variable() {  return tag == Variable;  }
     public Boolean is_a_compound() {  return tag == Compound;  }
     public Boolean is_a_constant() {  return tag == Constant;  }
     public Boolean is_a_termlist() {  return tag == TermList;}
-    public Boolean is_an_equation(){  return tag == Compound && terms.size() == 2 && c == "=";  }
+    public Boolean is_an_equation(){  return tag == Compound && terms().size() == 2 && c() == "=";  }
     public Boolean is_a_termpair() {  return tag == TermPair; }
 
     public static String remove_any_Var_prefix(String s) {
@@ -161,16 +191,16 @@ public class Term {
         if (Character.isUpperCase(c.charAt(0))) c = Const_prefix + c;
         return new Term (Constant, c, null);
     }
-    public static Term compound(String C) {
-        return new Term (Compound, C, new LinkedList<Term>());
+    public static Term compound(String f) {
+        return new Term (Compound, f, new LinkedList<Term>());
     }
-    public static Term compound(String C, LinkedList<Term> terms) {
-        return new Term (Compound, C, terms);
+    public static Term compound(String f, LinkedList<Term> terms) {
+        return new Term (Compound, f, terms);
     }
-    public static Term compound(String C, Term t) {
+    public static Term compound(String f, Term t) {
         LinkedList<Term> llt = new LinkedList<>();
         llt.add (t);
-        return compound (C, llt);
+        return compound (f, llt);
     }
     public static Term equation(Term lhs, Term rhs) {
         LinkedList<Term> ll = new LinkedList<Term>();
@@ -209,12 +239,12 @@ public class Term {
 
     public Term lhs() {
         assert this.is_an_equation();
-        return terms.peekFirst();
+        return terms().peekFirst();
     }
 
     public Term rhs() {
         assert this.is_an_equation();
-        return terms.peekLast();
+        return terms().peekLast();
     }
 
     // The following differences in lexicalization
@@ -289,7 +319,7 @@ public class Term {
         String delim = "";
         String s = "";
 
-        for (Term t : terms) {
+        for (Term t : terms()) {
             s = s + delim;
             if (t == null)
                 s = s + " nil ";
@@ -301,37 +331,37 @@ public class Term {
     }
 
     private boolean is_lists() {
-        return tag == Compound && this.c == "lists";
+        return tag == Compound && this.c() == "lists";
     }
 
     public String toString() {
         String r = "<unassigned>";
 
         switch (tag) {
-            case Variable: r = v; break;
-            case Constant: r = c; break;
-            case Compound: if (c != "=") {
+            case Variable: r = v(); break;
+            case Constant: r = c(); break;
+            case Compound: if (c() != "=") {
                                 
-                                if (c == "lists") {
+                                if (c() == "lists") {
                                     // Main.println("  Term.toString:      seeing lists case  !!!!!!!!!!!!!!");
                                     // Main.println ("  Term.toString:         terms = " + terms_to_str(arg_sep));
                                 }
                                  
-                                 r =      c
+                                 r =      c()
                                         + args_start
                                         + terms_to_str(arg_sep)
                                         + args_end;
                             } else {
-                                assert c == "=";
+                                assert c() == "=";
                                 if (rhs().is_lists()) {
-                                    Term rhs_car = rhs().terms.peekFirst();
+                                    Term rhs_car = rhs().terms().peekFirst();
                                     assert rhs_car != null;
                                     // Main.println ("  Term.toString:       rhs_car = " + rhs_car);
-                                    if (rhs().terms.size() == 1)
+                                    if (rhs().terms().size() == 1)
                                         // Main.println ("  Term.toString:      rhs_cdr == null")
                                         ;
                                     else {
-                                        Term rhs_cdr = rhs().terms.get(1);
+                                        Term rhs_cdr = rhs().terms().get(1);
                                         assert rhs_cdr != null;
                                         // Main.println ("  Term.toString:      rhs_cdr = " + rhs_cdr);
                                     }                                    
@@ -357,12 +387,12 @@ public class Term {
 
     public void takes_this(Term t) {
         assert tag == Compound;
-        terms.add (t);
+        terms().add (t);
     }
 
     public void takes_this(LinkedList<Term> llt) {
         assert llt != null;
-        terms.addAll(llt);
+        terms().addAll(llt);
     }
 
     private static int    gensym_i = 0;
@@ -383,7 +413,7 @@ public class Term {
         //    return lhs().is_flat() && rhs().is_flat();
 
         // depends on representing lhs+rhs as terms list in eqns:
-        for (Term t : terms)
+        for (Term t : terms())
             if (!t.is_simple())
                 return false;
 
@@ -448,16 +478,16 @@ _1 = p(Z, _2, _3)
         LinkedList<Term> new_terms = new LinkedList<Term>();
 
         if (this.is_an_equation()) {
-            for (Term t : terms) {   // will traverse lhs and rhs
+            for (Term t : terms()) {   // will traverse lhs and rhs
                 if (!t.is_flat())
                     todo.addAll (t.flatten1(false));
                 new_terms.add (t);
             }
-            terms = new_terms;
+            set_terms(new_terms);
             r.add (this);
         }
         else {
-            for (Term t : terms) {
+            for (Term t : terms()) {
                 if (t.is_simple()) {
                     new_terms.add (t);
                 } 
@@ -468,7 +498,7 @@ _1 = p(Z, _2, _3)
                     todo.add(e);
                 }
             }
-            terms = new_terms;
+            set_terms(new_terms);
 
             if (first)
                 r.add (this);

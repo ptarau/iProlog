@@ -42,6 +42,8 @@ class Clause {
   // where to allow for this?
   public static Clause f__(String fid, Term... ts) {
 
+    assert fid != null;
+
     Clause cl = new Clause(0,null,0,0,null);
 
     cl.head = new LinkedList<Term>();

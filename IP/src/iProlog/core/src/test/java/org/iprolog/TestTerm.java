@@ -58,7 +58,7 @@ public class TestTerm {
             assert (llt.size() == 1);
             Term goal_ans = llt.get(0);
             assert goal_ans.is_a_compound();
-            assert goal_ans.c.compareTo("goal") == 0;
+            assert goal_ans.c().compareTo("goal") == 0;
             LinkedList<Term> args = goal_ans.args();
 
             int i = 0;
@@ -160,12 +160,16 @@ public class TestTerm {
 
         LinkedList<Clause> llc = new LinkedList<Clause>();
     // dookie([]).
-        llc.add(Clause.f__("dookie", l_()));
+    Clause cl0 = Clause.f__("dookie", l_());
+    Main.println ("try_simple: cl0 = " + cl0);
+        llc.add(cl0);
     // dookie(0).
     //    llc.add(Clause.f__("dookie", c_("0")));
         Term Foo = v_("Foo");
     // goal([]).
-        llc.add(Clause.f__("goal", Foo).if__(s_("dookie", Foo)));
+    Clause cl1 = Clause.f__("goal", Foo).if__(s_("dookie", Foo));
+    Main.println ("try_simple: cl1 = " + cl1);
+        llc.add(cl1);
 
         try_it (llc, null);
     }
@@ -477,6 +481,10 @@ public class TestTerm {
     @Test
     public void mainTest() {
         Main.println ("************* Start Term test ********************");
+
+        Term tt = s_("a",c_("b"));
+        // Term.CustomIterator it = new Term.CustomIterator(tt);
+        for (Term x : tt) { Main.println ("!!!!!!!!!!! x = " + x + "!!!!!!!!!!!!!!"); }
 
         test_gensym();
 
