@@ -111,27 +111,20 @@ class Clause {
   }
 
   public void flatten() {
-    assert head != null;
-
+      assert head != null;
     head = head.flatten();
-    assert head != null;
-
-    // Main.println (" Clause.flatten: head = ");
-    // for (Term x = head; x != null; x = x.next) Main.println ("     " + x);
-
+      assert head != null;
     Term new_body = null;
+
     if (body != null)
-      for (Term t = body; t != null; t = t.next) {
+      // for (Term t = body; t != null; t = t.next) {
+      for (Term t : body) {
           if (new_body == null)
             new_body = t.flatten();
           else
             new_body = new_body.add_all (new_body, t.flatten());
       }
     body = new_body;
-
-    // Main.println (" Clause.flatten: body = ");
-    // for (Term x = body; x != null; x = x.next) Main.println ("     " + x);
-
   }
 
 // Skeletal elements for compiled form:

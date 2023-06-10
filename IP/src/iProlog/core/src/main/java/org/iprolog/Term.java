@@ -37,31 +37,32 @@ import java.util.Iterator;
 // internally; if so, this redundancy in coding types could be
 // eliminated.
 
-public class Term // implements Iterable<Term>
-                {
-/* 
+// The iterator implementation is iffy; things blow up
+// when I try to substitute
+//    for (Term t : xTerms)
+// for
+//    for (Term t = xTerms; t != null; t = t.next)
+
+public class Term implements Iterable<Term> {
+
     class TermIterator implements Iterator<Term> {
         Term start;
         Term cursor;
         TermIterator(Term obj) {      // constructor -- initialize cursor
-            Main.println ("cursor init with obj = " + obj);
             start = cursor = obj;
         }
         public boolean hasNext() {      // Checks if the next element exists
-            Main.println ("%%%%%%%%% OK are we ever checking next???? %%%%%%");
             return cursor.next != null;
         }
         public Term next() {            // moves the cursor/iterator to next element
-            // should probably throw exception if !hasnext() 
-
+            // should probably throw exception if !hasnext() is null 
             return cursor = cursor.next;
         }
     }
     public Iterator<Term> iterator() {
-        Main.println ("<<<<< do we ever get a Term iterator??? >>>>>");
         return new Term.TermIterator(this);
     }
-*/
+
     final private static int Variable = 1;   // correponds to Engine.U (unbound variable)
     final private static int Compound = 2;   // correponds to Engine.R (reference)
     final private static int Constant = 3;   // correponds to Engine.C (constant)
@@ -115,44 +116,24 @@ public class Term // implements Iterable<Term>
         return terms();
     }
 
-    public int n_after() {
-        int n = 0;
-        for (Term x = this.next; x != null; x = x.next) ++n;
-        return n;
-    }
-
-    private void _T(int i) { // Main.println ("-----> in is_same_as " + i); 
-        }
-    // compares two terms
-    // really need to sort out what null list means
-    // is it empty list?
-    // null pointer?
-    // either?
     Boolean is_same_as (Term t) {
-        if (t == null) { _T(1); return false; }
-        if (tag != t.tag) { _T(2); return false; }
+        if (t == null) return false;
+        if (tag != t.tag) return false;
         if (t.S_ != null) {
-            if (S_ == null) { _T(3); return false; }
-            if (t.S_.compareTo(S_) != 0) { _T(4); return false; }
+            if (S_ == null) return false;
+            if (t.S_.compareTo(S_) != 0) return false; 
         }
 
         Term t1 = t.Terms;
-        for (Term tt = Terms; tt != null; tt = tt.next) {
-            if (t1 == null) { _T(5); return false; }
-            if (!tt.is_same_as(t1)) { _T(6); return false; }
-            // Main.println ("     &&& tt = <<<"+tt+">>>, t1=<<<"+t1+">>>");
-            // if (t1.next != null) Main.println ("     &&& t1.next = <<<"+t1.next+">>>");
-            t1 = t1.next;
-        }
+        if (Terms != null)
+            for (Term tt = Terms; tt != null; tt = tt.next) {
+            // for (Term tt : Terms) {              // why is this not equivalent?
+                if (t1 == null) return false; 
+                if (!tt.is_same_as(t1)) return false; 
+                t1 = t1.next;
+            }
 
-        /*return*/ { _T(7); // Main.println ("this is <<<"+this+">>> t is <<<"+t+">>>");
-                                // Main.println (" t1==null is " + (t1 == null));
-                                if (t1 != null) {
-                                    // Main.println ("t1 is <<<"+t1+">>>")
-                                    ;
-                                }
-                                    return t1 == null;
-                    }
+        return t1 == null;
     }
 
     // Because of side effects, this could break all over the place
@@ -218,7 +199,6 @@ public class Term // implements Iterable<Term>
         if (Character.isLowerCase(v.charAt(0))) v = Var_prefix + v;
         return new Term (Variable, v, null);
     }
-
     public static Term constant(String c) {
         if (Character.isUpperCase(c.charAt(0))) c = Const_prefix + c;
         return new Term (Constant, c, null);
@@ -336,13 +316,13 @@ public class Term // implements Iterable<Term>
         String delim = "";
         String s = "";
 
-        if (terms() != null) {
-            for (Term t = Terms; t != null; t = t.next) {
-                s = s + delim;
-                s = s + t;
-                delim = sep;
-            }
+
+        for (Term t = Terms; t != null; t = t.next) {
+            s = s + delim;
+            s = s + t;
+            delim = sep;
         }
+        
         return s;
     }
 
@@ -368,10 +348,7 @@ public class Term // implements Iterable<Term>
                                     r = lhs() + holds_op + rhs();
                             }
                             break;
-            case TermList:  // if (terms == null)
-                            //    Main.println ("  Term.toString:      Term.toString: list terms = null !!!!");
-                            
-                            r =  list_start + terms_to_str(list_elt_sep) + list_end;
+            case TermList:  r =  list_start + terms_to_str(list_elt_sep) + list_end;
                             break;
             case TermPair:  r = cons + terms_to_str(list_elt_sep);
                             break;
@@ -382,17 +359,9 @@ public class Term // implements Iterable<Term>
     public Term takes_this(Term t) {
         assert tag == Compound;
         assert t != null;
-        /*
-        Main.println (" is t really " + t + "?????????????");
-        Main.println ("t.S_ = " + t.S_);
-        Main.println ("t.tag = " + t.tag);
-        Main.println ("Term "+this+" takes_this("+t+"):");
-        */
+
         this.Terms = add_elt(terms(), t.clone());
-        // Main.println ("In takes_this, this term is now "+this);
         assert Terms != null;
-        // Main.println ("Terms = " + Terms);
-        // for (Term x = Terms; x != null; x = x.next) { Main.println ("    .... " + x); }
         return this;
     }
 
@@ -464,8 +433,6 @@ _1 = p(Z, _2, _3)
  /* flatten this */
 
     Term add_elt (Term x, Term elt) {
-        // Main.println ("   in add_elt("+x+", "+elt+"):");
-
         if (x == null) return elt;
         assert elt != null;
         assert elt.next != elt;
@@ -474,7 +441,6 @@ _1 = p(Z, _2, _3)
 
         int limit = 6;
         for (Term i = x; i != null; i = i.next) {
-            // Main.println ("   i = " + i);
             assert i.next != i;
             if (i.next == null) {
                 i.next = elt;
@@ -486,34 +452,17 @@ _1 = p(Z, _2, _3)
     }
     Term add_all (Term x, Term Ts) {
         if (Ts == null) return x;
-        assert Ts.next != Ts;
-        // Main.println ("add_all: x = <<<" + x + ">>> Ts (start) is <<<" + Ts + ">>>");
-        String xS;
-        if (x != null)
-             xS = x.toString();
-        else xS = "<<<null>>>";
-        String TsStartS = Ts.toString();
-        assert xS.compareTo(TsStartS) != 0;
         return add_elt (x, Ts);
     }
 
+    // iffy naming here -- doesn't copy next link, so maybe it should be called "shallow_copy"
     public Term clone() {
       return new Term(this.tag, this.S_, this.Terms);
     }
 
-    private void check_it(Term r) {
-        for (Term x = r; x != null; x = x.next) {
-            if (x.is_an_equation()) {
-                assert !x.rhs().is_an_equation();
-            }
-        }
-    }
-
     public Term flatten() {
-        // Main.println ("\n\nflatten1: this is " + this);
 
         if (this.is_simple()) {
-            // Main.println ("Returning a clone of it");
             return this.clone();
         }
  
@@ -531,23 +480,18 @@ _1 = p(Z, _2, _3)
                 Term rhs_fl = rhs().flatten();
                 Term rhs_next = rhs_fl.next;
                 new_terms = add_elt (new_terms, rhs_fl.clone());
-                // Main.println ("    adding rhs_next <<<"+rhs_next+">>> to todo");
                 todo = add_all (todo, rhs_next);
             }   
         }
         else {
-            // Main.println (" compound:");
             if (terms() != null)
                 for (Term t = terms(); t != null; t = t.next) {
                     if (t.is_simple()) {
-                        // Main.println ("  simple arg t is <<<"+t+">>>:");
                         new_terms = add_elt (new_terms, t.clone());
                     } else {
-                        // Main.println ("  complex arg t is <<<"+t+">>>:");
                         Term v = variable(Term.gensym());
                         new_terms = add_elt (new_terms, v);
                         Term e = equation (v.clone(), t.clone());
-                        // Main.println ("    adding <<<"+e+">>> to todo");
                         todo = add_elt (todo, e);
                     }
                 }
@@ -567,17 +511,11 @@ _1 = p(Z, _2, _3)
             }
         }
 
-
         Term new_head = this.clone();
         new_head = add_all (new_head, r);
-        // Main.println ("flatten: new_head is <<<"+new_head+">>>");
-        // Main.println ("returning = ");
-        // for (Term x = r; r != null; r = r.next) Main.println ("   " + x);
-        // Main.println ("return");
 
         return new_head;
     }
-
 }
 
 

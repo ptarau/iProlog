@@ -280,7 +280,7 @@ public class TestTerm {
     }
 
     private void list_test() {
-        Main.println ("list_test entered...");
+        Main.println ("============ list_test entered...");
 
         Term.reset_gensym();
         Term.set_TarauLog();
@@ -302,14 +302,12 @@ public class TestTerm {
 
         Term V = v_("V");
 
-        // llc.add (Clause.f__("zero_and_one", V).if__(e_(V,l)));
         Clause x;
         
         x = Clause.f__("zero_and_one", l);
         x.flatten();
         llc.add (x);
 
-        // llc.add (Clause.f__("zero_and_one", V).if__(e_(V,l_(c1,c0))));
         x = Clause.f__("zero_and_one", l_(c1,c0));
         x.flatten();
         llc.add (x);
@@ -326,7 +324,7 @@ public class TestTerm {
 
         Term.set_Prolog();
         /*
-        Main.println ("\n=== list_test: Pretty-print Prolog from it ===");
+        Main.println ("\n=== list_test: 'Pretty-print' Prolog from it ===");
         P.ppCode();
         */
 
@@ -496,15 +494,9 @@ public class TestTerm {
         
         Main.println ("==== moo ===============================================");
         Term nnn = s_("moo", l_(l_(l_(c_("a")))));
-        // Main.println ("nnn is <<<"+nnn+">>>");
 
         Term exp5[] = { s_("moo", v_0), e_(v_0,l_(v_1)), e_(v_1,l_(v_2)), e_(v_2,l_(c_("a"))) };
-/*
-        Main.println ("exp5[0] is <<<"+exp5[0]+">>>");
-        Main.println ("exp5[1] is <<<"+exp5[1]+">>>");
-        Main.println ("exp5[2] is <<<"+exp5[2]+">>>");
-        Main.println ("exp5[3] is <<<"+exp5[3]+">>>");
-*/
+
         check_flattening(nnn, exp5);
 
         Term mmm = s_("goo", s_("x", s_("y", c_("a"))));
@@ -543,19 +535,12 @@ public class TestTerm {
         assert L.is_a_termlist();
 
         try_simple();
-        
         list_test();
-        
         test_flatten();
-        
         try_t();
-        
         try_add();
-
         try_big();
-        
         try_perms();
-        
         try_t_J();
       
         Main.println ("\n======== End Term test ====================");
