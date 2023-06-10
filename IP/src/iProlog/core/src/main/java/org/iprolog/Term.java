@@ -37,26 +37,31 @@ import java.util.Iterator;
 // internally; if so, this redundancy in coding types could be
 // eliminated.
 
-public class Term implements Iterable<Term> {
-
-    class CustomIterator implements Iterator<Term> {
+public class Term // implements Iterable<Term>
+                {
+/* 
+    class TermIterator implements Iterator<Term> {
         Term start;
         Term cursor;
-        CustomIterator(Term obj) {      // constructor -- initialize cursor
+        TermIterator(Term obj) {      // constructor -- initialize cursor
+            Main.println ("cursor init with obj = " + obj);
             start = cursor = obj;
         }
         public boolean hasNext() {      // Checks if the next element exists
+            Main.println ("%%%%%%%%% OK are we ever checking next???? %%%%%%");
             return cursor.next != null;
         }
         public Term next() {            // moves the cursor/iterator to next element
             // should probably throw exception if !hasnext() 
-            return cursor.next;
+
+            return cursor = cursor.next;
         }
     }
     public Iterator<Term> iterator() {
-        return new Term.CustomIterator(this);
+        Main.println ("<<<<< do we ever get a Term iterator??? >>>>>");
+        return new Term.TermIterator(this);
     }
-
+*/
     final private static int Variable = 1;   // correponds to Engine.U (unbound variable)
     final private static int Compound = 2;   // correponds to Engine.R (reference)
     final private static int Constant = 3;   // correponds to Engine.C (constant)
@@ -83,73 +88,99 @@ public class Term implements Iterable<Term> {
                                     // which I admit may turn out to be
                                     // a bad idea
     
-    
-    public String v() { return V_; };
-    private String V_;
-    String set_v(String v) { V_ = v; return V_; }
-    public String c() { return C_; }
-    private String C_;
-    String set_c(String c) { C_ = c; return C_; }
-    private LinkedList<Term> terms() { return Terms; }   // What's in "(...)" in a compound,
+    private String S_;
+    final public String v() { assert tag == Variable; assert S_ != null; return S_; };
+    final String set_v(String v) { assert v != null; S_ = v; return S_; }
+
+    // c/C_  -- constant or the functor of a compound
+    final public String c() { assert tag == Compound || tag == Constant; return S_; }
+    final String set_c(String c) { S_ = c; return S_; }
+
+    // terms -- args of compound,
+    //       or elements of "lists",
+    //       or car of "list",
+    //       or lhs+rhs of equation
+    final private Term terms() { return Terms; }   // What's in "(...)" in a compound,
                                             //  or (hacky) the list [lhs,rhs] if equation
-    private LinkedList<Term> Terms;
-    private LinkedList<Term> set_terms(LinkedList<Term> Ts) { Terms = Ts; return Ts; }
+    private Term Terms;
+    final private Term set_terms(Term Ts) {
+        Terms = Ts;
+        return Ts;
+    }
 
-    Term next;
+    Term next = null;  // cdr
 
-    LinkedList<Term> args() {
+    public Term args() {
         assert tag == Compound;
         return terms();
     }
 
+    public int n_after() {
+        int n = 0;
+        for (Term x = this.next; x != null; x = x.next) ++n;
+        return n;
+    }
+
+    private void _T(int i) { // Main.println ("-----> in is_same_as " + i); 
+        }
     // compares two terms
     // really need to sort out what null list means
     // is it empty list?
     // null pointer?
     // either?
     Boolean is_same_as (Term t) {
-        if (tag != t.tag
-         || (c() != null && c().compareTo(t.c()) != 0)
-         || (v() != null && v().compareTo(t.v()) != 0)) return false;
-
-        if (terms() != null && t.terms() == null) return false;
-        if (terms() == null && t.terms() != null) return false;
-
-        if (t.terms() == null) {
-            assert terms() == null;
-            return true;
+        if (t == null) { _T(1); return false; }
+        if (tag != t.tag) { _T(2); return false; }
+        if (t.S_ != null) {
+            if (S_ == null) { _T(3); return false; }
+            if (t.S_.compareTo(S_) != 0) { _T(4); return false; }
         }
-        Iterator<Term> itl = t.terms().iterator();
-        if (!itl.hasNext() && (terms() == null || terms().isEmpty()))  return true;
-        if (!itl.hasNext() && (terms() != null || !terms().isEmpty())) return false;
-        Term tt = itl.next();
 
-        for (Term t1 : terms()) {
-            if (tt == null) return false;
-            if (!t1.is_same_as(tt)) return false;
-            if (itl.hasNext()) tt = itl.next();
-            else tt = null;
+        Term t1 = t.Terms;
+        for (Term tt = Terms; tt != null; tt = tt.next) {
+            if (t1 == null) { _T(5); return false; }
+            if (!tt.is_same_as(t1)) { _T(6); return false; }
+            // Main.println ("     &&& tt = <<<"+tt+">>>, t1=<<<"+t1+">>>");
+            // if (t1.next != null) Main.println ("     &&& t1.next = <<<"+t1.next+">>>");
+            t1 = t1.next;
         }
-        return true;
+
+        /*return*/ { _T(7); // Main.println ("this is <<<"+this+">>> t is <<<"+t+">>>");
+                                // Main.println (" t1==null is " + (t1 == null));
+                                if (t1 != null) {
+                                    // Main.println ("t1 is <<<"+t1+">>>")
+                                    ;
+                                }
+                                    return t1 == null;
+                    }
     }
 
+    // Because of side effects, this could break all over the place
+    // unless we make a copy
+    //
     Term a_term (int tag, String thing, Term... ts) {
-        LinkedList<Term> tl = new LinkedList<Term>();
-        for (Term t : ts)
-            tl.add (t);
-        return new Term (tag, thing, tl);
+
+        if (ts != null) {
+            Term cp_Ts[] = ts.clone();
+            for (int i = 0; i < ts.length-1; ++i)
+                cp_Ts[i].next = cp_Ts[i+1];
+            cp_Ts[ts.length-1].next = null;
+            return new Term (tag, thing, cp_Ts[0]);
+        }
+        return new Term (tag, thing, null);
+
     }
 
-    Term (int tag, String thing, LinkedList<Term> Ts) {
+    Term (int tag, String thing, Term Ts) {
 
         this.tag = tag;
 
         switch (tag) {
-            case Variable: set_v(thing); set_terms(null); set_c(null);  return;
-            case Compound: set_v(null); set_terms(Ts); set_c(thing); return;
-            case Constant: set_v(null); set_terms(null); set_c(thing); return;
-            case TermList: set_v(null); set_terms(Ts); set_c(null);  return;
-            case TermPair: set_v(null); set_terms(Ts); set_c(null);  return;
+            case Variable: set_terms(null); set_v(thing);   return;
+            case Compound: set_terms(Ts); set_c(thing); return;
+            case Constant: set_terms(null); set_c(thing); return;
+            case TermList: set_terms(Ts); set_c(null);  return;
+            case TermPair: set_terms(Ts); set_c(null);  return;
         }
 
 // I should really raise some exception here
@@ -162,7 +193,7 @@ public class Term implements Iterable<Term> {
     public Boolean is_a_compound() {  return tag == Compound;  }
     public Boolean is_a_constant() {  return tag == Constant;  }
     public Boolean is_a_termlist() {  return tag == TermList;}
-    public Boolean is_an_equation(){  return tag == Compound && terms().size() == 2 && c() == "=";  }
+    public Boolean is_an_equation(){  return tag == Compound && c() == "=";  }
     public Boolean is_a_termpair() {  return tag == TermPair; }
 
     public static String remove_any_Var_prefix(String s) {
@@ -187,64 +218,51 @@ public class Term implements Iterable<Term> {
         if (Character.isLowerCase(v.charAt(0))) v = Var_prefix + v;
         return new Term (Variable, v, null);
     }
+
     public static Term constant(String c) {
         if (Character.isUpperCase(c.charAt(0))) c = Const_prefix + c;
         return new Term (Constant, c, null);
     }
     public static Term compound(String f) {
-        return new Term (Compound, f, new LinkedList<Term>());
+        return new Term (Compound, f, null);
     }
-    public static Term compound(String f, LinkedList<Term> terms) {
+    public static Term compound(String f, Term terms) {
         return new Term (Compound, f, terms);
     }
-    public static Term compound(String f, Term t) {
-        LinkedList<Term> llt = new LinkedList<>();
-        llt.add (t);
-        return compound (f, llt);
-    }
     public static Term equation(Term lhs, Term rhs) {
-        LinkedList<Term> ll = new LinkedList<Term>();
-        ll.add (lhs);
-        ll.add (rhs);
-        return new Term(Compound, "=", ll);
+        assert lhs.is_a_variable(); // for now
+        assert !rhs.is_an_equation();
+        Term l = lhs.clone();
+        l.next = rhs.clone();
+        // Main.println ("in equation (lhs=<<<"+lhs+">>>, rhs=<<<"+rhs+">>>)");
+        return new Term(Compound, "=", l);
     }
-
     public static Term termlist(Term... ts) {
-        LinkedList<Term> ll = new LinkedList<Term>();
-        for (Term t : ts)
-            ll.add(t);
-        return termlist(ll);
-    }
+        Term r = new Term (TermList, null, null);
+        assert r.is_a_termlist();
+        if (ts == null) return r;
+        if (ts.length == 0) return r;
 
-    public static Term termlist(LinkedList<Term> llt) {
-        Term t = new Term (TermList, "[...]", llt);
+        Term cp_Ts[] = ts.clone();
 
-        return t;
-    }
-    public static Term termpair(LinkedList<Term> car_cdr) {
-        int sz = car_cdr.size();
+        for (int i = 0; i < ts.length-1; ++i)
+            cp_Ts[i].next = cp_Ts[i+1];
 
-        assert sz <= 2 && sz > 0;
+        cp_Ts[ts.length-1].next = null;
 
-        return new Term (TermPair, "", car_cdr);
-    }
-    // Not clear what to do about termpairs. Maybe default to
-    // first elt of LinkedList is car, the rest is cdr?
-    public static Term termpair(Term car, Term cdr) {
-        LinkedList<Term> car_cdr = new LinkedList<Term>();
-        car_cdr.add (car);
-        car_cdr.add (cdr);
-        return termpair (car_cdr);
+        r.Terms = cp_Ts[0];
+
+        return r;
     }
 
     public Term lhs() {
         assert this.is_an_equation();
-        return terms().peekFirst();
+        return terms();
     }
 
     public Term rhs() {
         assert this.is_an_equation();
-        return terms().peekLast();
+        return terms().next;
     }
 
     // The following differences in lexicalization
@@ -253,7 +271,6 @@ public class Term implements Iterable<Term> {
 
     public static boolean in_Prolog_mode = set_Prolog();
     
-
     protected static String and_op; 
     protected static String args_start;
     protected static String arg_sep;
@@ -319,13 +336,12 @@ public class Term implements Iterable<Term> {
         String delim = "";
         String s = "";
 
-        for (Term t : terms()) {
-            s = s + delim;
-            if (t == null)
-                s = s + " nil ";
-            else
+        if (terms() != null) {
+            for (Term t = Terms; t != null; t = t.next) {
+                s = s + delim;
                 s = s + t;
-            delim = sep;
+                delim = sep;
+            }
         }
         return s;
     }
@@ -340,38 +356,16 @@ public class Term implements Iterable<Term> {
         switch (tag) {
             case Variable: r = v(); break;
             case Constant: r = c(); break;
-            case Compound: if (c() != "=") {
-                                
-                                if (c() == "lists") {
-                                    // Main.println("  Term.toString:      seeing lists case  !!!!!!!!!!!!!!");
-                                    // Main.println ("  Term.toString:         terms = " + terms_to_str(arg_sep));
-                                }
-                                 
+            case Compound: if (c() != "=") {                                 
                                  r =      c()
                                         + args_start
                                         + terms_to_str(arg_sep)
                                         + args_end;
                             } else {
-                                assert c() == "=";
-                                if (rhs().is_lists()) {
-                                    Term rhs_car = rhs().terms().peekFirst();
-                                    assert rhs_car != null;
-                                    // Main.println ("  Term.toString:       rhs_car = " + rhs_car);
-                                    if (rhs().terms().size() == 1)
-                                        // Main.println ("  Term.toString:      rhs_cdr == null")
-                                        ;
-                                    else {
-                                        Term rhs_cdr = rhs().terms().get(1);
-                                        assert rhs_cdr != null;
-                                        // Main.println ("  Term.toString:      rhs_cdr = " + rhs_cdr);
-                                    }                                    
+                                if (rhs().is_lists()) // ?????? WHY ????????                                                                  
                                     r = lhs().toString() + " " + rhs().toString();
-                                    // Main.println ("  Term.toString:      holds lists reduced to r = " + r + "!!!!!");
-                                } else {
-                                    r =   lhs()
-                                        + holds_op
-                                        + rhs();
-                                }
+                                else 
+                                    r = lhs() + holds_op + rhs();
                             }
                             break;
             case TermList:  // if (terms == null)
@@ -385,14 +379,21 @@ public class Term implements Iterable<Term> {
         return r;
     }
 
-    public void takes_this(Term t) {
+    public Term takes_this(Term t) {
         assert tag == Compound;
-        terms().add (t);
-    }
-
-    public void takes_this(LinkedList<Term> llt) {
-        assert llt != null;
-        terms().addAll(llt);
+        assert t != null;
+        /*
+        Main.println (" is t really " + t + "?????????????");
+        Main.println ("t.S_ = " + t.S_);
+        Main.println ("t.tag = " + t.tag);
+        Main.println ("Term "+this+" takes_this("+t+"):");
+        */
+        this.Terms = add_elt(terms(), t.clone());
+        // Main.println ("In takes_this, this term is now "+this);
+        assert Terms != null;
+        // Main.println ("Terms = " + Terms);
+        // for (Term x = Terms; x != null; x = x.next) { Main.println ("    .... " + x); }
+        return this;
     }
 
     private static int    gensym_i = 0;
@@ -413,7 +414,7 @@ public class Term implements Iterable<Term> {
         //    return lhs().is_flat() && rhs().is_flat();
 
         // depends on representing lhs+rhs as terms list in eqns:
-        for (Term t : terms())
+        for (Term t = terms(); t != null; t = t.next)
             if (!t.is_simple())
                 return false;
 
@@ -462,52 +463,119 @@ _1 = p(Z, _2, _3)
 
  /* flatten this */
 
-    public LinkedList<Term> flatten() {
-        return this.flatten1 (true);
-    }
-    private LinkedList<Term> flatten1 (Boolean first) {
+    Term add_elt (Term x, Term elt) {
+        // Main.println ("   in add_elt("+x+", "+elt+"):");
 
-        LinkedList<Term> r = new LinkedList<Term>();
+        if (x == null) return elt;
+        assert elt != null;
+        assert elt.next != elt;
+        assert x != elt;
+        assert (x.next != x);
+
+        int limit = 6;
+        for (Term i = x; i != null; i = i.next) {
+            // Main.println ("   i = " + i);
+            assert i.next != i;
+            if (i.next == null) {
+                i.next = elt;
+                break;
+            }
+            assert (--limit > 0);
+        }
+        return x;
+    }
+    Term add_all (Term x, Term Ts) {
+        if (Ts == null) return x;
+        assert Ts.next != Ts;
+        // Main.println ("add_all: x = <<<" + x + ">>> Ts (start) is <<<" + Ts + ">>>");
+        String xS;
+        if (x != null)
+             xS = x.toString();
+        else xS = "<<<null>>>";
+        String TsStartS = Ts.toString();
+        assert xS.compareTo(TsStartS) != 0;
+        return add_elt (x, Ts);
+    }
+
+    public Term clone() {
+      return new Term(this.tag, this.S_, this.Terms);
+    }
+
+    private void check_it(Term r) {
+        for (Term x = r; x != null; x = x.next) {
+            if (x.is_an_equation()) {
+                assert !x.rhs().is_an_equation();
+            }
+        }
+    }
+
+    public Term flatten() {
+        // Main.println ("\n\nflatten1: this is " + this);
 
         if (this.is_simple()) {
-            r.add (this);
-            return r;
+            // Main.println ("Returning a clone of it");
+            return this.clone();
         }
  
-        LinkedList<Term> todo = new LinkedList<Term>();
-        LinkedList<Term> new_terms = new LinkedList<Term>();
+        Term r = null;
+        Term todo = null;
+        Term new_terms = null;
 
         if (this.is_an_equation()) {
-            for (Term t : terms()) {   // will traverse lhs and rhs
-                if (!t.is_flat())
-                    todo.addAll (t.flatten1(false));
-                new_terms.add (t);
-            }
-            set_terms(new_terms);
-            r.add (this);
+            assert lhs().is_a_variable();
+            assert !rhs().is_an_equation();
+            new_terms = lhs().clone();
+            if (rhs().is_simple()) {
+                new_terms = add_elt (new_terms, rhs().clone());
+            } else {
+                Term rhs_fl = rhs().flatten();
+                Term rhs_next = rhs_fl.next;
+                new_terms = add_elt (new_terms, rhs_fl.clone());
+                // Main.println ("    adding rhs_next <<<"+rhs_next+">>> to todo");
+                todo = add_all (todo, rhs_next);
+            }   
         }
         else {
-            for (Term t : terms()) {
-                if (t.is_simple()) {
-                    new_terms.add (t);
-                } 
-                else {
-                    Term v = variable(Term.gensym());
-                    new_terms.add(v);
-                    Term e = equation (v, t);
-                    todo.add(e);
+            // Main.println (" compound:");
+            if (terms() != null)
+                for (Term t = terms(); t != null; t = t.next) {
+                    if (t.is_simple()) {
+                        // Main.println ("  simple arg t is <<<"+t+">>>:");
+                        new_terms = add_elt (new_terms, t.clone());
+                    } else {
+                        // Main.println ("  complex arg t is <<<"+t+">>>:");
+                        Term v = variable(Term.gensym());
+                        new_terms = add_elt (new_terms, v);
+                        Term e = equation (v.clone(), t.clone());
+                        // Main.println ("    adding <<<"+e+">>> to todo");
+                        todo = add_elt (todo, e);
+                    }
                 }
-            }
-            set_terms(new_terms);
-
-            if (first)
-                r.add (this);
         }
         
-        for (Term t :  todo)
-            r.addAll (t.flatten1(false));
+        set_terms(new_terms);
+        
+        if (todo != null) {
+            for (Term t = todo; t != null; t = t.next) {
+                Term tf = t.flatten();
+                r = add_all (r, tf);
+            }
+        }
+        for (Term x = r; x != null; x = x.next) {
+            if (x.is_an_equation()) {
+                assert !x.rhs().is_an_equation();
+            }
+        }
 
-        return r;
+
+        Term new_head = this.clone();
+        new_head = add_all (new_head, r);
+        // Main.println ("flatten: new_head is <<<"+new_head+">>>");
+        // Main.println ("returning = ");
+        // for (Term x = r; r != null; r = r.next) Main.println ("   " + x);
+        // Main.println ("return");
+
+        return new_head;
     }
 
 }

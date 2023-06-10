@@ -310,8 +310,8 @@ s += "]";
   private final static ArrayList<String[]>
   expand_lists_stmts(final ArrayList<ArrayList<String>> Wss) {
 
-    // Main.println("\n\nexpand_lists_stmts: entered....");
-    // Main.println("  Wss = " + Wss);
+    Main.println("\n\nexpand_lists_stmts: entered....");
+    Main.println("  Wss = " + Wss);
 
     final ArrayList<String[]> Results = new ArrayList<String[]>();
     for (final ArrayList<String> Ws : Wss) {
@@ -479,12 +479,12 @@ s += "]";
 
     if (!lt.is_a_termlist())
       return null;
-
+/*
     LinkedList<Term> xf = new LinkedList<Term>();
     int l = lt.args().size();
 
     for (int i = 1; i < l; i++) {
-      /*
+      
       final String[] Rs = new String[4];
       final String Vi = 1 == i ? V : V + "__" + (i - 1);
       final String Vii = V + "__" + i;
@@ -493,10 +493,11 @@ s += "]";
       Rs[2] = Ws.get(i);
       Rs[3] = i == l - 1 ? "c:nil" : "v:" + Vii;
       Rss.add(Rs);
-       */
+       
     }
+    */
 
-    return xf;
+    return null;
   }
 
   // NOT CALLED YET
@@ -523,7 +524,7 @@ s += "]";
   expand_lists_stmts(final Clause cl) {
 
     assert (false);
-
+/*
     Main.println("\nexpand_lists_stmts(cl): calling on cl.head....");
 
     cl.head = expand_list_stmt(cl.head);
@@ -535,13 +536,15 @@ s += "]";
     Main.println ("...exiting expand_lists_stmts(Clause cl)");
 
     return cl;
+*/
+    return null;
   }
 
   // NOT CALLED YET
   Clause[] dload_from_x(LinkedList<Clause> these_clauses) {
 
     assert(false);
-
+/*
     final ArrayList<Clause> compiled_clauses = new ArrayList<Clause>();
 
     for (final Clause cl : these_clauses) { // for each clause
@@ -564,6 +567,8 @@ s += "]";
     }  // end clause set
 
     return condensed_clauses (compiled_clauses);
+*/
+    return null;
   }
   
   void linker(  LinkedHashMap<String,IntStack> refs,

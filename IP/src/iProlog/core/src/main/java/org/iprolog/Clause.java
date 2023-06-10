@@ -22,18 +22,17 @@ class Clause {
 
   // import/export version:
 
-  public LinkedList<Term> head;  // equational form will make this plural
-  public LinkedList<Term> body;
+  public Term head;  // equational form will make this plural
+  public Term body;
   boolean adding_args = true; // still needed?
 
   public static Clause f_(String fid) { // still needed?
 
     Clause cl = new Clause(0,null,0,0,null);
 
-    cl.head = new LinkedList<Term>();
-    cl.head.add (Term.compound(fid));
+    cl.head = Term.compound(fid);
 
-    cl.body = new LinkedList<Term>();
+    cl.body = null;
 
     return cl;
   }
@@ -46,14 +45,15 @@ class Clause {
 
     Clause cl = new Clause(0,null,0,0,null);
 
-    cl.head = new LinkedList<Term>();
-    Term hd = Term.compound(fid);
-    cl.head.add (hd);
+    cl.head = Term.compound(fid);
+
+    assert cl.head != null;
+    assert cl.head.is_a_compound();
 
     for (Term t : ts) 
-      hd.takes_this (t);
+      cl.head.takes_this(t);
 
-    cl.body = new LinkedList<Term>();
+    cl.body = null;
 
     return cl;
   }
@@ -66,9 +66,11 @@ class Clause {
   public Clause __(Term x) {
     assert x != null;
     if (adding_args)
-      head.peekFirst().takes_this(x); // Change to adding to head??
-    else
-      body.add(x);
+      head.takes_this(x); // Change to adding to head??
+    else {
+      if (body == null) body = x;
+      else body = body.add_elt(body, x);
+    }
     return this;
   }
 
@@ -79,21 +81,27 @@ class Clause {
 
   public Clause if__(Term... body_list) {
     adding_args = false;
-    for (Term t : body_list) body.add(t);
+
+    for (Term t : body_list)
+      if (body == null)
+        body = t;
+      else
+        body = body.add_elt (body, t);
+
     return this;
   }
 
   public String toString() {
     String s = "";
     String sep = "";
-    for (Term x : head) {
+    for (Term x = head; x != null; x = x.next) {
       s += sep + x.toString();
       sep = Term.and_op;
     }
-    if (body.size() > 0) {
+    if (body != null) {
       s += Term.if_sym;
       sep = "";
-      for (Term x : body) {
+      for (Term x = body; x != null; x = x.next) {
         s += sep + x.toString();
         sep = Term.and_op;
       }
@@ -103,14 +111,27 @@ class Clause {
   }
 
   public void flatten() {
-    assert !head.isEmpty();
-    assert head.getFirst() != null;
+    assert head != null;
 
-    head = head.getFirst().flatten();
-    LinkedList<Term> new_body = new LinkedList<Term>();
-    for (Term t : body)
-        new_body.addAll (t.flatten());
+    head = head.flatten();
+    assert head != null;
+
+    // Main.println (" Clause.flatten: head = ");
+    // for (Term x = head; x != null; x = x.next) Main.println ("     " + x);
+
+    Term new_body = null;
+    if (body != null)
+      for (Term t = body; t != null; t = t.next) {
+          if (new_body == null)
+            new_body = t.flatten();
+          else
+            new_body = new_body.add_all (new_body, t.flatten());
+      }
     body = new_body;
+
+    // Main.println (" Clause.flatten: body = ");
+    // for (Term x = body; x != null; x = x.next) Main.println ("     " + x);
+
   }
 
 // Skeletal elements for compiled form:
