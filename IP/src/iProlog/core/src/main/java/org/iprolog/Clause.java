@@ -82,11 +82,19 @@ class Clause {
   public Clause if__(Term... body_list) {
     adding_args = false;
 
-    for (Term t : body_list)
+    for (Term t : body_list) {
       if (body == null)
         body = t;
       else
         body = body.add_elt (body, t);
+      Main.println ("Clause.if__: adding " + t);
+    }
+
+    for (Term t = body ; t != null; t = t.next)
+      Main.println ("      ..." + t);
+    
+    
+    Main.println ("Returning from Clause.if__ ....");
 
     return this;
   }
@@ -116,9 +124,7 @@ class Clause {
       assert head != null;
     Term new_body = null;
 
-    if (body != null)
-      // for (Term t = body; t != null; t = t.next) {
-      for (Term t : body) {
+    for (Term t = body; t != null; t = t.next) {
           if (new_body == null)
             new_body = t.flatten();
           else

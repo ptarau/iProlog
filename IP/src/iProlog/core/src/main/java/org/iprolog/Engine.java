@@ -132,28 +132,34 @@ class Engine {
   final public static int MAX_N = 1 << (Integer.SIZE-(n_tag_bits+1));
   // to allow for tag & 1 sign bit -----------------------^
 
+
+
   /**
-   * Tags an integer value while flipping it into a negative
-   * number to ensure that untagged cells are always negative and the tagged
-   * ones are always positive - a simple way to ensure we do not mix them up
-   * at runtime.
+   * Tags an integer value while (optionally) flipping it into a negative
+   * number when we want to ensure that untagged cells are always negative
+   * and the tagged ones are always positive - a simple way to ensure we
+   * do not mix them up at runtime. Not negating the argument doesn't
+   * seem to affect results, and may improve performance slightly.
    */
+  final private static int maybe_invert(int w) {
+    return -w;
+  }
   final private static int tag(final int t, final int w) {
-    return -((w << 3) + t);
+    return maybe_invert((w << 3) + t);
   }
 
   /**
-   * Removes tag after flipping sign.
+   * Removes tag after (maybe) flipping sign.
    */
   final private static int detag(final int w) {
-    return -w >> 3;
+    return maybe_invert(w) >> 3;
   }
 
   /**
    * Extracts the tag of a cell.
    */
   final private static int tagOf(final int w) {
-    return -w & 7;
+    return maybe_invert(w) & 7;
   }
 
   /**
@@ -263,21 +269,21 @@ class Engine {
     if(!"l:".equals(asm_prefix_tag))
       return null;
 
-// Main.println ("expand_lists_to_holds: entering....");
+Main.println ("expand_lists_to_holds: entering....");
 
     final int l = words.size();
     final int n_elts = l-1;
     final ArrayList<String[]> an_expansion = new ArrayList<String[]>();
     final String V = first_word.substring(2);
 
-// Main.println ("expand_lists_to_holds: l = " + l);
-// Main.println ("expand_lists_to_holds: V = " + V);
+Main.println ("expand_lists_to_holds: l = " + l);
+Main.println ("expand_lists_to_holds: V = " + V);
 
 String s = "[";
 String sep = "";
 for (int i = 1; i < l; ++i) { s += (sep + words.get(i)); sep = ","; }
 s += "]";
-// Main.println ("expand_lists_to_holds: list = " + s);
+Main.println ("expand_lists_to_holds: list = " + s);
 
     String subscript = "";
     String sub = "_sub_";
@@ -292,14 +298,14 @@ s += "]";
 
       subscript = sub + i;
 
-// Main.println("\n");
-// for (int j = 0; j < 4; ++j) Main.println ("expand_lists_to_holds: a_subexpansion["+j+"] = " + a_subexpansion[j]);
-// Main.println ("for next, subscript = " + subscript);
+Main.println("\n");
+for (int j = 0; j < 4; ++j) Main.println ("expand_lists_to_holds: a_subexpansion["+j+"] = " + a_subexpansion[j]);
+Main.println ("for next, subscript = " + subscript);
 
       an_expansion.add(a_subexpansion);
     }
 
-    // Main.println ("expand_lists_to_holds: exiting\n\n");
+    Main.println ("expand_lists_to_holds: exiting\n\n");
 
     return an_expansion;
   }
@@ -360,7 +366,7 @@ s += "]";
   }
   Clause[] dload_from_x(final String s, Boolean fromFile) {
 
-    // Main.println ("dload_from_x: s = " + s);
+    Main.println ("dload_from_x: s = " + s);
 
     final ArrayList<ArrayList<ArrayList<String>>> clause_asm_list = Toks.toSentences(s, fromFile);
 
@@ -372,8 +378,8 @@ s += "]";
       final IntStack cells = new IntStack();
       final IntStack goals = new IntStack();
 
-      // Main.println ("Just before expand_lists_stmts(clause_asm)");
-      // Main.println ("clause_asm = " + clause_asm);
+      Main.println ("Just before expand_lists_stmts(clause_asm)");
+      Main.println ("clause_asm = " + clause_asm);
       final ArrayList<String[]> raw_asm = expand_lists_stmts(clause_asm);
       assert raw_asm.size() > 0;
       int k = 0;

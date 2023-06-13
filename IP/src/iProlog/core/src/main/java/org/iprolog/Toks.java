@@ -17,7 +17,7 @@ public class Toks extends StreamTokenizer {
   public static String HOLDS = Term.holds_op.trim(); // "holds";
 
   public static String LISTS = "lists"; // todo
-  public static String IS = "is"; // todo
+  public static String IS = "is"; // "todo"
 
   public static Toks makeToks(final String s, final boolean fromFile) {
     try {
@@ -118,7 +118,6 @@ public class Toks extends StreamTokenizer {
 
     while (null != (t = toks.getWord())) {
       if (DOT.equals(t)) {
-
           Structures.add(Tokens);      // add this finished (?) structure
           Clauses.add(Structures);    // add it to this finished clause
                             // prepare for (possible) new clause and structure

@@ -174,8 +174,8 @@ public class Term implements Iterable<Term> {
     public Boolean is_a_compound() {  return tag == Compound;  }
     public Boolean is_a_constant() {  return tag == Constant;  }
     public Boolean is_a_termlist() {  return tag == TermList;}
-    public Boolean is_an_equation(){  return tag == Compound && c() == "=";  }
-    public Boolean is_a_termpair() {  return tag == TermPair; }
+    public Boolean is_an_equation(){  return tag == Compound && c() == "="; }
+    public Boolean is_a_termpair() {  return tag == Compound && c() == "|"; }
 
     public static String remove_any_Var_prefix(String s) {
         if (s.startsWith(Var_prefix))
@@ -232,6 +232,16 @@ public class Term implements Iterable<Term> {
 
         r.Terms = cp_Ts[0];
 
+        return r;
+    }
+    public static Term termpair(Term car, Term cdr) {
+        assert cdr != null;
+        Main.println ("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+        Main.println ("Term.termpair car = " + car + " cdr = " + cdr);
+        Main.println ("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+        Term Ts = car.clone();
+        Ts.next = cdr.clone();
+        Term r = new Term (Compound, "|", Ts);
         return r;
     }
 
@@ -336,19 +346,23 @@ public class Term implements Iterable<Term> {
         switch (tag) {
             case Variable: r = v(); break;
             case Constant: r = c(); break;
-            case Compound: if (c() != "=") {                                 
+            case Compound: if (c() == "|") {
+                                r = cons + args_start +terms_to_str(arg_sep) + args_end;
+                            } else
+                            if (c() != "=") {                                 
                                  r =      c()
                                         + args_start
                                         + terms_to_str(arg_sep)
                                         + args_end;
                             } else {
                                 if (rhs().is_lists()) // ?????? WHY ????????                                                                  
-                                    r = lhs().toString() + " " + rhs().toString();
+                                    r = lhs().toString() + list_elt_sep + rhs().toString();
                                 else 
                                     r = lhs() + holds_op + rhs();
                             }
                             break;
             case TermList:  r =  list_start + terms_to_str(list_elt_sep) + list_end;
+            Main.println ("$$$$$$$$$$$ do I even get here??? $$$$$$$$$$$$$$$");
                             break;
             case TermPair:  r = cons + terms_to_str(list_elt_sep);
                             break;

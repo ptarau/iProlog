@@ -28,8 +28,11 @@ public class Prog extends Engine implements Spliterator<Object> {
   // From Engine
   @Override
   String showTerm(final Object O) {
-    if (O instanceof Object[])
+    if (O instanceof Object[]) {
+      Object [] OO = (Object[]) O;
+      assert OO.length != 0;
       return make_string_from((Object[]) O);
+    }
     return O.toString();
   }
 
@@ -49,8 +52,17 @@ public class Prog extends Engine implements Spliterator<Object> {
         return t;
       }
     } else {
+      assert (O != null);
       Object oa[] = (Object[]) O;
       // should try to make sure oa[0] is a functor first
+      assert (oa != null);
+      if (oa.length == 0) {
+        Main.println ("oa.length == 0! O is " + O.toString());
+        Main.println ("O type is " + O.getClass().getTypeName());
+      }
+      if (oa.length == 0) {
+        return Term.termlist();
+      }
       Term f = Term.compound(oa[0].toString());
       for (int i = 1; i < oa.length; ++i) {
           f.takes_this (term_made_from(oa[i]));
@@ -126,8 +138,13 @@ public class Prog extends Engine implements Spliterator<Object> {
     return O.toString();
   }
 
-  static String make_string_from(final Object[] f_of_args) {
+  public static String make_string_from(final Object[] f_of_args) {
+    if (f_of_args.length == 0) {
+      // assert false;
+      return ("nil");
+    }
     final StringBuffer buf = new StringBuffer();
+
     final String name = f_of_args[0].toString();
 
     if (f_of_args.length == 3 && isInfixOp(name)) {

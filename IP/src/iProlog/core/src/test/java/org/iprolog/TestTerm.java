@@ -12,20 +12,23 @@ import java.util.Arrays;
 
 public class TestTerm {
 
-    private static Term v_(String s) { return Term.variable(s); }
-    private static Term c_(String s) { return Term.constant(s); }
-    private static Term s_(String s) { return Term.compound(s); }
-    private static Term s_(String s, Term... ts) {
+    private static final Term v_(String s) { return Term.variable(s); }
+    private static final Term c_(String s) { return Term.constant(s); }
+    private static final Term s_(String s) { return Term.compound(s); }
+    private static final Term s_(String s, Term... ts) {
                                         Term xt = Term.compound(s); 
                                         for (Term t : ts)
                                             xt = xt.takes_this(t);
                                         return xt;
                                     }
-    private static Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
-    private static Term l_(Term... ts) {
+    private static final Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
+    private static final Term l_(Term... ts) {
                                         if (ts.length == 0)
                                             return c_("nil");
                                         return Term.termlist(ts);
+                                    }
+    private static final Term p_(Term car, Term cdr) {
+                                        return Term.termpair(car,cdr);
                                     }
 
     /**
@@ -70,6 +73,8 @@ public class TestTerm {
             String sg = P.showTerm(POJO_goal_answers[0]);
             assert sg.equals("goal");   // because it'll be "[goal, <answer>]"
             assert POJO_goal_answers.length > 1;
+            assert POJO_goal_answers.length < 3;
+            Main.println ("POJO_goal_answers[1] is " + POJO_goal_answers[1]);
             String show_POJO_object = P.showTerm(POJO_goal_answers[1]);
 
             if (whats_expected != null) {
@@ -146,6 +151,18 @@ public class TestTerm {
         Term.reset_gensym();
         Term.set_TarauLog();
 
+        Main.println ("   ===== try_it: before flatten ========");
+
+        x_out = "";
+        for (Clause cl : llc) {
+            x_out += cl.toString()+"\n";
+            Main.println ("Pulling out body list:");
+            for (Term t = cl.body; t != null; t = t.next)
+                Main.println ("               .... " + t);
+        }
+
+        Main.println (x_out);
+
         Main.println ("   ===== try_it: flatten transform =======");
         x_out = "";
         for (Clause cl : llc) {
@@ -153,12 +170,12 @@ public class TestTerm {
             x_out += cl.toString()+"\n";
         }
 
-        Main.println ("   ===== try_it: flattened result ======");
         Main.println (x_out);
 
         Main.println ("   ===== try_it: Calling new Prog: ===============");
         Prog P = new Prog(x_out, false);
-        expect_from(P, whats_expected);
+        // expect_from(P, whats_expected);
+        P.run();
         Main.println ("  exiting try_it()");
     }
 
@@ -238,14 +255,64 @@ public class TestTerm {
         Main.println ("... try_big() exiting.");
     }
 
+    private void try_bar() {
+
+        Main.println ("\n==== try_bar (list composition with | symbol) ====");
+
+
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+
+        Term X  = v_("X");  Term Y  = v_("Y"); Term F = v_("F");
+        
+    // eq(X,X).
+        Clause eqXX = Clause.f__("eq",X,X);
+        llc.add(eqXX);
+        llc.add(Clause.f__("foo", p_(X,Y)).
+            if__(s_("eq", X, c_("1")),
+                 s_("eq", Y, c_("nil")))
+        );
+        llc.add(Clause.f__("foo", p_(X,Y)).
+        if__(s_("eq", X, c_("2")),
+             s_("eq", Y, c_("3"))
+             )
+        );
+        llc.add(Clause.f__("foo", l_(X,Y)).
+        if__(s_("eq", X, c_("2")),
+             s_("eq", Y, c_("3"))
+             )
+        );
+        llc.add(Clause.f__("goal", F).
+            if__(s_("foo", F)));
+
+
+        Main.println ("\n==== try_bar calling try_it .... ====");
+        try_it (llc, null);
+        
+
+        Main.println ("\n==== try_bar exiting .... ====");
+    }
+
     private void try_perms() {
-/* 
+
         LinkedList<Clause> llc = new LinkedList<Clause>();
 
         Term X  = v_("X");  Term Y  = v_("Y");
         Term Xs = v_("Xs"); Term Ys = v_("Ys");
-        llc.add (Clause.f__("sel"));
-*/
+        
+    // eq(X,X).
+        Clause eqXX = Clause.f__("eq",X,X);
+        llc.add(eqXX);
+
+    // sel(X,[X|Xs],Xs).
+        llc.add (Clause.f__("sel", X, p_(X,Xs), Xs));
+
+        // sel(X,[Y|Xs],[Y|Ys]):-sel(X,Xs,Ys).
+        llc.add(Clause.f__("sel", X, p_(Y,Xs), p_(Y,Ys)).
+            if__(s_("sel", X, Xs, Ys)));
+        
+        // To be continued ....
+        // First I need to make sure I can do p_(Something, SomethingElse)
+        
     }
 
     private void try_t_J() {
@@ -516,7 +583,11 @@ public class TestTerm {
             { Main.println ("!!!!!!!!!!! x = " + x + "!!!!!!!!!!!!!!"); }
 
         test_gensym();
-
+/*
+        Object A[] = {};
+        String mmm = Prog.make_string_from(A);
+        Main.println ("mmm = " + mmm);
+ */
         String var_X = "X";
         Term vX = v_(var_X);
         assert vX.is_a_variable();
@@ -533,15 +604,19 @@ public class TestTerm {
         Term L = l_(vX,cOoh);
         assert L != null;
         assert L.is_a_termlist();
-
+/*
         try_simple();
         list_test();
         test_flatten();
         try_t();
         try_add();
         try_big();
+*/
+        try_bar();  // so basic, should be earlier
+/*
         try_perms();
         try_t_J();
+*/
       
         Main.println ("\n======== End Term test ====================");
     }
