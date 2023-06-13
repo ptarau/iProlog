@@ -604,19 +604,18 @@ public class TestTerm {
         Term L = l_(vX,cOoh);
         assert L != null;
         assert L.is_a_termlist();
-/*
+
         try_simple();
         list_test();
         test_flatten();
         try_t();
         try_add();
         try_big();
-*/
+
         try_bar();  // so basic, should be earlier
-/*
+
         try_perms();
         try_t_J();
-*/
       
         Main.println ("\n======== End Term test ====================");
     }

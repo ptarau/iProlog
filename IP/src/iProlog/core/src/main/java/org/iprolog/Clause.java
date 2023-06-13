@@ -87,14 +87,12 @@ class Clause {
         body = t;
       else
         body = body.add_elt (body, t);
-      Main.println ("Clause.if__: adding " + t);
+      // Main.println ("Clause.if__: adding " + t);
     }
 
-    for (Term t = body ; t != null; t = t.next)
-      Main.println ("      ..." + t);
+    // for (Term t = body ; t != null; t = t.next) Main.println ("      ..." + t);
     
-    
-    Main.println ("Returning from Clause.if__ ....");
+    // Main.println ("Returning from Clause.if__ ....");
 
     return this;
   }

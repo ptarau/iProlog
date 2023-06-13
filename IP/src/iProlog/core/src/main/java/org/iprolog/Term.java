@@ -235,10 +235,6 @@ public class Term implements Iterable<Term> {
         return r;
     }
     public static Term termpair(Term car, Term cdr) {
-        assert cdr != null;
-        Main.println ("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        Main.println ("Term.termpair car = " + car + " cdr = " + cdr);
-        Main.println ("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
         Term Ts = car.clone();
         Ts.next = cdr.clone();
         Term r = new Term (Compound, "|", Ts);
@@ -362,7 +358,6 @@ public class Term implements Iterable<Term> {
                             }
                             break;
             case TermList:  r =  list_start + terms_to_str(list_elt_sep) + list_end;
-            Main.println ("$$$$$$$$$$$ do I even get here??? $$$$$$$$$$$$$$$");
                             break;
             case TermPair:  r = cons + terms_to_str(list_elt_sep);
                             break;

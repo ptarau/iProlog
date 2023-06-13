@@ -269,21 +269,21 @@ class Engine {
     if(!"l:".equals(asm_prefix_tag))
       return null;
 
-Main.println ("expand_lists_to_holds: entering....");
+// Main.println ("expand_lists_to_holds: entering....");
 
     final int l = words.size();
     final int n_elts = l-1;
     final ArrayList<String[]> an_expansion = new ArrayList<String[]>();
     final String V = first_word.substring(2);
 
-Main.println ("expand_lists_to_holds: l = " + l);
-Main.println ("expand_lists_to_holds: V = " + V);
+// Main.println ("expand_lists_to_holds: l = " + l);
+// Main.println ("expand_lists_to_holds: V = " + V);
 
 String s = "[";
 String sep = "";
 for (int i = 1; i < l; ++i) { s += (sep + words.get(i)); sep = ","; }
 s += "]";
-Main.println ("expand_lists_to_holds: list = " + s);
+// Main.println ("expand_lists_to_holds: list = " + s);
 
     String subscript = "";
     String sub = "_sub_";
@@ -298,14 +298,14 @@ Main.println ("expand_lists_to_holds: list = " + s);
 
       subscript = sub + i;
 
-Main.println("\n");
-for (int j = 0; j < 4; ++j) Main.println ("expand_lists_to_holds: a_subexpansion["+j+"] = " + a_subexpansion[j]);
-Main.println ("for next, subscript = " + subscript);
+// Main.println("\n");
+// for (int j = 0; j < 4; ++j) Main.println ("expand_lists_to_holds: a_subexpansion["+j+"] = " + a_subexpansion[j]);
+// Main.println ("for next, subscript = " + subscript);
 
       an_expansion.add(a_subexpansion);
     }
 
-    Main.println ("expand_lists_to_holds: exiting\n\n");
+//    Main.println ("expand_lists_to_holds: exiting\n\n");
 
     return an_expansion;
   }
@@ -316,8 +316,8 @@ Main.println ("for next, subscript = " + subscript);
   private final static ArrayList<String[]>
   expand_lists_stmts(final ArrayList<ArrayList<String>> Wss) {
 
-    Main.println("\n\nexpand_lists_stmts: entered....");
-    Main.println("  Wss = " + Wss);
+    // Main.println("\n\nexpand_lists_stmts: entered....");
+    // Main.println("  Wss = " + Wss);
 
     final ArrayList<String[]> Results = new ArrayList<String[]>();
     for (final ArrayList<String> Ws : Wss) {
@@ -366,7 +366,7 @@ Main.println ("for next, subscript = " + subscript);
   }
   Clause[] dload_from_x(final String s, Boolean fromFile) {
 
-    Main.println ("dload_from_x: s = " + s);
+    Main.println ("\ndload_from_x:s = \n" + s);
 
     final ArrayList<ArrayList<ArrayList<String>>> clause_asm_list = Toks.toSentences(s, fromFile);
 
@@ -378,8 +378,8 @@ Main.println ("for next, subscript = " + subscript);
       final IntStack cells = new IntStack();
       final IntStack goals = new IntStack();
 
-      Main.println ("Just before expand_lists_stmts(clause_asm)");
-      Main.println ("clause_asm = " + clause_asm);
+      // Main.println ("Just before expand_lists_stmts(clause_asm)");
+      // Main.println ("clause_asm = " + clause_asm);
       final ArrayList<String[]> raw_asm = expand_lists_stmts(clause_asm);
       assert raw_asm.size() > 0;
       int k = 0;
