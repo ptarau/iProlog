@@ -46,14 +46,20 @@ class Clause {
     Clause cl = new Clause(0,null,0,0,null);
 
     cl.head = Term.compound(fid);
+ 
+    Main.println ("   IN Clause.f__: cl.head is <<<" + cl.head + ">>>");
 
     assert cl.head != null;
     assert cl.head.is_a_compound();
 
-    for (Term t : ts) 
+    for (Term t : ts) {
+      Main.println ("   IN Clause.f__: adding " + t);
       cl.head.takes_this(t);
+    }
 
     cl.body = null;
+
+    Main.println ("    IN Clause.f__: this is now <<<" + cl + ">>>");
 
     return cl;
   }
@@ -81,18 +87,28 @@ class Clause {
 
   public Clause if__(Term... body_list) {
     adding_args = false;
+    assert body == null;
 
     for (Term t : body_list) {
-      if (body == null)
+      Main.println ("   Clause.if__: adding <<<" + t + ">>> to body...");
+      if (body == null) {
         body = t;
-      else
-        body = body.add_elt (body, t);
-      // Main.println ("Clause.if__: adding " + t);
-    }
+        Main.println ("   Clause.if__: this is now <<<" + this + ">>> after adding to empty body");
+      } else {
+        Main.println ("   Clause.if__: this is now <<<" + this + ">>> before add_elt call...");
 
-    // for (Term t = body ; t != null; t = t.next) Main.println ("      ..." + t);
-    
-    // Main.println ("Returning from Clause.if__ ....");
+        for (Term x = head.args(); x != null; x = x.next) {
+          Main.println ("             head.args elt: " + x);
+        }
+        
+        body = body.add_elt (body, t);
+        Main.println ("   Clause.if__: this is now <<<" + this + ">>> after adding to body");
+        for (Term x = head.args(); x != null; x = x.next) {
+          Main.println ("             head.args elt: " + x);
+        }
+      }
+      assert body != head.args();
+    }
 
     return this;
   }
@@ -118,17 +134,25 @@ class Clause {
 
   public void flatten() {
       assert head != null;
+    Term.reset_gensym();
     head = head.flatten();
       assert head != null;
+    // Term.reset_gensym();
+    if (body != null)
+        body.flatten();
+/*
     Term new_body = null;
 
     for (Term t = body; t != null; t = t.next) {
-          if (new_body == null)
+          if (new_body == null) {
             new_body = t.flatten();
-          else
+          }
+          else {
             new_body = new_body.add_all (new_body, t.flatten());
+          }
       }
     body = new_body;
+*/
   }
 
 // Skeletal elements for compiled form:

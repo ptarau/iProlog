@@ -9,59 +9,35 @@ import java.util.Iterator;
 
 // Prolog "term", with lexical conventions abstracted away.
 // E.g., variables don't have to start with a capital letter
-// or underscore, and can have embedded blanks. Maybe better
-// to call it a Structure, which may align better with some
+// or underscore, and they can have embedded blanks. Maybe better
+// to call it a Structure, because it may align better with some
 // established Prolog nomenclature.
 
 // To be consistent with Paul Tarau's strategy of
 // pretending Java classes are like C structs,
-// I won't try to make this an interface
+// I won't try to make this an interface or superclass
 // for free-standing Java classes for constants,
 // variables and compound terms.
 
 // In C it could probably contain a tagged union. However,
 // because the members built up through the API get
 // turned into Tarau's compiled form, their size doesn't
-// matter much. They'll be used once paged out of caches/RAM
-// during any long logic-program execution; if their size
-// somehow becomes a memory or speed bottleneck, the
-// can be garbage-collected; as long as the symbol
-// table info is retained, something similar enough
-// to the original can be reconstructed from Tarau's
+// matter much. They'll be used once, GCed
+// during any long logic-program execution.
+// As long as the symbol table info is retained,
+// something similar enough to the original
+// can be reconstructed from Tarau's
 // compiled form.
 
 // For tags, note the correpondence to Engine's V, R, and C.
 // There may be a reason to merge the tags in Engine with the tags here.
-// For now, tolerate smelly redundancy. I need to look at whether
+// For now, tolerate the smelly redundancy. I need to look at whether
 // the equations (e.g., "_1=x") can be Compounds (like ""=(_1,x)"")
 // internally; if so, this redundancy in coding types could be
 // eliminated.
 
-// The iterator implementation is iffy; things blow up
-// when I try to substitute
-//    for (Term t : xTerms)
-// for
-//    for (Term t = xTerms; t != null; t = t.next)
 
-public class Term implements Iterable<Term> {
-
-    class TermIterator implements Iterator<Term> {
-        Term start;
-        Term cursor;
-        TermIterator(Term obj) {      // constructor -- initialize cursor
-            start = cursor = obj;
-        }
-        public boolean hasNext() {      // Checks if the next element exists
-            return cursor.next != null;
-        }
-        public Term next() {            // moves the cursor/iterator to next element
-            // should probably throw exception if !hasnext() is null 
-            return cursor = cursor.next;
-        }
-    }
-    public Iterator<Term> iterator() {
-        return new Term.TermIterator(this);
-    }
+public class Term {
 
     final private static int Variable = 1;   // correponds to Engine.U (unbound variable)
     final private static int Compound = 2;   // correponds to Engine.R (reference)
@@ -69,18 +45,19 @@ public class Term implements Iterable<Term> {
     final private static int TermList = 4;   // Not in Engine tags because lists expand
     final private static int TermPair = 5;   // cons/dotted-pair for list construction
 
-    // "TermPair" can be used in the "natural assembly language"; "list" is the
+    // TermPair can be used in the "natural assembly language"; "list" is its
     // corresponding reserved word, "lists" being a plurality of termpairs
     // arranged as, well, a list. Yeah, I found it cofusing at first myself.
     // If I ever change the "natural assembly language", I might go with "pair"
     // and maybe "just" when the second argument is nil.
 
-    // hacky: if a variable presented through the API doesn't
+    // Hacky: if a variable presented through the API doesn't
     // start with upper case or underscore, prefix it with
     // something that does; likewise, if a constant starts
     // with upper case, prefix it with something lower case;
     // filter these prefixes back out at a later stage of
-    // token processing.
+    // token processing. Eventually there will be an API that
+    // gets around the need for this hack.
 
     final public static String Var_prefix = "V__";
     final public static String Const_prefix = "c__";
@@ -101,21 +78,16 @@ public class Term implements Iterable<Term> {
     //       or elements of "lists",
     //       or car of "list",
     //       or lhs+rhs of equation
+    private Term Terms = null;
     final private Term terms() { return Terms; }   // What's in "(...)" in a compound,
                                             //  or (hacky) the list [lhs,rhs] if equation
-    private Term Terms;
-    final private Term set_terms(Term Ts) {
-        Terms = Ts;
-        return Ts;
-    }
+    public Term args() { assert tag == Compound;  return terms(); }
+  
+    final private Term set_terms(Term Ts) { Terms = Ts;  return Ts; }
 
-    Term next = null;  // cdr
+    Term next = null;  // cdr in LISP
 
-    public Term args() {
-        assert tag == Compound;
-        return terms();
-    }
-
+    // deep equality
     Boolean is_same_as (Term t) {
         if (t == null) return false;
         if (tag != t.tag) return false;
@@ -161,6 +133,7 @@ public class Term implements Iterable<Term> {
             case Compound: set_terms(Ts); set_c(thing); return;
             case Constant: set_terms(null); set_c(thing); return;
             case TermList: set_terms(Ts); set_c(null);  return;
+            // iffy, when termpair is actually compound with "|" functor
             case TermPair: set_terms(Ts); set_c(null);  return;
         }
 
@@ -175,7 +148,7 @@ public class Term implements Iterable<Term> {
     public Boolean is_a_constant() {  return tag == Constant;  }
     public Boolean is_a_termlist() {  return tag == TermList;}
     public Boolean is_an_equation(){  return tag == Compound && c() == "="; }
-    public Boolean is_a_termpair() {  return tag == Compound && c() == "|"; }
+    public Boolean is_a_termpair() {  return (tag == Compound && c() == "|") || tag == TermPair; }
 
     public static String remove_any_Var_prefix(String s) {
         if (s.startsWith(Var_prefix))
@@ -235,9 +208,12 @@ public class Term implements Iterable<Term> {
         return r;
     }
     public static Term termpair(Term car, Term cdr) {
+        Main.println ("termpair (car=<<<"+car+">>>,cdr=<<<"+cdr+">>>)");
         Term Ts = car.clone();
+        assert Ts != car;
         Ts.next = cdr.clone();
-        Term r = new Term (Compound, "|", Ts);
+        assert car.next != Ts.next;
+        Term r = new Term (TermPair, "|", Ts);
         return r;
     }
 
@@ -333,7 +309,7 @@ public class Term implements Iterable<Term> {
     }
 
     private boolean is_lists() {
-        return tag == Compound && this.c() == "lists";
+        return (tag == Compound && this.c() == "lists") || tag == TermList;
     }
 
     public String toString() {
@@ -342,24 +318,34 @@ public class Term implements Iterable<Term> {
         switch (tag) {
             case Variable: r = v(); break;
             case Constant: r = c(); break;
-            case Compound: if (c() == "|") {
-                                r = cons + args_start +terms_to_str(arg_sep) + args_end;
+            case Compound: if (this.is_a_termpair()) {
+                                if (in_Prolog_mode)
+                                    r = terms_to_str("|");
+                                else
+                                    r = cons + args_start + terms_to_str(arg_sep) + args_end;
                             } else
-                            if (c() != "=") {                                 
-                                 r =      c()
-                                        + args_start
-                                        + terms_to_str(arg_sep)
-                                        + args_end;
+                            if (!this.is_an_equation()) {                                 
+                                 r = c() + args_start + terms_to_str(arg_sep) + args_end;
                             } else {
-                                if (rhs().is_lists()) // ?????? WHY ????????                                                                  
-                                    r = lhs().toString() + list_elt_sep + rhs().toString();
-                                else 
+                                if (rhs().is_lists()) // ?????? WHY ???????? 
+                                {    
+                                    // Main.println ("(((((( do we ever get here (rhs is lists in eqn???? ))))))");                                                              
                                     r = lhs() + holds_op + rhs();
+                                    // Main.println ("        now r = " + r);
+                                } else {
+                                    // Main.println ("(((((( how about here???? (rhs NOT is lists in eqn???? )))))))");     
+                                    r = lhs() + holds_op + rhs();
+                                    // Main.println ("        now r = " + r);
+                                }
                             }
                             break;
             case TermList:  r =  list_start + terms_to_str(list_elt_sep) + list_end;
                             break;
-            case TermPair:  r = cons + terms_to_str(list_elt_sep);
+            case TermPair:  if (in_Prolog_mode)
+                                r = terms_to_str ("|");
+                            else
+                                r = cons + terms_to_str (list_elt_sep);
+
                             break;
         }
         return r;
@@ -385,12 +371,6 @@ public class Term implements Iterable<Term> {
     public Boolean is_flat() {
         if (this.is_simple()) return true;
 
-        // With lhs and rhs coded in Term as two-element list
-        // this step is not even really necessary; you've
-        // got either a compound, or a list:
-        // if (c == "=")
-        //    return lhs().is_flat() && rhs().is_flat();
-
         // depends on representing lhs+rhs as terms list in eqns:
         for (Term t = terms(); t != null; t = t.next)
             if (!t.is_simple())
@@ -412,50 +392,21 @@ public class Term implements Iterable<Term> {
 _1 = p(Z, _2, _3)
  */
 
-// A flatten that returns residue "squeezed out".
-// this transforms clause structures.
-// it's applied first to the head, then to the body
-// Making it DFS in what it flattens.
-// Trying to make it work in-place -- i.e., it
-// rewrites the structure given to it.
-// The original should be recoverable (P. Tarau)
-// Not sure any of this is right.
-// Basically, loop until residue gone.
-
-// flatten a term, with (mutable?) todo list passed in.
-// Has shared-structure result for already-flattened terms
-// It can also munge what's originally passed to it, so
-// watch out for linked list side effects on terms list,
-// at point of call.
-
-// think of holds/'=' and list/'.' as functors of compounds
-// just always two arguments a1,a2, either or both of which
-// could be flat themselves.
-
-/*
- * a(b(c)) -> a(_0), todo = [_0 = b(c)]
- * But if treated as compound ['='(_0,b(c))] in further iteration,
- * recursion would be infinite.
- * So equations really need to be a special case
- */
-
  /* flatten this */
 
-    Term add_elt (Term x, Term elt) {
+    static Term add_elt (Term x, Term elt) {
         if (x == null) return elt;
         assert elt != null;
         assert elt.next != elt;
         assert x != elt;
         assert (x.next != x);
 
-        int limit = 6;
         for (Term i = x; i != null; i = i.next) {
             assert i.next != i;
             if (i.next == null) {
                 i.next = elt;
                 break;
             }
-            assert (--limit > 0);
         }
         return x;
     }
@@ -468,7 +419,7 @@ _1 = p(Z, _2, _3)
     public Term clone() {
       return new Term(this.tag, this.S_, this.Terms);
     }
-
+/*
     public Term flatten() {
 
         if (this.is_simple()) {
@@ -493,17 +444,18 @@ _1 = p(Z, _2, _3)
             }   
         }
         else {
-            if (terms() != null)
-                for (Term t = terms(); t != null; t = t.next) {
-                    if (t.is_simple()) {
-                        new_terms = add_elt (new_terms, t.clone());
-                    } else {
-                        Term v = variable(Term.gensym());
-                        new_terms = add_elt (new_terms, v);
-                        Term e = equation (v.clone(), t.clone());
-                        todo = add_elt (todo, e);
+            if (terms() != null) {
+                    for (Term t = terms(); t != null; t = t.next) {
+                        if (t.is_simple()) {
+                            new_terms = add_elt (new_terms, t.clone());
+                        } else {
+                            Term v = variable(Term.gensym());
+                            new_terms = add_elt (new_terms, v);
+                            Term e = equation (v.clone(), t.clone());
+                            todo = add_elt (todo, e);
+                        }
                     }
-                }
+            }
         }
         
         set_terms(new_terms);
@@ -525,7 +477,168 @@ _1 = p(Z, _2, _3)
 
         return new_head;
     }
+*/
+    private class nvpair {
+        String n;
+        Term v;
+        public nvpair(String n, Term v) { this.n = n; this.v = v; }
+    }
+
+    // Need to figure out side effects:
+    //
+    private static int tab = 0;
+    private static String tabs() {
+        String s = "";
+        for (int i = tab; i > 0; --i) s += "| ";
+        return s;
+    }
+    private static void indent() { ++tab; }
+    private static void dedent() { assert tab > 0; --tab; }
+
+    private static int limit = 20; 
+
+    private  void flappin (LinkedList<nvpair> buf, LinkedList<nvpair> result) {
+        assert --limit > 0;
+        indent();
+        String s_ = "";
+        if (S_ != null) s_ = S_;
+        Main.println (tabs()+s_+annote());
+        // LinkedList<Term> todo = new LinkedList<Term>();
+        Term new_terms = null;
+        for (Term t = terms(); t != null; t = t.next)
+            if (t.is_simple()) {
+                Main.println (tabs() + "Adding <<<"+t+">>> to new_terms");
+                new_terms = Term.add_elt(new_terms, t.clone());
+                // buf.add (new nvpair(null, t));
+            } else {
+                Main.println (tabs() + "Adding <<<"+t+">>> to new_terms");
+                Term v = variable(Term.gensym());
+                new_terms = add_elt (new_terms, v);
+                nvpair nvp = new nvpair(v.v(),t);
+                buf.add (nvp);
+            }
+        
+        while (!buf.isEmpty()) {
+            nvpair x = buf.pop();
+            Main.println (tabs() + " .... buf.pop(): "+x.n+" = "+x.v);
+            Main.println (tabs() + " .... recursion on that:");
+            x.v.flappin (buf, result);
+            Main.println (tabs() + "now, x is " + x.n + "="+x.v);
+            result.add (x);
+        }
+                
+        Terms = new_terms;
+        Main.println (tabs() + "Finishing with " + this);
+        dedent();
+    }
+
+    private String annote() {
+        String type = "?";
+        if (this.is_an_equation()) type = "==";
+        if (this.is_a_termpair())  type = ".";
+        if (this.is_a_compound())  type = "(...)";
+        if (this.is_a_termlist())  type = "[...]";
+        if (this.is_a_variable())  type = "$";
+        if (this.is_a_constant())  type = "#";
+        return type;
+    }
+
+// nth attempt to rewrite flatten():
+
+    public Term flatten() {
+        // save successor of this and isolate it
+        Term save_next = this.next;
+        this.next = null;
+        tab = 0;
+        limit = 20;
+        // reset_gensym();
+        LinkedList<nvpair> buf = new LinkedList<nvpair>();
+        LinkedList<nvpair> result = new LinkedList<nvpair>();
+
+        Main.println ("flatten -- starting....");
+
+        this.flappin(buf, result);
+
+        Main.println ("flatten: buf=");
+        for (nvpair x : buf)
+            Main.println ("      ... " + x.n + " = " + x.v);
+        Main.println ("flatten: result=");
+        
+        for (nvpair x : result)
+            Main.println ("      ... " + x.n + " = " + x.v);
+        Main.println ("flatten: this is now " + this);
+
+        Term tt = this;
+        for (nvpair x : result) {
+            Main.println (">>>---   " + x.v + ", ");
+            if (x.v.is_a_termlist()) { // hacky & dubious post-processing
+                Main.println ("          x.v=" + x.v);
+                Term xvterms = x.v.terms();
+                if (xvterms != null) {
+                    if (xvterms.next != null) {
+                        if (xvterms.next.is_a_variable()) {
+                            if (xvterms.next.v().startsWith("_")) {
+                                Main.println ("**** BINGO ****");
+                                x.v.tag = TermPair;
+                                assert x.v.S_ == null;
+                            }
+                        }
+                    }
+                }
+            }
+            tt.next = equation(variable(x.n),x.v);
+            tt = tt.next;
+        }
+
+        assert tt != null;
+        assert tt.next == null;
+
+        Main.println ("flatten return value....");
+        for (Term tx = this; tx != null; tx = tx.next) {
+
+        }
+
+        if (save_next != null)
+            save_next.flatten();
+        tt.next = save_next;
+
+        return this;
+    }
+/*
+    private Term fatten(String var, LinkedList<nvpair> buf) {
+        // DFS down to this.is_flat()
+        
+        ++tab;
+        String tabs = "";
+        for (int i = 0; i < tab; ++i) tabs += "| ";
+
+        String v = "";
+        if (S_ != null) v = S_;
+
+        String v_pref = "";
+        if (var != null) v_pref = var + " = ";
+
+        String type = annote();
+
+        Term new_terms = null;
+
+        for (Term t = terms(); t != null; t = t.next) {
+            String x = null;
+            if (!t.is_flat()) {
+                x = gensym();
+                new_terms = add_elt (new_terms, t.fatten(x, buf));
+                buf.add(new nvpair(x,t));
+            }
+            else
+                new_terms = add_elt (new_terms, t);
+        }
+        Main.println (tabs + v_pref + type + ":" + v);
+        for (Term x = new_terms; x != null; x = x.next)
+            Main.println (tabs + "   " + x);
+        --tab;
+
+        return this;
+    }
+*/
 }
-
-
 

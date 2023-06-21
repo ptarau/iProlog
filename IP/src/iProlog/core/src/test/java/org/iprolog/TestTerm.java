@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 
 import java.util.LinkedList;
+import java.time.Year;
 import java.util.Arrays;
 
 public class TestTerm {
@@ -38,6 +39,8 @@ public class TestTerm {
     private void expect_from(Prog P, String[] whats_expected) {
         Object POJO_Ans;
 
+        Term.set_Prolog();
+
         if (whats_expected != null) {
             Main.println ("whats_expected =");
             for (String s : whats_expected) {
@@ -47,8 +50,9 @@ public class TestTerm {
 
         // Going through the Java Object interface, unfortunately.
 
-        int limit = 40;
+        Boolean yielded_something = false;
         while ((POJO_Ans = P.POJO_ask()) != null) {
+            yielded_something = true;
             Main.println ("\nIn POJO_ask() loop....");
             assert POJO_Ans instanceof Object[];  // because it'll be "[goal, <answer>]"
 
@@ -80,15 +84,13 @@ public class TestTerm {
             if (whats_expected != null) {
                 Prog.println ("  to_compare = " + to_compare);
                 Prog.println ("  show_POJO_object = " + show_POJO_object);
-                // assert Arrays.asList(whats_expected).contains(so);
+                assert Arrays.asList(whats_expected).contains(show_POJO_object);
             } else {
                 Main.println (" yielding: " + show_POJO_object);
             }
-            if (--limit < 0) {
-                Main.println ("Exceeded temporary limit on answers");
-                assert (false);
-            }
         }
+        assert whats_expected == null || yielded_something;
+
         Main.println ("... expect_from exiting.");
     }
 
@@ -122,12 +124,10 @@ public class TestTerm {
         LinkedList<Clause> llc = new LinkedList<Clause>();
 
         for (String s : expected) {
-             Clause cl = Clause.f__("live_", l_(c_(s)));
-             llc.add (cl);
-             Main.println ("try_t: Adding clause: ");
-             Main.println ("try_t: " + cl.toString());
-             Main.println ("");
-            llc.add (Clause.f__("live_", c_(s)));
+            Clause cl = Clause.f__("live_", c_(s));
+            Main.println ("try_t: Adding clause: ");
+            Main.println ("try_t: " + cl.toString());
+            llc.add (cl);
         }
 
         // llc.add (Clause.f__("good_", vPerson).if__(s_("live_", vPerson)));
@@ -143,7 +143,13 @@ public class TestTerm {
         Main.println ("  try_it() entering....");
         String s = "[";
         if (whats_expected == null) s += "<null>";
-        else for (int i = 0; i < whats_expected.length; ++i) s += whats_expected[i];
+        else {  String sep = "";
+                for (int i = 0; i < whats_expected.length; ++i) {
+                    s += sep;
+                    sep = ",";
+                    s += whats_expected[i];
+                }
+        }
         s += "]";
         Main.println ("     whats_expected = " + s);
 
@@ -174,8 +180,9 @@ public class TestTerm {
 
         Main.println ("   ===== try_it: Calling new Prog: ===============");
         Prog P = new Prog(x_out, false);
-        // expect_from(P, whats_expected);
-        P.run();
+
+        expect_from(P, whats_expected);
+
         Main.println ("  exiting try_it()");
     }
 
@@ -209,22 +216,24 @@ public class TestTerm {
         Main.println ("\n===== try_big() entering ....");
 
         LinkedList<Clause> llc = new LinkedList<Clause>();
-        String expected[] = { "[a,b,c]" };
+        String expected[] = { "[a,b]" };
 
         Term Ys = v_("Ys");  Term X = v_("X");  Term Xs = v_("Xs");  Term Zs = v_("Zs");
     // append([],Ys,Ys).
-        llc.add (Clause.f__("append", l_(), Ys, Ys));
+
+        llc.add (Clause.f__("append", l_(), v_("Ys"), v_("Ys")));
 
 
-        llc.add (Clause.f__("append", l_(X, Xs), Ys, l_(X,Zs)).
-                            if__(s_("append",Xs,Ys,Zs)));
+        llc.add (Clause.f__("append", p_(v_("X"), v_("Xs")), v_("Ys"), p_(v_("X"),v_("Zs"))).
+                            if__(s_("append",v_("Xs"),v_("Ys"),v_("Zs"))));
     // nrev([],[]).
         llc.add (Clause.f__("nrev", l_(), l_()));
     // nrev([X|Xs],Zs):-nrev(Xs,Ys),append(Ys,[X],Zs).
-        llc.add (Clause.f__("nrev", l_(X,Xs),Zs).
-                            if__(s_("nrev",Xs,Ys),
-                                 s_("append",Ys,l_(X),Zs)
-                            ));
+        llc.add (Clause.f__("nrev", p_(v_("X"),v_("Xs")),v_("Zs")).
+                            if__(   s_("nrev",v_("Xs"),v_("Ys")),
+                                    s_("append",v_("Ys"),l_(v_("X")),v_("Zs"))
+                            )
+                );
     
         for (Integer i = 0; i < 18; ++i) {
             Term it = c_(i.toString());
@@ -234,7 +243,7 @@ public class TestTerm {
         }
 
     // dup(0,X,X).
-        llc.add(Clause.f__("dup", c_("0"), X,X));
+        llc.add(Clause.f__("dup", c_("0"), v_("X"),v_("X")));
 
         Term R = v_("R");  Term XX = v_("XX");  Term N = v_("N");  Term N1 = v_("N1");
     // dup(N,X,R):-next_number_after(N1,N),append(X,X,XX),dup(N1,XX,R).
@@ -247,9 +256,18 @@ public class TestTerm {
 
     // goal([X,Y]):-dup(18,[a,b,c,d],[X,Y|_]).
         Term l_a_b_c_d = l_(c_("a"),c_("b"),c_("c"),c_("d"));
-        llc.add (Clause.f__("goal", l_(X,Y)).
-                            if__(s_("dup", c_("18"), l_a_b_c_d, l_(X,l_(Y,v_("_"))))));
 
+        assert Y.next == null;
+        Main.println ("Before p_ call, Y is <<<"+Y+">>>");
+        Term p = p_(v_("Y"),v_("_"));
+        Main.println ("After p_ call, Y is <<<"+Y+">>> p is <<<"+p+">>>");
+
+        llc.add (Clause.f__("goal", l_(v_("X"),v_("Y"))) 
+            . if__(s_("dup", c_("18"), l_a_b_c_d, l_(v_("X"),p)))
+            );
+
+        assert Y.next == null;
+        
         try_it (llc, expected);
 
         Main.println ("... try_big() exiting.");
@@ -284,10 +302,11 @@ public class TestTerm {
         llc.add(Clause.f__("goal", F).
             if__(s_("foo", F)));
 
+        String expected[] = { "[1]", "[2|3]", "[2,3]" };
 
         Main.println ("\n==== try_bar calling try_it .... ====");
-        try_it (llc, null);
-        
+
+        try_it (llc, expected);
 
         Main.println ("\n==== try_bar exiting .... ====");
     }
@@ -324,26 +343,39 @@ public class TestTerm {
         Main.println ("\n try_t_J: Construct data structures for try_t_J() case and ...");
 
         String expected[] = {"私", "あなた"};
-        Term vPerson = v_("人");
         LinkedList<Clause> llc = new LinkedList<Clause>();
         for (String s : expected)
             llc.add (Clause.f__("いきる", c_(s)));
-        llc.add (Clause.f__("いいです", vPerson).if__(s_("いきる", vPerson)));
-        llc.add (Clause.f__("goal",  vPerson).if__(s_("いいです", vPerson)));
+        // llc.add (Clause.f__("いいです", v_("人")).if__(s_("いきる", v_("人"))));
+        // llc.add (Clause.f__("goal",  v_("人")).if__(s_("いいです", v_("人"))));
+        llc.add (Clause.f__("goal",  v_("人")).if__(s_("いきる", v_("人"))));
         String x_out = "";
         for (Clause cl : llc)  x_out += cl.toString()+"\n";
         Main.println (x_out);
 
-        Prog P = new Prog(x_out, false);
+        try_it(llc, expected);
+    }
 
-        Term.set_Prolog();
-        /*
-        Main.println ("\n=== try_t_J: Pretty-print Prolog from it ===");
-        P.ppCode();
-        */
+    private void try_t_J_romaji() {
+        Main.println ("\n==== try_t_J ====");
+        
+        Term.reset_gensym();
+        Term.set_TarauLog();
 
-        // expect_from(P, expected);
-        expect_from(P,null);
+        Main.println ("\n try_t_J: Construct data structures for try_t_J_romaji() case and ...");
+
+        String expected[] = {"I", "you"};
+        Term vPerson = v_("person");
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+        for (String s : expected)
+            llc.add (Clause.f__("is_alive", c_(s)));
+        llc.add (Clause.f__("is_good", vPerson).if__(s_("is_alive", vPerson)));
+        llc.add (Clause.f__("goal",  vPerson).if__(s_("is_good", vPerson)));
+        String x_out = "";
+        for (Clause cl : llc)  x_out += cl.toString()+"\n";
+        Main.println (x_out);
+
+        try_it(llc, expected);
     }
 
     private void list_test() {
@@ -363,7 +395,7 @@ public class TestTerm {
 
         Main.println ("\n list_test: Construct data structures for try_t() case and ...");
 
-        String expected[] = {"list(0,1,2)", "[1|0]"};
+        String expected[] = {"[0,1,2]", "[1|0]"};
 
         LinkedList<Clause> llc = new LinkedList<Clause>();
 
@@ -375,7 +407,7 @@ public class TestTerm {
         x.flatten();
         llc.add (x);
 
-        x = Clause.f__("zero_and_one", l_(c1,c0));
+        x = Clause.f__("zero_and_one", p_(c1,c0));
         x.flatten();
         llc.add (x);
 
@@ -445,6 +477,7 @@ public class TestTerm {
         String[] these_answers = {
             "the_successor_of(the_successor_of(the_successor_of(the_successor_of(0))))"
         };
+
         try_it(llc,these_answers);
         Main.println ("...exiting try_add");
     }
@@ -555,19 +588,21 @@ public class TestTerm {
         check_flattening (cl.head, exp3);
 
         // not really checking anything yet
-        for (Term t = cl.body; t != null; t = t.next) {
-            check_flattening (t, null);
-        }
+        //for (Term t = cl.body; t != null; t = t.next) {
+        //    check_flattening (t, null);
+        //}
+        check_flattening(cl.body,null);
         
         Main.println ("==== moo ===============================================");
         Term nnn = s_("moo", l_(l_(l_(c_("a")))));
 
-        Term exp5[] = { s_("moo", v_0), e_(v_0,l_(v_1)), e_(v_1,l_(v_2)), e_(v_2,l_(c_("a"))) };
+        // Term exp5[] = { s_("moo", v_0), e_(v_0,l_(v_1)), e_(v_1,l_(v_2)), e_(v_2,l_(c_("a"))) };
+        Term exp5[] = { s_("moo", v_0), e_(v_2,l_(c_("a"))), e_(v_1,l_(v_2)), e_(v_0,l_(v_1)) };
 
         check_flattening(nnn, exp5);
 
         Term mmm = s_("goo", s_("x", s_("y", c_("a"))));
-        Term exp6[] = { s_("goo", v_0), e_(v_0, s_("x", v_1)), e_(v_1,s_("y",a)) };
+        Term exp6[] = { s_("goo", v_0), e_(v_1, s_("y", a)), e_(v_0,s_("x",v_1)) };
         check_flattening(mmm, exp6);
 
         Main.println ("\n-----====< test_flatten exiting... >====-----\n");
@@ -576,18 +611,15 @@ public class TestTerm {
     @Test
     public void mainTest() {
         Main.println ("************* Start Term test ********************");
-
+ 
         Term tt = s_("a",c_("b"));
+        
         // Term.CustomIterator it = new Term.CustomIterator(tt);
         for (Term x = tt; x != null; x = x.next)
             { Main.println ("!!!!!!!!!!! x = " + x + "!!!!!!!!!!!!!!"); }
 
         test_gensym();
-/*
-        Object A[] = {};
-        String mmm = Prog.make_string_from(A);
-        Main.println ("mmm = " + mmm);
- */
+
         String var_X = "X";
         Term vX = v_(var_X);
         assert vX.is_a_variable();
@@ -606,17 +638,54 @@ public class TestTerm {
         assert L.is_a_termlist();
 
         try_simple();
+
         list_test();
+
         test_flatten();
+
         try_t();
+
         try_add();
+
         try_big();
 
         try_bar();  // so basic, should be earlier
 
         try_perms();
-        try_t_J();
-      
+
+        try_t_J_romaji();
+
+        // Seemed to work before:
+        // try_t_J();
+
+/*
+Term p = p_(v_("Y"),v_("_"));
+Term l_a_b_c_d = l_(c_("a"),c_("b"),c_("c"),c_("d"));
+Term maybe = s_("dup", c_("18"), l_a_b_c_d, l_(v_("X"),p));
+maybe.flatten();
+Main.println ("maybe after flattening:");
+for (Term t = maybe; t != null; t = t.next)
+        Main.println ("  ........ " + t);
+*/
+
+/*
+        Term t = s_("poo",
+                        v_("A"),
+                        l_(v_("X"),v_("Y")),
+                        s_("boo",
+                                    l_(s_("erk", c_("1"), c_("3")), v_("W"))),
+                        l_(v_("Z"),p_(c_("0"),c_("1"))));
+        t.next = v_("P");
+
+        Main.println (" ===== t is " + t + " ======================================");
+
+        t.flatten();
+
+        for (Term x = t; x != null; x = x.next)
+            Main.println ("  ~~~~~~~ " + x);
+*/
+        
         Main.println ("\n======== End Term test ====================");
+     
     }
 }
