@@ -419,65 +419,7 @@ _1 = p(Z, _2, _3)
     public Term clone() {
       return new Term(this.tag, this.S_, this.Terms);
     }
-/*
-    public Term flatten() {
 
-        if (this.is_simple()) {
-            return this.clone();
-        }
- 
-        Term r = null;
-        Term todo = null;
-        Term new_terms = null;
-
-        if (this.is_an_equation()) {
-            assert lhs().is_a_variable();
-            assert !rhs().is_an_equation();
-            new_terms = lhs().clone();
-            if (rhs().is_simple()) {
-                new_terms = add_elt (new_terms, rhs().clone());
-            } else {
-                Term rhs_fl = rhs().flatten();
-                Term rhs_next = rhs_fl.next;
-                new_terms = add_elt (new_terms, rhs_fl.clone());
-                todo = add_all (todo, rhs_next);
-            }   
-        }
-        else {
-            if (terms() != null) {
-                    for (Term t = terms(); t != null; t = t.next) {
-                        if (t.is_simple()) {
-                            new_terms = add_elt (new_terms, t.clone());
-                        } else {
-                            Term v = variable(Term.gensym());
-                            new_terms = add_elt (new_terms, v);
-                            Term e = equation (v.clone(), t.clone());
-                            todo = add_elt (todo, e);
-                        }
-                    }
-            }
-        }
-        
-        set_terms(new_terms);
-        
-        if (todo != null) {
-            for (Term t = todo; t != null; t = t.next) {
-                Term tf = t.flatten();
-                r = add_all (r, tf);
-            }
-        }
-        for (Term x = r; x != null; x = x.next) {
-            if (x.is_an_equation()) {
-                assert !x.rhs().is_an_equation();
-            }
-        }
-
-        Term new_head = this.clone();
-        new_head = add_all (new_head, r);
-
-        return new_head;
-    }
-*/
     private class nvpair {
         String n;
         Term v;
@@ -507,11 +449,11 @@ _1 = p(Z, _2, _3)
         Term new_terms = null;
         for (Term t = terms(); t != null; t = t.next)
             if (t.is_simple()) {
-                Main.println (tabs() + "Adding <<<"+t+">>> to new_terms");
+                // Main.println (tabs() + "Adding <<<"+t+">>> to new_terms");
                 new_terms = Term.add_elt(new_terms, t.clone());
                 // buf.add (new nvpair(null, t));
             } else {
-                Main.println (tabs() + "Adding <<<"+t+">>> to new_terms");
+                // Main.println (tabs() + "Adding <<<"+t+">>> to new_terms");
                 Term v = variable(Term.gensym());
                 new_terms = add_elt (new_terms, v);
                 nvpair nvp = new nvpair(v.v(),t);
@@ -520,10 +462,10 @@ _1 = p(Z, _2, _3)
         
         while (!buf.isEmpty()) {
             nvpair x = buf.pop();
-            Main.println (tabs() + " .... buf.pop(): "+x.n+" = "+x.v);
-            Main.println (tabs() + " .... recursion on that:");
+            // Main.println (tabs() + " .... buf.pop(): "+x.n+" = "+x.v);
+            // Main.println (tabs() + " .... recursion on that:");
             x.v.flappin (buf, result);
-            Main.println (tabs() + "now, x is " + x.n + "="+x.v);
+            // Main.println (tabs() + "now, x is " + x.n + "="+x.v);
             result.add (x);
         }
                 
@@ -555,22 +497,22 @@ _1 = p(Z, _2, _3)
         LinkedList<nvpair> buf = new LinkedList<nvpair>();
         LinkedList<nvpair> result = new LinkedList<nvpair>();
 
-        Main.println ("flatten -- starting....");
+        // Main.println ("flatten -- starting....");
 
         this.flappin(buf, result);
 
-        Main.println ("flatten: buf=");
-        for (nvpair x : buf)
-            Main.println ("      ... " + x.n + " = " + x.v);
-        Main.println ("flatten: result=");
+        // Main.println ("flatten: buf=");
+        // for (nvpair x : buf)
+        //    Main.println ("      ... " + x.n + " = " + x.v);
+        // Main.println ("flatten: result=");
         
-        for (nvpair x : result)
-            Main.println ("      ... " + x.n + " = " + x.v);
-        Main.println ("flatten: this is now " + this);
+        // for (nvpair x : result)
+        //    Main.println ("      ... " + x.n + " = " + x.v);
+        // Main.println ("flatten: this is now " + this);
 
         Term tt = this;
         for (nvpair x : result) {
-            Main.println (">>>---   " + x.v + ", ");
+            // Main.println (">>>---   " + x.v + ", ");
             if (x.v.is_a_termlist()) { // hacky & dubious post-processing
                 Main.println ("          x.v=" + x.v);
                 Term xvterms = x.v.terms();
@@ -578,7 +520,7 @@ _1 = p(Z, _2, _3)
                     if (xvterms.next != null) {
                         if (xvterms.next.is_a_variable()) {
                             if (xvterms.next.v().startsWith("_")) {
-                                Main.println ("**** BINGO ****");
+                                // Main.println ("**** BINGO ****");
                                 x.v.tag = TermPair;
                                 assert x.v.S_ == null;
                             }
@@ -593,7 +535,7 @@ _1 = p(Z, _2, _3)
         assert tt != null;
         assert tt.next == null;
 
-        Main.println ("flatten return value....");
+        // Main.println ("flatten return value....");
         for (Term tx = this; tx != null; tx = tx.next) {
 
         }
@@ -604,41 +546,5 @@ _1 = p(Z, _2, _3)
 
         return this;
     }
-/*
-    private Term fatten(String var, LinkedList<nvpair> buf) {
-        // DFS down to this.is_flat()
-        
-        ++tab;
-        String tabs = "";
-        for (int i = 0; i < tab; ++i) tabs += "| ";
-
-        String v = "";
-        if (S_ != null) v = S_;
-
-        String v_pref = "";
-        if (var != null) v_pref = var + " = ";
-
-        String type = annote();
-
-        Term new_terms = null;
-
-        for (Term t = terms(); t != null; t = t.next) {
-            String x = null;
-            if (!t.is_flat()) {
-                x = gensym();
-                new_terms = add_elt (new_terms, t.fatten(x, buf));
-                buf.add(new nvpair(x,t));
-            }
-            else
-                new_terms = add_elt (new_terms, t);
-        }
-        Main.println (tabs + v_pref + type + ":" + v);
-        for (Term x = new_terms; x != null; x = x.next)
-            Main.println (tabs + "   " + x);
-        --tab;
-
-        return this;
-    }
-*/
 }
 

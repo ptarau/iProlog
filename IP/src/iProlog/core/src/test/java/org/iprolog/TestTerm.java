@@ -162,9 +162,9 @@ public class TestTerm {
         x_out = "";
         for (Clause cl : llc) {
             x_out += cl.toString()+"\n";
-            Main.println ("Pulling out body list:");
-            for (Term t = cl.body; t != null; t = t.next)
-                Main.println ("               .... " + t);
+            // Main.println ("Pulling out body list:");
+            // for (Term t = cl.body; t != null; t = t.next)
+            //     Main.println ("               .... " + t);
         }
 
         Main.println (x_out);
