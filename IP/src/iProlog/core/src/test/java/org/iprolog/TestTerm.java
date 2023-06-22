@@ -78,7 +78,7 @@ public class TestTerm {
             assert sg.equals("goal");   // because it'll be "[goal, <answer>]"
             assert POJO_goal_answers.length > 1;
             assert POJO_goal_answers.length < 3;
-            Main.println ("POJO_goal_answers[1] is " + POJO_goal_answers[1]);
+            // Main.println ("POJO_goal_answers[1] is " + POJO_goal_answers[1]);
             String show_POJO_object = P.showTerm(POJO_goal_answers[1]);
 
             if (whats_expected != null) {
@@ -312,26 +312,74 @@ public class TestTerm {
     }
 
     private void try_perms() {
+        Main.println ("\n==== try_perms ====");
 
         LinkedList<Clause> llc = new LinkedList<Clause>();
-
-        Term X  = v_("X");  Term Y  = v_("Y");
-        Term Xs = v_("Xs"); Term Ys = v_("Ys");
         
+        String expected[] = { "[10,9,8,7,6,5,4,3,2,1]" };
+
     // eq(X,X).
-        Clause eqXX = Clause.f__("eq",X,X);
+        Clause eqXX = Clause.f__("eq",v_("X"),v_("X"));
         llc.add(eqXX);
 
     // sel(X,[X|Xs],Xs).
-        llc.add (Clause.f__("sel", X, p_(X,Xs), Xs));
+        llc.add (Clause.f__("sel", v_("X"), p_(v_("X"),v_("Xs")), v_("Xs")));
 
         // sel(X,[Y|Xs],[Y|Ys]):-sel(X,Xs,Ys).
-        llc.add(Clause.f__("sel", X, p_(Y,Xs), p_(Y,Ys)).
-            if__(s_("sel", X, Xs, Ys)));
+        llc.add(Clause.f__("sel", v_("X"), p_(v_("Y"),v_("Xs")), p_(v_("Y"),v_("Ys"))).
+            if__(s_("sel", v_("X"), v_("Xs"), v_("Ys"))));
+              
+        //    perm([],[]).
+        llc.add(Clause.f__("perm",l_(),l_()));
         
-        // To be continued ....
-        // First I need to make sure I can do p_(Something, SomethingElse)
+        //    perm([X|Xs],Zs):-perm(Xs,Ys),sel(X,Zs,Ys).
+        llc.add(Clause.f__("perm",p_(v_("X"),v_("Xs")),v_("Zs")).
+            if__(   s_("perm", v_("Xs"), v_("Ys")),
+                    s_("sel", v_("X"), v_("Zs"), v_("Ys"))
+            )
+        );
+
+        // app([],Xs,Xs).
+        llc.add(Clause.f__("app", l_(), v_("Xs"), v_("Xs")));
+
+        // app([X|Xs],Ys,[X|Zs]):-app(Xs,Ys,Zs).
+        llc.add(Clause.f__("app", p_(v_("X"),v_("Xs")),v_("Ys"),p_(v_("X"),v_("Zs"))).
+            if__(   s_("app", v_("Xs"),v_("Ys"),v_("Zs"))
+            )
+        );
+
+        // nrev([],[]).
+        llc.add(Clause.f__("nrev",l_(),l_()));
+
+        // nrev([X|Xs],Zs):-nrev(Xs,Ys),app(Ys,[X],Zs).
+        llc.add(Clause.f__("nrev", p_(v_("X"),v_("Xs")),v_("Zs")).
+            if__(   s_("nrev", v_("Xs"), v_("Ys")),
+                    s_("app",  v_("Ys"), l_(v_("X")),v_("Zs")))
+        );
         
+        // input([1,2,3,4,5,6,7,8,9,10]).
+        llc.add(Clause.f__("input", l_(
+            c_("1"), c_("2"), c_("3"), c_("4"), c_("5"),
+            c_("6"), c_("7"), c_("8"), c_("9"), c_("10")
+            ))
+        );
+
+        // goal(Y):-input(X),nrev(X,Y),perm(X,Y),perm(Y,X).
+        llc.add(Clause.f__("goal", v_("Y")).
+                if__(   s_("input", v_("X")),
+                        s_("nrev",  v_("X"), v_("Y")),
+                        s_("perm",  v_("X"), v_("Y")),
+                        s_("perm",  v_("Y"), v_("X"))
+                )
+        );
+
+        String x_out = "";
+        for (Clause cl : llc)  x_out += cl.toString()+"\n";
+        Main.println (x_out);
+
+        try_it(llc, expected);
+
+        Main.println ("\n==== try_perms exiting .... ====");
     }
 
     private void try_t_J() {
@@ -652,9 +700,9 @@ public class TestTerm {
         try_bar();  // so basic, should be earlier
 
         try_perms();
-
+/*
         try_t_J_romaji();
-
+ */
         // Seemed to work before:
         // try_t_J();
 

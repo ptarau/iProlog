@@ -330,7 +330,7 @@ public class Term {
                                 if (rhs().is_lists()) // ?????? WHY ???????? 
                                 {    
                                     // Main.println ("(((((( do we ever get here (rhs is lists in eqn???? ))))))");                                                              
-                                    r = lhs() + holds_op + rhs();
+                                    r = lhs() + " " + this.rhs();
                                     // Main.println ("        now r = " + r);
                                 } else {
                                     // Main.println ("(((((( how about here???? (rhs NOT is lists in eqn???? )))))))");     
