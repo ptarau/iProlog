@@ -208,7 +208,7 @@ public class Term {
         return r;
     }
     public static Term termpair(Term car, Term cdr) {
-        Main.println ("termpair (car=<<<"+car+">>>,cdr=<<<"+cdr+">>>)");
+        // Main.println ("termpair (car=<<<"+car+">>>,cdr=<<<"+cdr+">>>)");
         Term Ts = car.clone();
         assert Ts != car;
         Ts.next = cdr.clone();
@@ -434,17 +434,17 @@ _1 = p(Z, _2, _3)
         for (int i = tab; i > 0; --i) s += "| ";
         return s;
     }
-    private static void indent() { ++tab; }
-    private static void dedent() { assert tab > 0; --tab; }
+    private static final void indent() { ++tab; }
+    private static final void dedent() { assert tab > 0; --tab; }
 
     private static int limit = 20; 
 
     private  void flappin (LinkedList<nvpair> buf, LinkedList<nvpair> result) {
         assert --limit > 0;
-        indent();
+        // indent();
         String s_ = "";
         if (S_ != null) s_ = S_;
-        Main.println (tabs()+s_+annote());
+        // Main.println (tabs()+s_+annote());
         // LinkedList<Term> todo = new LinkedList<Term>();
         Term new_terms = null;
         for (Term t = terms(); t != null; t = t.next)
@@ -470,8 +470,8 @@ _1 = p(Z, _2, _3)
         }
                 
         Terms = new_terms;
-        Main.println (tabs() + "Finishing with " + this);
-        dedent();
+        // Main.println (tabs() + "Finishing with " + this);
+        // dedent();
     }
 
     private String annote() {

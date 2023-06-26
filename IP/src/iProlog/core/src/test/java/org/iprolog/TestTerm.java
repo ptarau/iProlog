@@ -181,7 +181,7 @@ public class TestTerm {
         Main.println ("   ===== try_it: Calling new Prog: ===============");
         Prog P = new Prog(x_out, false);
 
-        expect_from(P, whats_expected);
+        expect_from(P, whats_expected); 
 
         Main.println ("  exiting try_it()");
     }
@@ -392,8 +392,10 @@ public class TestTerm {
 
         String expected[] = {"私", "あなた"};
         LinkedList<Clause> llc = new LinkedList<Clause>();
-        for (String s : expected)
+        for (String s : expected) {
             llc.add (Clause.f__("いきる", c_(s)));
+            Main.println (">>>>>>>>>>>>>>>>> s = " + s);
+        }
         // llc.add (Clause.f__("いいです", v_("人")).if__(s_("いきる", v_("人"))));
         // llc.add (Clause.f__("goal",  v_("人")).if__(s_("いいです", v_("人"))));
         llc.add (Clause.f__("goal",  v_("人")).if__(s_("いきる", v_("人"))));
@@ -700,39 +702,12 @@ public class TestTerm {
         try_bar();  // so basic, should be earlier
 
         try_perms();
-/*
+
         try_t_J_romaji();
- */
+ 
         // Seemed to work before:
-        // try_t_J();
+        try_t_J();
 
-/*
-Term p = p_(v_("Y"),v_("_"));
-Term l_a_b_c_d = l_(c_("a"),c_("b"),c_("c"),c_("d"));
-Term maybe = s_("dup", c_("18"), l_a_b_c_d, l_(v_("X"),p));
-maybe.flatten();
-Main.println ("maybe after flattening:");
-for (Term t = maybe; t != null; t = t.next)
-        Main.println ("  ........ " + t);
-*/
-
-/*
-        Term t = s_("poo",
-                        v_("A"),
-                        l_(v_("X"),v_("Y")),
-                        s_("boo",
-                                    l_(s_("erk", c_("1"), c_("3")), v_("W"))),
-                        l_(v_("Z"),p_(c_("0"),c_("1"))));
-        t.next = v_("P");
-
-        Main.println (" ===== t is " + t + " ======================================");
-
-        t.flatten();
-
-        for (Term x = t; x != null; x = x.next)
-            Main.println ("  ~~~~~~~ " + x);
-*/
-        
         Main.println ("\n======== End Term test ====================");
      
     }
