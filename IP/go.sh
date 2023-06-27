@@ -8,7 +8,7 @@ rm -r -f $TARGET/iProlog
 # rm -f progs/*.pl.nl
 echo "starting java compilations"
 if javac -J-Duser.language=en \
-	-O -d "$TARGET" src/iProlog/core/src/main/java/org/iprolog/*.java; then
+	-O -d "$TARGET" src/main/java/org/iprolog/*.java; then
  echo "swipl starting pl2nl on $1.pl ...."
  swipl -f pl2nl.pl -g "pl('$1'),halt"
  echo "java starting on $1.pl.nl ...."

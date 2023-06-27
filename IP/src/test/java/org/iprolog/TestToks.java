@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class TestToks {
 
-    public String case1() {
+    public static String case1() {
 
         String in = "";
         in += "live_ i_ .\n";
@@ -39,6 +39,8 @@ public class TestToks {
     }
 
   public static void main(final String[] args) {
-    Main.pp(Toks.toSentences("core/resources/t.pl.nl", true));
+
+        // Main.pp(Toks.toSentences("core/resources/t.pl.nl", true));
+      Main.pp(Toks.toSentences(case1(), false));
   }
 }
