@@ -5,86 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apiguardian_apiguardian_api_1_1_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_api_5_6_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_engine_5_6_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_platform_junit_platform_commons_1_6_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_junit_platform_junit_platform_engine_1_6_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_opentest4j_opentest4j_1_2_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Clause.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/IMap.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/IntList.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/IntMap.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/IntStack.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/ObStack.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Prog.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Spine.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Term.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Toks.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestClause.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestIMap.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestIntList.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestIntMap.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestIntStack.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestObStack.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestProg.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestToks.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IP.iml" beforeDir="false" afterPath="$PROJECT_DIR$/IP.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sh" beforeDir="false" afterPath="$PROJECT_DIR$/go.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/.vscode/launch.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/.vscode/settings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/.editorconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/add.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/big.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/lambdas.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/mperms.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/nsm.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/perms.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/queens.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/queens.pl.nl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/queens1.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/sud4x.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/t.pl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/resources/t.pl.nl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/Clause.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/Engine.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/IMap.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/IntList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/IntMap.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/IntStack.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/Main.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/ObStack.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/Prog.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/Spine.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/Term.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/main/java/org/iprolog/Toks.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/test/java/org/iprolog/TestClause.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/test/java/org/iprolog/TestIMap.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/test/java/org/iprolog/TestIntList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/test/java/org/iprolog/TestIntMap.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/test/java/org/iprolog/TestIntStack.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/test/java/org/iprolog/TestObStack.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/test/java/org/iprolog/TestProg.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/test/java/org/iprolog/TestTerm.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/src/test/java/org/iprolog/TestToks.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/iProlog/core/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iProlog.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Term.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Term.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestIMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestIMap.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestIntMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestIntMap.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,6 +54,9 @@
         <option value="$PROJECT_DIR$/src/iProlog/Engine.java" />
       </list>
     </option>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedIndex" value="1" />
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="849" />
@@ -216,10 +144,11 @@
   <component name="RunAnythingCache">
     <option name="myCommands">
       <command value="mvn test" />
+      <command value="mvn clean" />
     </option>
   </component>
-  <component name="RunManager" selected="JUnit.TestIntList">
-    <configuration name="TestIntList" type="AndroidJUnit" factoryName="Android JUnit" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="JUnit.TestIntMap.mainTest">
+    <configuration name="TestIMap" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="IP" />
       <extension name="coverage">
         <pattern>
@@ -228,26 +157,13 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="org.iprolog" />
-      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestIntList" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestIMap" />
       <option name="TEST_OBJECT" value="class" />
-      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Main" type="Application" factoryName="Application" temporary="true">
-      <option name="MAIN_CLASS_NAME" value="iProlog.Main" />
-      <module name="IP" />
-      <option name="PROGRAM_PARAMETERS" value="progs/add.pl" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestToks" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestToks" />
+    <configuration name="TestIMap.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="IP" />
       <extension name="coverage">
         <pattern>
@@ -255,6 +171,10 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <option name="PACKAGE_NAME" value="org.iprolog" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestIMap" />
+      <option name="METHOD_NAME" value="mainTest" />
+      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -274,12 +194,45 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="TestIntList.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.iprolog.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.iprolog" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestIntList" />
+      <option name="METHOD_NAME" value="mainTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestIntMap.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.iprolog.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.iprolog" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestIntMap" />
+      <option name="METHOD_NAME" value="mainTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.TestIntMap.mainTest" />
+        <item itemvalue="JUnit.TestIMap.mainTest" />
+        <item itemvalue="JUnit.TestIMap" />
+        <item itemvalue="JUnit.TestIntList.mainTest" />
         <item itemvalue="JUnit.TestIntList" />
-        <item itemvalue="Android JUnit.TestIntList" />
-        <item itemvalue="Application.TestToks" />
-        <item itemvalue="Application.Main" />
       </list>
     </recent_temporary>
   </component>

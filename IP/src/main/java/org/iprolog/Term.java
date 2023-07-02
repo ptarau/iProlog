@@ -2,11 +2,6 @@ package org.iprolog;
 
 import java.util.LinkedList;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.util.ElementScanner6;
-
-import java.util.Iterator;
-
 // Prolog "term", with lexical conventions abstracted away.
 // E.g., variables don't have to start with a capital letter
 // or underscore, and they can have embedded blanks. Maybe better
@@ -187,7 +182,6 @@ public class Term {
         assert !rhs.is_an_equation();
         Term l = lhs.clone();
         l.next = rhs.clone();
-        // Main.println ("in equation (lhs=<<<"+lhs+">>>, rhs=<<<"+rhs+">>>)");
         return new Term(Compound, "=", l);
     }
     public static Term termlist(Term... ts) {
@@ -208,7 +202,6 @@ public class Term {
         return r;
     }
     public static Term termpair(Term car, Term cdr) {
-        // Main.println ("termpair (car=<<<"+car+">>>,cdr=<<<"+cdr+">>>)");
         Term Ts = car.clone();
         assert Ts != car;
         Ts.next = cdr.clone();
@@ -328,14 +321,10 @@ public class Term {
                                  r = c() + args_start + terms_to_str(arg_sep) + args_end;
                             } else {
                                 if (rhs().is_lists()) // ?????? WHY ???????? 
-                                {    
-                                    // Main.println ("(((((( do we ever get here (rhs is lists in eqn???? ))))))");                                                              
+                                {
                                     r = lhs() + " " + this.rhs();
-                                    // Main.println ("        now r = " + r);
                                 } else {
-                                    // Main.println ("(((((( how about here???? (rhs NOT is lists in eqn???? )))))))");     
                                     r = lhs() + holds_op + rhs();
-                                    // Main.println ("        now r = " + r);
                                 }
                             }
                             break;
@@ -345,7 +334,6 @@ public class Term {
                                 r = terms_to_str ("|");
                             else
                                 r = cons + terms_to_str (list_elt_sep);
-
                             break;
         }
         return r;
@@ -445,7 +433,6 @@ _1 = p(Z, _2, _3)
         String s_ = "";
         if (S_ != null) s_ = S_;
         // Main.println (tabs()+s_+annote());
-        // LinkedList<Term> todo = new LinkedList<Term>();
         Term new_terms = null;
         for (Term t = terms(); t != null; t = t.next)
             if (t.is_simple()) {
@@ -493,34 +480,20 @@ _1 = p(Z, _2, _3)
         this.next = null;
         tab = 0;
         limit = 20;
-        // reset_gensym();
+
         LinkedList<nvpair> buf = new LinkedList<nvpair>();
         LinkedList<nvpair> result = new LinkedList<nvpair>();
 
-        // Main.println ("flatten -- starting....");
-
         this.flappin(buf, result);
-
-        // Main.println ("flatten: buf=");
-        // for (nvpair x : buf)
-        //    Main.println ("      ... " + x.n + " = " + x.v);
-        // Main.println ("flatten: result=");
-        
-        // for (nvpair x : result)
-        //    Main.println ("      ... " + x.n + " = " + x.v);
-        // Main.println ("flatten: this is now " + this);
 
         Term tt = this;
         for (nvpair x : result) {
-            // Main.println (">>>---   " + x.v + ", ");
             if (x.v.is_a_termlist()) { // hacky & dubious post-processing
-                Main.println ("          x.v=" + x.v);
                 Term xvterms = x.v.terms();
                 if (xvterms != null) {
                     if (xvterms.next != null) {
                         if (xvterms.next.is_a_variable()) {
                             if (xvterms.next.v().startsWith("_")) {
-                                // Main.println ("**** BINGO ****");
                                 x.v.tag = TermPair;
                                 assert x.v.S_ == null;
                             }
@@ -534,11 +507,6 @@ _1 = p(Z, _2, _3)
 
         assert tt != null;
         assert tt.next == null;
-
-        // Main.println ("flatten return value....");
-        for (Term tx = this; tx != null; tx = tx.next) {
-
-        }
 
         if (save_next != null)
             save_next.flatten();

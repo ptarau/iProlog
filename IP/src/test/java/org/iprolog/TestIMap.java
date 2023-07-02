@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-// import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class TestIMap {
     @Test
@@ -15,6 +14,7 @@ public class TestIMap {
         assertNotNull (im);
         im.put(1,2);
         IntMap imx = im.get(1);
+        assertNotNull(imx);
         // assertEquals(2, imx.get(1));
         System.out.println("imx size = " + imx.size());
         System.out.println("imx get(1) = " + imx.get(1));
