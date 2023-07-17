@@ -10,11 +10,12 @@ import java.util.*;
 public class Toks extends StreamTokenizer {
 
   // reserved words - with syntactic function
-  // Need to Term.set_Taraulog to get the reserved words.
-  public static String IF = Term.if_sym.trim(); // "if";
-  public static String AND = Term.and_op.trim(); // "and";
-  public static String DOT = Term.clause_end.trim(); // ".";
-  public static String HOLDS = Term.holds_op.trim(); // "holds";
+  // Would need guaranteed Term.set_Taraulog at class
+  // initialization time to get the right reserved words.
+  public static String IF = /* Term.if_sym.trim(); */ "if";
+  public static String AND = /* Term.and_op.trim(); */ "and";
+  public static String DOT = /* Term.clause_end.trim(); */ ".";
+  public static String HOLDS = /* Term.holds_op.trim(); */ "holds";
 
   public static String LISTS = "lists"; // todo
   public static String IS = "is"; // "todo"

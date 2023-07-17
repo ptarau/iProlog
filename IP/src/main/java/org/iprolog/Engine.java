@@ -370,6 +370,8 @@ s += "]";
 
     final ArrayList<ArrayList<ArrayList<String>>> clause_asm_list = Toks.toSentences(s, fromFile);
 
+    Main.println ("clause_asm_list = " + clause_asm_list);
+
     final ArrayList<Clause> compiled_clauses = new ArrayList<Clause>();
 
     for (final ArrayList<ArrayList<String>> clause_asm : clause_asm_list) {

@@ -407,12 +407,12 @@ public class TestTerm {
     }
 
     private void try_t_J_romaji() {
-        Main.println ("\n==== try_t_J ====");
+        Main.println ("\n==== try_t_J_romaji ====");
         
         Term.reset_gensym();
         Term.set_TarauLog();
 
-        Main.println ("\n try_t_J: Construct data structures for try_t_J_romaji() case and ...");
+        Main.println ("\n try_t_J_romaji: Construct data structures for try_t_J_romaji() case and ...");
 
         String expected[] = {"I", "you"};
         Term vPerson = v_("person");
