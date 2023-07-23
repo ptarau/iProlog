@@ -254,7 +254,7 @@ public class Term {
         holds_op = " holds ";
         list_start = "lists ";
         list_elt_sep = " ";
-        list_end = " ";
+        list_end = "";
         cons = "list ";
 
         in_Prolog_mode = false;
