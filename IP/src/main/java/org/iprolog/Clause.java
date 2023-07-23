@@ -26,14 +26,15 @@ class Clause {
   public Term body;
   boolean adding_args = true; // still needed?
 
-  public static Clause f_(String fid) { // still needed?
+  static LinkedList<Clause> say_(Clause... args) {
+    LinkedList<Clause> llc = new LinkedList<Clause>();
+    for (Clause c : args) llc.add (c);
+    return llc;
+  }
 
+  public static Clause f__(Term hd) {
     Clause cl = new Clause(0,null,0,0,null);
-
-    cl.head = Term.compound(fid);
-
-    cl.body = null;
-
+    cl.head = hd;
     return cl;
   }
 
@@ -75,7 +76,7 @@ class Clause {
       head.takes_this(x); // Change to adding to head??
     else {
       if (body == null) body = x;
-      else body = body.add_elt(body, x);
+      else body = body.append_elt_to_ll(x, body);
     }
     return this;
   }
@@ -85,7 +86,7 @@ class Clause {
     return this;
   }
 
-  public Clause if__(Term... body_list) {
+  public Clause if_(Term... body_list) {
     adding_args = false;
     assert body == null;
 
@@ -94,7 +95,7 @@ class Clause {
       if (body == null) {
         body = t;
       }  else {
-        body = Term.add_elt (body, t);
+        body = Term.append_elt_to_ll (t, body);
       }
     }
 

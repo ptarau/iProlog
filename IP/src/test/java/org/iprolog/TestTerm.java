@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.LinkedList;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 public class TestTerm {
 
@@ -31,6 +32,8 @@ public class TestTerm {
     private static final Term p_(Term car, Term cdr) {
                                         return Term.termpair(car,cdr);
                                     }
+
+    private Clause yes_ (Term hd) { return Clause.f__(hd); }
 
     /**
    * Initiator and consumer of the stream of answers
@@ -130,9 +133,9 @@ public class TestTerm {
             llc.add (cl);
         }
 
-        // llc.add (Clause.f__("good_", vPerson).if__(s_("live_", vPerson)));
-        // llc.add (Clause.f__("goal",  vPerson).if__(s_("good_", vPerson)));
-        llc.add (Clause.f__("goal",  vPerson).if__(s_("live_", vPerson)));
+        // llc.add (Clause.f__("good_", vPerson).if_ (s_("live_", vPerson)));
+        // llc.add (Clause.f__("goal",  vPerson).if_ (s_("good_", vPerson)));
+        llc.add (Clause.f__("goal",  vPerson).if_ (s_("live_", vPerson)));
 
         try_it (llc, expected);
     }
@@ -186,31 +189,33 @@ public class TestTerm {
         Main.println ("  exiting try_it()");
     }
 
-    private void try_simple() {
-        Main.println ("try_simple() entering....");
+private class TrySimple {
+    private Term   _0()             { return  c_("0");                   }
+    private Term   Foo()            { return  v_("Foo");                 }
+    private Term   dookie(Term x)   { return  s_("dookie", x);           }
+    private Term   goal(Term x)     { return  s_("goal", x);             }
 
-        LinkedList<Clause> llc = new LinkedList<Clause>();
+    private void test() {
+        Main.println("TrySimple.test() entering....");
 
-    // dookie([]).
-        Clause cl_nil = Clause.f__("dookie", l_());
-        Main.println ("try_simple: cl_nil = " + cl_nil);
-        llc.add(cl_nil);
+        // dookie([]).
+        // dookie(0).
+        // goal(Foo):-dookie(Foo).
 
-    // dookie(0).
-        Clause cl0 = Clause.f__("dookie", c_("0"));
-        llc.add(cl0);
-        Main.println ("try_simple: cl0 = " + cl0);
+        LinkedList<Clause> llc = Clause.say_ (
+                yes_(dookie(l_())),
+                yes_(dookie(_0())),
+                yes_(goal(Foo())).if_(
+                        dookie(Foo())
+                )
+        );
+        String expected[] = {"nil", "0"};
 
-        Term Foo = v_("Foo");
+        try_it(llc, expected);
 
-    // goal(Foo):-dookie(Foo).
-        Clause cl1 = Clause.f__("goal", Foo).if__(s_("dookie", Foo));
-        assert cl1.body != null;
-        Main.println ("try_simple: cl1 = " + cl1);
-        llc.add(cl1);
-
-        try_it (llc, null);
+        Main.println ("TrySimple.test() exiting ....");
     }
+};
 
     private void try_big() {  // based on Tarau's original progs/big.pl
         Main.println ("\n===== try_big() entering ....");
@@ -225,12 +230,12 @@ public class TestTerm {
 
 
         llc.add (Clause.f__("append", p_(v_("X"), v_("Xs")), v_("Ys"), p_(v_("X"),v_("Zs"))).
-                            if__(s_("append",v_("Xs"),v_("Ys"),v_("Zs"))));
+                            if_(s_("append",v_("Xs"),v_("Ys"),v_("Zs"))));
     // nrev([],[]).
         llc.add (Clause.f__("nrev", l_(), l_()));
     // nrev([X|Xs],Zs):-nrev(Xs,Ys),append(Ys,[X],Zs).
         llc.add (Clause.f__("nrev", p_(v_("X"),v_("Xs")),v_("Zs")).
-                            if__(   s_("nrev",v_("Xs"),v_("Ys")),
+                            if_(   s_("nrev",v_("Xs"),v_("Ys")),
                                     s_("append",v_("Ys"),l_(v_("X")),v_("Zs"))
                             )
                 );
@@ -248,7 +253,7 @@ public class TestTerm {
         Term R = v_("R");  Term XX = v_("XX");  Term N = v_("N");  Term N1 = v_("N1");
     // dup(N,X,R):-next_number_after(N1,N),append(X,X,XX),dup(N1,XX,R).
         llc.add(Clause.f__("dup", N,X,R).
-                            if__(s_("next_number_after", N1, N),
+                            if_ (s_("next_number_after", N1, N),
                                  s_("append",X,X,XX),
                                  s_("dup",N1,XX,R)));
 
@@ -263,7 +268,7 @@ public class TestTerm {
         Main.println ("After p_ call, Y is <<<"+Y+">>> p is <<<"+p+">>>");
 
         llc.add (Clause.f__("goal", l_(v_("X"),v_("Y"))) 
-            . if__(s_("dup", c_("18"), l_a_b_c_d, l_(v_("X"),p)))
+            . if_ (s_("dup", c_("18"), l_a_b_c_d, l_(v_("X"),p)))
             );
 
         assert Y.next == null;
@@ -286,21 +291,21 @@ public class TestTerm {
         Clause eqXX = Clause.f__("eq",X,X);
         llc.add(eqXX);
         llc.add(Clause.f__("foo", p_(X,Y)).
-            if__(s_("eq", X, c_("1")),
+            if_ (s_("eq", X, c_("1")),
                  s_("eq", Y, c_("nil")))
         );
         llc.add(Clause.f__("foo", p_(X,Y)).
-        if__(s_("eq", X, c_("2")),
+        if_ (s_("eq", X, c_("2")),
              s_("eq", Y, c_("3"))
              )
         );
         llc.add(Clause.f__("foo", l_(X,Y)).
-        if__(s_("eq", X, c_("2")),
+        if_ (s_("eq", X, c_("2")),
              s_("eq", Y, c_("3"))
              )
         );
         llc.add(Clause.f__("goal", F).
-            if__(s_("foo", F)));
+            if_ (s_("foo", F)));
 
         String expected[] = { "[1]", "[2|3]", "[2,3]" };
 
@@ -327,14 +332,14 @@ public class TestTerm {
 
         // sel(X,[Y|Xs],[Y|Ys]):-sel(X,Xs,Ys).
         llc.add(Clause.f__("sel", v_("X"), p_(v_("Y"),v_("Xs")), p_(v_("Y"),v_("Ys"))).
-            if__(s_("sel", v_("X"), v_("Xs"), v_("Ys"))));
+            if_ (s_("sel", v_("X"), v_("Xs"), v_("Ys"))));
               
         //    perm([],[]).
         llc.add(Clause.f__("perm",l_(),l_()));
         
         //    perm([X|Xs],Zs):-perm(Xs,Ys),sel(X,Zs,Ys).
         llc.add(Clause.f__("perm",p_(v_("X"),v_("Xs")),v_("Zs")).
-            if__(   s_("perm", v_("Xs"), v_("Ys")),
+            if_ (   s_("perm", v_("Xs"), v_("Ys")),
                     s_("sel", v_("X"), v_("Zs"), v_("Ys"))
             )
         );
@@ -344,7 +349,7 @@ public class TestTerm {
 
         // app([X|Xs],Ys,[X|Zs]):-app(Xs,Ys,Zs).
         llc.add(Clause.f__("app", p_(v_("X"),v_("Xs")),v_("Ys"),p_(v_("X"),v_("Zs"))).
-            if__(   s_("app", v_("Xs"),v_("Ys"),v_("Zs"))
+            if_(   s_("app", v_("Xs"),v_("Ys"),v_("Zs"))
             )
         );
 
@@ -353,7 +358,7 @@ public class TestTerm {
 
         // nrev([X|Xs],Zs):-nrev(Xs,Ys),app(Ys,[X],Zs).
         llc.add(Clause.f__("nrev", p_(v_("X"),v_("Xs")),v_("Zs")).
-            if__(   s_("nrev", v_("Xs"), v_("Ys")),
+            if_(   s_("nrev", v_("Xs"), v_("Ys")),
                     s_("app",  v_("Ys"), l_(v_("X")),v_("Zs")))
         );
         
@@ -366,7 +371,7 @@ public class TestTerm {
 
         // goal(Y):-input(X),nrev(X,Y),perm(X,Y),perm(Y,X).
         llc.add(Clause.f__("goal", v_("Y")).
-                if__(   s_("input", v_("X")),
+                if_ (   s_("input", v_("X")),
                         s_("nrev",  v_("X"), v_("Y")),
                         s_("perm",  v_("X"), v_("Y")),
                         s_("perm",  v_("Y"), v_("X"))
@@ -396,9 +401,9 @@ public class TestTerm {
             llc.add (Clause.f__("いきる", c_(s)));
             Main.println (">>>>>>>>>>>>>>>>> s = " + s);
         }
-        // llc.add (Clause.f__("いいです", v_("人")).if__(s_("いきる", v_("人"))));
-        // llc.add (Clause.f__("goal",  v_("人")).if__(s_("いいです", v_("人"))));
-        llc.add (Clause.f__("goal",  v_("人")).if__(s_("いきる", v_("人"))));
+        // llc.add (Clause.f__("いいです", v_("人")).if_ (s_("いきる", v_("人"))));
+        // llc.add (Clause.f__("goal",  v_("人")).if_ (s_("いいです", v_("人"))));
+        llc.add (Clause.f__("goal",  v_("人")).if_ (s_("いきる", v_("人"))));
         String x_out = "";
         for (Clause cl : llc)  x_out += cl.toString()+"\n";
         Main.println (x_out);
@@ -420,9 +425,9 @@ public class TestTerm {
         for (String s : expected)
             llc.add (Clause.f__("is_alive", c_(s)));
         llc.add (Clause.f__("is_good", vPerson).
-			if__(s_("is_alive", vPerson)));
+			if_ (s_("is_alive", vPerson)));
         llc.add (Clause.f__("goal",  vPerson).
-			if__(s_("is_good", vPerson)));
+			if_ (s_("is_good", vPerson)));
         String x_out = "";
         for (Clause cl : llc)  x_out += cl.toString()+"\n";
         Main.println (x_out);
@@ -463,7 +468,7 @@ public class TestTerm {
         x.flatten();
         llc.add (x);
 
-        x = Clause.f__("goal",  V).if__(s_("zero_and_one", V));
+        x = Clause.f__("goal",  V).if_ (s_("zero_and_one", V));
         x.flatten();
         llc.add (x);
 
@@ -520,10 +525,10 @@ public class TestTerm {
         Term vR = v_("R");
 
         llc.add(Clause.f__("the_sum_of", c0, vX, vX));
-        llc.add(Clause.f__("the_sum_of", succ_X,vY,succ_Z).if__(s_("the_sum_of",vX,vY,vZ)));        
+        llc.add(Clause.f__("the_sum_of", succ_X,vY,succ_Z).if_ (s_("the_sum_of",vX,vY,vZ)));
 
         Term two = s_("the_successor_of", succ_0);
-        llc.add(Clause.f__("goal", vR).if__(s_("the_sum_of", two, two, vR)));
+        llc.add(Clause.f__("goal", vR).if_ (s_("the_sum_of", two, two, vR)));
 
         Main.println ("----- try_add: Calling new Prog: --------");
         String[] these_answers = {
@@ -533,6 +538,144 @@ public class TestTerm {
         try_it(llc,these_answers);
         Main.println ("...exiting try_add");
     }
+
+    // Tarau's code generates _<#> IDs from these, generally just
+    // past the gensym count after flattening. Not clear where
+    // this should go, if not in flatten().
+    private Term _()            {
+        return v_("_");
+    }
+
+private class TryQueens {
+    private Term QueenColumn()  {  return v_("QueenColumn");    }
+    private Term Q()            {  return v_("Q");              }
+    private Term Qs()           {  return v_("Qs");             }
+    private Term Columns()      {  return v_("Columns");        }
+    private Term Rows()         {  return v_("Rows");           }
+    private Term LeftDiags()    {  return v_("LeftDiags");      }
+    private Term RightDiags()   {  return v_("RightDiags");     }
+    private Term OtherColumns() {  return v_("OtherColumns");   }
+    private Term OtherRows()    {  return v_("OtherRows");      }
+
+    private void test() {
+        Main.println("\n==== try_queens() ====");
+
+        Term.reset_gensym();
+
+        String[] these_answers = {
+                ""
+        };
+
+        LinkedList<Clause> llc = new LinkedList<Clause>();
+
+        /*
+        this_queen_doesnt_fight_in(
+            QueenColumn,
+            [QueenColumn|_],
+            [QueenColumn|_],
+            [QueenColumn|_] ).
+         */
+Term.reset_gensym();
+        Clause ccc = Clause.f__("this_queen_doesnt_fight_in",
+                QueenColumn(),
+                p_(QueenColumn(), _()),
+                p_(QueenColumn(), _()),
+                p_(QueenColumn(), _())
+        );
+        llc.add(ccc);
+
+        /*
+        this_queen_doesnt_fight_in(Q,[_|Rows],[_|LeftDiags],[_|RightDiags]):-
+            this_queen_doesnt_fight_in(Q,Rows,LeftDiags,RightDiags).
+         */
+
+ Term.reset_gensym();
+        ccc = Clause.f__("this_queen_doesnt_fight_in",
+                Q(), p_(_(),Rows()), p_(_(),LeftDiags()), p_(_(),RightDiags())
+        ).if_(s_("this_queen_doesnt_fight_in",
+                Q(), Rows(), LeftDiags(), RightDiags())
+        );
+        llc.add(ccc);
+
+        /*
+        these_queens_dont_fight_on_these_lines([],_,_,_).
+        */
+ Term.reset_gensym();
+        ccc = Clause.f__("these_queens_dont_fight_on_these_lines",
+                l_(), _(), _(), _());
+        llc.add(ccc);
+
+        /*
+        these_queens_dont_fight_on_these_lines(
+                [QueenColumn|Qs],
+                Rows,
+                LeftDiags,
+                [_|RightDiags]
+        ) :-
+          these_queens_dont_fight_on_these_lines(Qs,Rows,[_|LeftDiags],RightDiags),
+          this_queen_doesnt_fight_in(QueenColumn,Rows,LeftDiags,RightDiags).
+         */
+Term.reset_gensym();
+        ccc = Clause.f__("these_queens_dont_fight_on_these_lines",
+                    p_(QueenColumn(), Qs()),
+                    Rows(),
+                    LeftDiags(),
+                    p_(_(), RightDiags())).
+                if_(    s_("these_queens_dont_fight_on_these_lines",
+                            Qs(), Rows(), p_(_(), LeftDiags()), RightDiags()
+                        ),
+                        s_("this_queen_doesnt_fight_in",
+                                QueenColumn(), Rows(), LeftDiags(), RightDiags()
+                        )
+                );
+        llc.add(ccc);
+
+        /*
+        these_queens_can_be_in_these_places([],[]).
+        */
+Term.reset_gensym();
+        ccc = Clause.f__("these_queens_can_be_in_these_places", l_(), l_());
+        llc.add(ccc);
+        /*
+        these_queens_can_be_in_these_places([_|OtherColumns],[_|OtherRows]):-
+            these_queens_can_be_in_these_places(OtherColumns,OtherRows).
+        */
+Term.reset_gensym();
+        ccc = Clause.f__("these_queens_can_be_in_these_places",
+                                p_(_(),OtherColumns()),
+                                p_(_(),OtherRows())
+                ).if_(  s_("these_queens_can_be_in_these_places",
+                                OtherColumns(),
+                                OtherRows())
+                );
+        llc.add(ccc);
+        /*
+        qs(Columns,Rows):-
+            these_queens_can_be_in_these_places(Columns,Rows),
+            these_queens_dont_fight_on_these_lines(Columns,Rows,_,_).
+        */
+Term.reset_gensym();
+        ccc = Clause.f__("qs", Columns(), Rows()).
+            if_(    s_("these_queens_can_be_in_these_places", Columns(),Rows()),
+                    s_("these_queens_dont_fight_on_these_lines",Columns(),Rows(),_(),_())
+            );
+        llc.add(ccc);
+        /*
+        % goal(Rows):-qs([0,1,2,3,4,5,6,7],Rows).
+        goal(Rows):-qs([0,1,2,3],Rows).
+         */
+Term.reset_gensym();
+        ccc = Clause.f__("goal", Rows()).if_(
+                s_("qs", l_(c_("0"),c_("1"),c_("2"),c_("3")),Rows())
+            );
+        llc.add(ccc);
+
+        // try_it(llc, these_answers);
+        try_it(llc,null);
+
+        Main.println("...exiting try_queens");
+    }
+}
 
     private void test_gensym() {
         String gs = Term.gensym();
@@ -633,7 +776,7 @@ public class TestTerm {
 
        // foo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]).
         Clause cl = Clause.f__("foo", bar_X, c_("r")).
-                                if__(s_("glom", v_("X")),
+                                if_ (s_("glom", v_("X")),
                                      s_("quux", s_("blah", v_("X"))),
                                      s_("whiz", l_(c_("a"), c_("a"))));
 
@@ -689,7 +832,8 @@ public class TestTerm {
         assert L != null;
         assert L.is_a_termlist();
 
-        try_simple();
+        TrySimple nts = new TrySimple();
+        nts.test();
 
         list_test();
 
@@ -704,6 +848,9 @@ public class TestTerm {
         try_bar();  // so basic, should be earlier
 
         try_perms();
+
+        TryQueens tqs = new TryQueens();
+        tqs.test();
 
         try_t_J_romaji();
  

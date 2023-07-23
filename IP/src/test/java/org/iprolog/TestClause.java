@@ -15,7 +15,7 @@ public class TestClause {
     public void mainTest() {
         Clause ft;
         
-        ft = Clause.f_("fun");
+        ft = Clause.f__("fun");
         assert ft != null;
         Term a = Term.constant("a");
         assert a != null;

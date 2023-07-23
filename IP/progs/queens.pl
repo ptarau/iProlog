@@ -46,5 +46,6 @@ qs(Columns,Rows):-
 	these_queens_can_be_in_these_places(Columns,Rows),
 	these_queens_dont_fight_on_these_lines(Columns,Rows,_,_).
 
-goal(Rows):-qs([0,1,2,3,4,5,6,7],Rows).
+% goal(Rows):-qs([0,1,2,3,4,5,6,7],Rows).
+goal(Rows):-qs([0,1,2,3],Rows).
 

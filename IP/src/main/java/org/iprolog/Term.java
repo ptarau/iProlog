@@ -180,8 +180,8 @@ public class Term {
     public static Term equation(Term lhs, Term rhs) {
         assert lhs.is_a_variable(); // for now
         assert !rhs.is_an_equation();
-        Term l = lhs.clone();
-        l.next = rhs.clone();
+        Term l = lhs.shallow_copy();
+        l.next = rhs.shallow_copy();
         return new Term(Compound, "=", l);
     }
     public static Term termlist(Term... ts) {
@@ -202,9 +202,9 @@ public class Term {
         return r;
     }
     public static Term termpair(Term car, Term cdr) {
-        Term Ts = car.clone();
+        Term Ts = car.shallow_copy();
         assert Ts != car;
-        Ts.next = cdr.clone();
+        Ts.next = cdr.shallow_copy();
         assert car.next != Ts.next;
         Term r = new Term (TermPair, "|", Ts);
         return r;
@@ -244,12 +244,12 @@ public class Term {
     // in the toSentences lexeme tagger.
     public static void set_TarauLog() {
 
-        and_op = " and ";
+        and_op = " and\n  ";
         args_start = " ";
         arg_sep = " ";
-        args_end = " ";
-        clause_end = ".";
-        if_sym = "\nif ";
+        args_end = "";
+        clause_end = " .\n";
+        if_sym = "\nif\n  ";
         holds_op = " holds ";
         list_start = "lists ";
         list_elt_sep = " ";
@@ -343,7 +343,7 @@ public class Term {
         assert tag == Compound;
         assert t != null;
 
-        this.Terms = add_elt(terms(), t.clone());
+        this.Terms = append_elt_to_ll(t.shallow_copy(), terms());
         assert Terms != null;
         return this;
     }
@@ -382,29 +382,30 @@ _1 = p(Z, _2, _3)
 
  /* flatten this */
 
-    static Term add_elt (Term x, Term elt) {
-        if (x == null) return elt;
+// append_elt_to_ll -- add term elt to end of linked list ll
+    static Term append_elt_to_ll (Term elt, Term ll) {
+        if (ll == null) return elt;
         assert elt != null;
         assert elt.next != elt;
-        assert x != elt;
-        assert (x.next != x);
+        assert ll != elt;
+        assert (ll.next != ll);
 
-        for (Term i = x; i != null; i = i.next) {
+        for (Term i = ll; i != null; i = i.next) {
             assert i.next != i;
             if (i.next == null) {
                 i.next = elt;
                 break;
             }
         }
-        return x;
+        return ll;
     }
-    Term add_all (Term x, Term Ts) {
-        if (Ts == null) return x;
-        return add_elt (x, Ts);
+    Term add_all (Term ll, Term Ts) {
+        if (Ts == null) return ll;
+        return append_elt_to_ll (Ts, ll);
     }
 
     // iffy naming here -- doesn't copy next link, so maybe it should be called "shallow_copy"
-    public Term clone() {
+    public Term shallow_copy() {
       return new Term(this.tag, this.S_, this.Terms);
     }
 
@@ -436,13 +437,19 @@ _1 = p(Z, _2, _3)
         Term new_terms = null;
         for (Term t = terms(); t != null; t = t.next)
             if (t.is_simple()) {
+                if (t.is_a_variable() && t.v().compareTo("_") == 0) {
+                    Main.println ("*******************");
+                    Main.println ("** gensym here? ***");
+                    t.set_v(Term.gensym());
+                    Main.println ("*******************");
+                }
                 // Main.println (tabs() + "Adding <<<"+t+">>> to new_terms");
-                new_terms = Term.add_elt(new_terms, t.clone());
+                new_terms = Term.append_elt_to_ll(t.shallow_copy(), new_terms);
                 // buf.add (new nvpair(null, t));
             } else {
                 // Main.println (tabs() + "Adding <<<"+t+">>> to new_terms");
                 Term v = variable(Term.gensym());
-                new_terms = add_elt (new_terms, v);
+                new_terms = append_elt_to_ll (v, new_terms);
                 nvpair nvp = new nvpair(v.v(),t);
                 buf.add (nvp);
             }
