@@ -164,7 +164,7 @@ public class TestTerm {
 
         x_out = "";
         for (Clause cl : llc) {
-            x_out += cl.toString()+"\n";
+            x_out += cl.toString()+System.lineSeparator();
             // Main.println ("Pulling out body list:");
             // for (Term t = cl.body; t != null; t = t.next)
             //     Main.println ("               .... " + t);
@@ -176,7 +176,7 @@ public class TestTerm {
         x_out = "";
         for (Clause cl : llc) {
             cl.flatten();
-            x_out += cl.toString()+"\n";
+            x_out += cl.toString()+System.lineSeparator();
         }
 
         Main.println (x_out);

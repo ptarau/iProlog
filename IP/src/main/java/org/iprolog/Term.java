@@ -250,7 +250,7 @@ public class Term {
         arg_sep = " ";
         args_end = "";
         clause_end = " ." + nl;
-        if_sym = nl + "if" + nl + "  ";
+        if_sym = " " + nl + "if" + nl + "  ";
         holds_op = " holds ";
         list_start = "lists ";
         list_elt_sep = " ";
