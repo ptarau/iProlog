@@ -366,7 +366,7 @@ s += "]";
   }
   Clause[] dload_from_x(final String s, Boolean fromFile) {
 
-    Main.println ("\ndload_from_x:s = \n" + s);
+    Main.println ("\ndload_from_x:s (len="+s.length()+") = \n" + s);
 
     final ArrayList<ArrayList<ArrayList<String>>> clause_asm_list = Toks.toSentences(s, fromFile);
 

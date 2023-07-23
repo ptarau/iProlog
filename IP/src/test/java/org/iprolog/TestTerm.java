@@ -741,72 +741,82 @@ Term.reset_gensym();
         assert s3.is_same_as (s4);
     }
 
-    private void test_flatten() {
-        Main.println ("\n-----====< test_flatten entered >====-----");
+    private class TestFlatten {
+        Term a() { return c_("a"); }
+        Term glom(Term x) { return s_("glom", x); }
 
-        test_is_same_as();
- 
-        Term a = c_("a");
-        Term glom_a = s_("glom", a);
-        Term exp0[] = {glom_a};
-        check_flattening (glom_a, exp0);
+        private void test() {
+            Main.println("\n-----====< TestFlatten.test entered >====-----");
 
-        Term.reset_gensym();
-        Term v_0 = v_(Term.gensym());
-        Term v_1 = v_(Term.gensym());
-        Term v_2 = v_(Term.gensym());
+            test_is_same_as();
 
-        // quux(blah(a)).
-        Term blah_a = s_("blah", a);
-        Term quux_blah_a = s_("quux", blah_a);
-        Term exp1[] = { s_("quux", v_0), e_(v_0, blah_a) };
-        check_flattening (quux_blah_a, exp1);
+            // Term a = c_("a");
+            Term glom_a = glom(a());
+            Term exp0[] = {glom_a};
+            check_flattening(glom_a, exp0);
 
-        // whiz([a,a]).
-        Term l_a_a =  l_(c_("a"), c_("a"));
-        Term whiz_a_a = s_("whiz", l_a_a);
-        Term exp2[] = { s_("whiz", v_0), e_(v_0, l_a_a) };
-        check_flattening (whiz_a_a, exp2);
+            Term.reset_gensym();
+            Term v_0 = v_(Term.gensym());
+            Term v_1 = v_(Term.gensym());
+            Term v_2 = v_(Term.gensym());
 
-        // foo(bar(X),r).
-        Term bar_X = s_("bar", v_("X"));
-        Term foo_bar_X_r = s_("foo", bar_X, c_("r"));
-        Term exp3[] = { s_("foo", v_0, c_("r")), e_(v_0,bar_X) };
-        check_flattening (foo_bar_X_r, exp3);
+            // quux(blah(a)).
+            Main.println("quux(blah(a)).");
+            Term blah_a = s_("blah", a());
+            Term quux_blah_a = s_("quux", blah_a);
+            Term exp1[] = {s_("quux", v_0), e_(v_0, blah_a)};
+            check_flattening(quux_blah_a, exp1);
 
-       // foo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]).
-        Clause cl = Clause.f__("foo", bar_X, c_("r")).
-                                if_ (s_("glom", v_("X")),
-                                     s_("quux", s_("blah", v_("X"))),
-                                     s_("whiz", l_(c_("a"), c_("a"))));
+            // whiz([a,a]).
+            Main.println ("whiz([a,a]).");
+            Term l_a_a = l_(a(), a());
+            Term whiz_a_a = s_("whiz", l_a_a);
+            Term exp2[] = {s_("whiz", v_0), e_(v_0, l_a_a)};
+            check_flattening(whiz_a_a, exp2);
 
-        check_flattening (cl.head, exp3);
+            // foo(bar(X),r).
+            Main.println ("foo(bar(X),r).");
+            Term bar_X = s_("bar", v_("X"));
+            Term foo_bar_X_r = s_("foo", bar_X, c_("r"));
+            Term exp3[] = {s_("foo", v_0, c_("r")), e_(v_0, bar_X)};
+            check_flattening(foo_bar_X_r, exp3);
 
-        // not really checking anything yet
-        //for (Term t = cl.body; t != null; t = t.next) {
-        //    check_flattening (t, null);
-        //}
-        check_flattening(cl.body,null);
-        
-        Main.println ("==== moo ===============================================");
-        Term nnn = s_("moo", l_(l_(l_(c_("a")))));
+            // foo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]).
+            Main.println ("foo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]).");
+            Clause cl = Clause.f__("foo", bar_X, c_("r")).
+                    if_(s_("glom", v_("X")),
+                            s_("quux", s_("blah", v_("X"))),
+                            s_("whiz", l_(c_("a"), a())));
 
-        // Term exp5[] = { s_("moo", v_0), e_(v_0,l_(v_1)), e_(v_1,l_(v_2)), e_(v_2,l_(c_("a"))) };
-        Term exp5[] = { s_("moo", v_0), e_(v_2,l_(c_("a"))), e_(v_1,l_(v_2)), e_(v_0,l_(v_1)) };
+            check_flattening(cl.head, exp3);
 
-        check_flattening(nnn, exp5);
+            // not really checking anything yet
+            //for (Term t = cl.body; t != null; t = t.next) {
+            //    check_flattening (t, null);
+            //}
+            check_flattening(cl.body, null);
 
-        Term mmm = s_("goo", s_("x", s_("y", c_("a"))));
-        Term exp6[] = { s_("goo", v_0), e_(v_1, s_("y", a)), e_(v_0,s_("x",v_1)) };
-        check_flattening(mmm, exp6);
+            Main.println("==== moo ===============================================");
 
-        Main.println ("\n-----====< test_flatten exiting... >====-----\n");
+            Term nnn = s_("moo", l_(l_(l_(a()))));
+
+            Term exp5[] = { s_("moo", v_0), e_(v_0,l_(v_1)), e_(v_1,l_(v_2)), e_(v_2,l_(a())) };
+            // Term exp5[] = {s_("moo", v_0), e_(v_2, l_(a())), e_(v_1, l_(v_2)), e_(v_0, l_(v_1))};
+
+            check_flattening(nnn, exp5);
+
+            Term mmm = s_("goo", s_("x", s_("y", a())));
+            Term exp6[] = {s_("goo", v_0), e_(v_0, s_("x", v_1)), e_(v_1, s_("y", a()))};
+            check_flattening(mmm, exp6);
+
+            Main.println("\n-----====< TestFlatten.test... >====-----\n");
+        }
     }
 
     @Test
     public void mainTest() {
         Main.println ("************* Start Term test ********************");
- 
+
         Term tt = s_("a",c_("b"));
         
         // Term.CustomIterator it = new Term.CustomIterator(tt);
@@ -837,7 +847,8 @@ Term.reset_gensym();
 
         list_test();
 
-        test_flatten();
+        TestFlatten tfo = new TestFlatten();
+        tfo.test();
 
         try_t();
 

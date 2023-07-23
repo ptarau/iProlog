@@ -244,12 +244,13 @@ public class Term {
     // in the toSentences lexeme tagger.
     public static void set_TarauLog() {
 
-        and_op = " and\n  ";
+        String nl = System.lineSeparator();
+        and_op = " and" + nl + "  ";
         args_start = " ";
         arg_sep = " ";
         args_end = "";
-        clause_end = " .\n";
-        if_sym = "\nif\n  ";
+        clause_end = " ." + nl;
+        if_sym = nl + "if" + nl + "  ";
         holds_op = " holds ";
         list_start = "lists ";
         list_elt_sep = " ";
@@ -438,10 +439,7 @@ _1 = p(Z, _2, _3)
         for (Term t = terms(); t != null; t = t.next)
             if (t.is_simple()) {
                 if (t.is_a_variable() && t.v().compareTo("_") == 0) {
-                    Main.println ("*******************");
-                    Main.println ("** gensym here? ***");
                     t.set_v(Term.gensym());
-                    Main.println ("*******************");
                 }
                 // Main.println (tabs() + "Adding <<<"+t+">>> to new_terms");
                 new_terms = Term.append_elt_to_ll(t.shallow_copy(), new_terms);
@@ -460,7 +458,8 @@ _1 = p(Z, _2, _3)
             // Main.println (tabs() + " .... recursion on that:");
             x.v.flappin (buf, result);
             // Main.println (tabs() + "now, x is " + x.n + "="+x.v);
-            result.add (x);
+            // result.add (x);
+            result.push(x);
         }
                 
         Terms = new_terms;
