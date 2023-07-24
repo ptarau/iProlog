@@ -387,31 +387,35 @@ private class TrySimple {
         Main.println ("\n==== try_perms exiting .... ====");
     }
 
-    private void try_t_J() {
-        Main.println ("\n==== try_t_J ====");
-        
+private class TryJapaneseCode {
+
+        private Term   ikiru(Term x)  {  return s_("いきる", x);   }
+        private Term   Hito()         {  return v_("人");         }
+        private Term   iidesu(Term x) {  return s_("いいです", x); }
+
+    private void test() {
+        Main.println("\n==== try_t_J ====");
+
         Term.reset_gensym();
         Term.set_TarauLog();
 
-        Main.println ("\n try_t_J: Construct data structures for try_t_J() case and ...");
+        Main.println("\n try_t_J: Construct data structures for try_t_J() case and ...");
 
         String expected[] = {"私", "あなた"};
         LinkedList<Clause> llc = new LinkedList<Clause>();
         for (String s : expected) {
-            Clause cl = Clause.f__("いきる", c_(s));
-            llc.add (cl);
-            Main.println (">>>>>>>>>>>>>>>>> s = " + s);
-            Main.println (">>>>>>>>>>>>>>>>> cl = " + cl);
+            llc.add(Clause.f__(ikiru(c_(s))));
         }
-        // llc.add (Clause.f__("いいです", v_("人")).if_ (s_("いきる", v_("人"))));
-        // llc.add (Clause.f__("goal",  v_("人")).if_ (s_("いいです", v_("人"))));
-        llc.add (Clause.f__("goal",  v_("人")).if_ (s_("いきる", v_("人"))));
+        llc.add(Clause.f__(iidesu(Hito())).if_(ikiru(Hito())));
+        llc.add(Clause.f__("goal", Hito()).if_(iidesu(Hito())));
+
         String x_out = "";
-        for (Clause cl : llc)  x_out += cl.toString()+System.lineSeparator();
-        Main.println (x_out);
+        for (Clause cl : llc) x_out += cl.toString() + System.lineSeparator();
+        Main.println(x_out);
 
         try_it(llc, expected);
     }
+}
 
     private void list_test() {
         Main.println ("============ list_test entered...");
@@ -841,7 +845,8 @@ Term.reset_gensym();
         TryQueens tqs = new TryQueens();
         tqs.test();
 
-        try_t_J();
+        TryJapaneseCode tjc = new TryJapaneseCode();
+        tjc.test();
 
         Main.println ("\n======== End Term test ====================");
      
