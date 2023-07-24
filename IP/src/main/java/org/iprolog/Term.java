@@ -163,13 +163,34 @@ public class Term {
     // Maybe in getword() this could be detected and removed,
     // but the v tag kept.
     // Similar hacky treatment for constants starting upper case.
-    public static Term variable(String v) {
-        if (Character.isLowerCase(v.charAt(0))) v = Var_prefix + v;
-        return new Term (Variable, v, null);
+
+
+    private static Boolean notStdPrologAtomStart(Character c) {
+        if (c == '_') return false;
+        // Just to handle Japanese for a start;
+        // need better distinction, but just trying out other characters
+        // for testing of translation to Tarau's assembly format.
+        // Not very relevant for anything more.
+        if (Character.isIdeographic(c)) return true;
+        if (Character.UnicodeBlock.of(c)==Character.UnicodeBlock.HIRAGANA) return true;
+        if (Character.UnicodeBlock.of(c)==Character.UnicodeBlock.KATAKANA) return true;
+
+        return !Character.isAlphabetic(c);
     }
-    public static Term constant(String c) {
-        if (Character.isUpperCase(c.charAt(0))) c = Const_prefix + c;
-        return new Term (Constant, c, null);
+    public static Term variable(String V) {
+        Character c = V.charAt(0);
+        if (    notStdPrologAtomStart(c) ||
+                Character.isLowerCase(c))
+                    V = Var_prefix + V;
+        return new Term (Variable, V, null);
+    }
+    public static Term constant(String C) {
+        Character c = C.charAt(0);
+
+        if (    // notStdPrologAtomStart(c) ||
+                Character.isUpperCase(c))
+                    C = Const_prefix + C;
+        return new Term (Constant, C, null);
     }
     public static Term compound(String f) {
         return new Term (Compound, f, null);

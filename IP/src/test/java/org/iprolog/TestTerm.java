@@ -398,38 +398,16 @@ private class TrySimple {
         String expected[] = {"私", "あなた"};
         LinkedList<Clause> llc = new LinkedList<Clause>();
         for (String s : expected) {
-            llc.add (Clause.f__("いきる", c_(s)));
+            Clause cl = Clause.f__("いきる", c_(s));
+            llc.add (cl);
             Main.println (">>>>>>>>>>>>>>>>> s = " + s);
+            Main.println (">>>>>>>>>>>>>>>>> cl = " + cl);
         }
         // llc.add (Clause.f__("いいです", v_("人")).if_ (s_("いきる", v_("人"))));
         // llc.add (Clause.f__("goal",  v_("人")).if_ (s_("いいです", v_("人"))));
         llc.add (Clause.f__("goal",  v_("人")).if_ (s_("いきる", v_("人"))));
         String x_out = "";
-        for (Clause cl : llc)  x_out += cl.toString()+"\n";
-        Main.println (x_out);
-
-        try_it(llc, expected);
-    }
-
-    private void try_t_J_romaji() {
-        Main.println ("\n==== try_t_J_romaji ====");
-        
-        Term.reset_gensym();
-        Term.set_TarauLog();
-
-        Main.println ("\n try_t_J_romaji: Construct data structures for try_t_J_romaji() case and ...");
-
-        String expected[] = {"I", "you"};
-        Term vPerson = v_("person");
-        LinkedList<Clause> llc = new LinkedList<Clause>();
-        for (String s : expected)
-            llc.add (Clause.f__("is_alive", c_(s)));
-        llc.add (Clause.f__("is_good", vPerson).
-			if_ (s_("is_alive", vPerson)));
-        llc.add (Clause.f__("goal",  vPerson).
-			if_ (s_("is_good", vPerson)));
-        String x_out = "";
-        for (Clause cl : llc)  x_out += cl.toString()+"\n";
+        for (Clause cl : llc)  x_out += cl.toString()+System.lineSeparator();
         Main.println (x_out);
 
         try_it(llc, expected);
@@ -863,10 +841,7 @@ Term.reset_gensym();
         TryQueens tqs = new TryQueens();
         tqs.test();
 
-        try_t_J_romaji();
- 
-        // Seemed to work before:
-        // try_t_J();
+        try_t_J();
 
         Main.println ("\n======== End Term test ====================");
      
