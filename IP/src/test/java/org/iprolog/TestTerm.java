@@ -33,6 +33,13 @@ public class TestTerm {
                                         return Term.termpair(car,cdr);
                                     }
 
+    // Tarau's code generates _<#> IDs from these, generally just
+    // past the gensym count after flattening. Not clear where
+    // this should go, if not in flatten().
+    private Term _()            {
+        return v_("_");
+    }
+
     private Clause yes_ (Term hd) { return Clause.f__(hd); }
 
     /**
@@ -97,53 +104,32 @@ public class TestTerm {
         Main.println ("... expect_from exiting.");
     }
 
-    private void try_t() {
-        Main.println ("\n==== try_t ====");
-        /*
-         * live_(i_).
-         * live_(you_).
-         * good_(Person) :- live_(Person).
-         * goal(Person):-good_(Person).
-         * 
-                * live_ i_ .
-                * live_ you_ .
-                * good_ Person
-                * if
-                *   live_ Person .
-                *
-                * goal Person
-                * if
-                *   good_ Person .
+    private class TryT {
+        private  Term good_(Term x)    { return s_("good_", x); }
+        private  Term live_(Term x)    { return s_("live_", x); }
+        private  Term Person()         { return v_("Person");   }
+        private  Term goal(Term x)     { return s_("goal", x);  }
 
-         */
-        Main.println ("\n try_t: Construct data structures for try_t() case and ...");
+        private void test() {
+            Main.println("\n==== TryT.test() entered ... ====");
+            String expected[] = {"I", "you", "them", "us"};
+            LinkedList<Clause> said = new LinkedList<Clause>();
 
-        String expected[] = {"I"
-                            ,"you"
-                            };
+            for (String s : expected) {
+                said.add(yes_(live_(c_(s))));
+            }
 
-        Term vPerson = v_("person");
+            said.add (yes_(good_(Person())).if_ (live_(Person())));
+            said.add (yes_(goal(Person())).if_(good_(Person())));
 
-        LinkedList<Clause> llc = new LinkedList<Clause>();
-
-        for (String s : expected) {
-            Clause cl = Clause.f__("live_", c_(s));
-            Main.println ("try_t: Adding clause: ");
-            Main.println ("try_t: " + cl.toString());
-            llc.add (cl);
+            try_it(said, expected);
         }
-
-        // llc.add (Clause.f__("good_", vPerson).if_ (s_("live_", vPerson)));
-        // llc.add (Clause.f__("goal",  vPerson).if_ (s_("good_", vPerson)));
-        llc.add (Clause.f__("goal",  vPerson).if_ (s_("live_", vPerson)));
-
-        try_it (llc, expected);
     }
 
-    private void try_it(LinkedList<Clause> llc, String[] whats_expected) {
+    private void try_it(LinkedList<Clause> said, String[] whats_expected) {
 
-        assert !llc.isEmpty();
-        Main.println ("  try_it() entering....");
+        assert !said.isEmpty();
+        Main.println (" ===== try_it() entering....");
         String s = "[";
         if (whats_expected == null) s += "<null>";
         else {  String sep = "";
@@ -156,37 +142,30 @@ public class TestTerm {
         s += "]";
         Main.println ("     whats_expected = " + s);
 
-        String x_out;
+        String asm_txt;
         Term.reset_gensym();
         Term.set_TarauLog();
 
-        Main.println ("   ===== try_it: before flatten ========");
+        Main.println ("   ===== try_it(): before flatten ========");
 
-        x_out = "";
-        for (Clause cl : llc) {
-            x_out += cl.toString()+System.lineSeparator();
-            // Main.println ("Pulling out body list:");
-            // for (Term t = cl.body; t != null; t = t.next)
-            //     Main.println ("               .... " + t);
+        asm_txt = "";
+        for (Clause cl : said) {
+            asm_txt += cl.toString() + System.lineSeparator();
         }
 
-        Main.println (x_out);
-
-        Main.println ("   ===== try_it: flatten transform =======");
-        x_out = "";
-        for (Clause cl : llc) {
+        Main.println ("   ===== try_it(): flatten transform =======");
+        asm_txt = "";
+        for (Clause cl : said) {
             cl.flatten();
-            x_out += cl.toString()+System.lineSeparator();
+            asm_txt += cl.toString()+System.lineSeparator();
         }
 
-        Main.println (x_out);
-
-        Main.println ("   ===== try_it: Calling new Prog: ===============");
-        Prog P = new Prog(x_out, false);
+        Main.println ("   ===== try_it(): Calling new Prog: ===============");
+        Prog P = new Prog(asm_txt, false);
 
         expect_from(P, whats_expected); 
 
-        Main.println ("  exiting try_it()");
+        Main.println ("  ===== exiting try_it()");
     }
 
 private class TrySimple {
@@ -196,195 +175,208 @@ private class TrySimple {
     private Term   goal(Term x)     { return  s_("goal", x);             }
 
     private void test() {
-        Main.println("TrySimple.test() entering....");
-
-        // dookie([]).
-        // dookie(0).
-        // goal(Foo):-dookie(Foo).
+        Main.println(" ======== TrySimple.test() entering....");
 
         LinkedList<Clause> llc = Clause.say_ (
                 yes_(dookie(l_())),
                 yes_(dookie(_0())),
-                yes_(goal(Foo())).if_(
-                        dookie(Foo())
-                )
+                yes_(goal(Foo())).if_(dookie(Foo()))
         );
+
         String expected[] = {"nil", "0"};
 
         try_it(llc, expected);
 
-        Main.println ("TrySimple.test() exiting ....");
+        Main.println (" ======= TrySimple.test() exiting ....");
     }
 };
 
-    private void try_big() {  // based on Tarau's original progs/big.pl
-        Main.println ("\n===== try_big() entering ....");
+    private class TryBig {
+        private void test() {  // based on Tarau's original progs/big.pl
+            Main.println("\n===== TryBig.test() entering ....");
 
-        LinkedList<Clause> llc = new LinkedList<Clause>();
-        String expected[] = { "[a,b]" };
+            LinkedList<Clause> llc = new LinkedList<Clause>();
+            String expected[] = {"[a,b]"};
 
-        Term Ys = v_("Ys");  Term X = v_("X");  Term Xs = v_("Xs");  Term Zs = v_("Zs");
-    // append([],Ys,Ys).
+            Term Ys = v_("Ys");
+            Term X = v_("X");
+            Term Xs = v_("Xs");
+            Term Zs = v_("Zs");
+            // append([],Ys,Ys).
 
-        llc.add (Clause.f__("append", l_(), v_("Ys"), v_("Ys")));
+            llc.add(Clause.f__("append", l_(), v_("Ys"), v_("Ys")));
 
 
-        llc.add (Clause.f__("append", p_(v_("X"), v_("Xs")), v_("Ys"), p_(v_("X"),v_("Zs"))).
-                            if_(s_("append",v_("Xs"),v_("Ys"),v_("Zs"))));
-    // nrev([],[]).
-        llc.add (Clause.f__("nrev", l_(), l_()));
-    // nrev([X|Xs],Zs):-nrev(Xs,Ys),append(Ys,[X],Zs).
-        llc.add (Clause.f__("nrev", p_(v_("X"),v_("Xs")),v_("Zs")).
-                            if_(   s_("nrev",v_("Xs"),v_("Ys")),
-                                    s_("append",v_("Ys"),l_(v_("X")),v_("Zs"))
-                            )
-                );
-    
-        for (Integer i = 0; i < 18; ++i) {
-            Term it = c_(i.toString());
-            Integer i_next = i + 1;
-            Term it_next = c_(i_next.toString());
-            llc.add(Clause.f__ ("next_number_after", it, it_next));
-        }
-
-    // dup(0,X,X).
-        llc.add(Clause.f__("dup", c_("0"), v_("X"),v_("X")));
-
-        Term R = v_("R");  Term XX = v_("XX");  Term N = v_("N");  Term N1 = v_("N1");
-    // dup(N,X,R):-next_number_after(N1,N),append(X,X,XX),dup(N1,XX,R).
-        llc.add(Clause.f__("dup", N,X,R).
-                            if_ (s_("next_number_after", N1, N),
-                                 s_("append",X,X,XX),
-                                 s_("dup",N1,XX,R)));
-
-        Term Y = v_("Y");
-
-    // goal([X,Y]):-dup(18,[a,b,c,d],[X,Y|_]).
-        Term l_a_b_c_d = l_(c_("a"),c_("b"),c_("c"),c_("d"));
-
-        assert Y.next == null;
-        Main.println ("Before p_ call, Y is <<<"+Y+">>>");
-        Term p = p_(v_("Y"),v_("_"));
-        Main.println ("After p_ call, Y is <<<"+Y+">>> p is <<<"+p+">>>");
-
-        llc.add (Clause.f__("goal", l_(v_("X"),v_("Y"))) 
-            . if_ (s_("dup", c_("18"), l_a_b_c_d, l_(v_("X"),p)))
+            llc.add(Clause.f__("append", p_(v_("X"), v_("Xs")), v_("Ys"), p_(v_("X"), v_("Zs"))).
+                    if_(s_("append", v_("Xs"), v_("Ys"), v_("Zs"))));
+            // nrev([],[]).
+            llc.add(Clause.f__("nrev", l_(), l_()));
+            // nrev([X|Xs],Zs):-nrev(Xs,Ys),append(Ys,[X],Zs).
+            llc.add(Clause.f__("nrev", p_(v_("X"), v_("Xs")), v_("Zs")).
+                    if_(s_("nrev", v_("Xs"), v_("Ys")),
+                            s_("append", v_("Ys"), l_(v_("X")), v_("Zs"))
+                    )
             );
 
-        assert Y.next == null;
-        
-        try_it (llc, expected);
+            for (Integer i = 0; i < 18; ++i) {
+                Term it = c_(i.toString());
+                Integer i_next = i + 1;
+                Term it_next = c_(i_next.toString());
+                llc.add(Clause.f__("next_number_after", it, it_next));
+            }
 
-        Main.println ("... try_big() exiting.");
+            // dup(0,X,X).
+            llc.add(Clause.f__("dup", c_("0"), v_("X"), v_("X")));
+
+            Term R = v_("R");
+            Term XX = v_("XX");
+            Term N = v_("N");
+            Term N1 = v_("N1");
+            // dup(N,X,R):-next_number_after(N1,N),append(X,X,XX),dup(N1,XX,R).
+            llc.add(Clause.f__("dup", N, X, R).
+                    if_(s_("next_number_after", N1, N),
+                            s_("append", X, X, XX),
+                            s_("dup", N1, XX, R)));
+
+            Term Y = v_("Y");
+
+            // goal([X,Y]):-dup(18,[a,b,c,d],[X,Y|_]).
+            Term l_a_b_c_d = l_(c_("a"), c_("b"), c_("c"), c_("d"));
+
+            assert Y.next == null;
+            Main.println("Before p_ call, Y is <<<" + Y + ">>>");
+            Term p = p_(v_("Y"), v_("_"));
+            Main.println("After p_ call, Y is <<<" + Y + ">>> p is <<<" + p + ">>>");
+
+            llc.add(Clause.f__("goal", l_(v_("X"), v_("Y")))
+                    .if_(s_("dup", c_("18"), l_a_b_c_d, l_(v_("X"), p)))
+            );
+
+            assert Y.next == null;
+
+            try_it(llc, expected);
+
+            Main.println(" ======== ryBig.test() exiting . . .");
+        }
     }
 
-    private void try_bar() {
+    private class TryBar {
+        private Term X()  { return v_("X"); }
+        private Term Y()  { return v_("Y"); }
+        private Term F()  { return v_("F"); }
+        private Term eq(Term x, Term y) { return s_("eq", x, y); }
+        private Term foo(Term x)        { return s_("foo", x);   }
+        private Term goal(Term x)       { return s_("goal", x);  }
 
-        Main.println ("\n==== try_bar (list composition with | symbol) ====");
+        private void test() {
 
+            Main.println("\n==== try_bar (list composition with | symbol) ====");
 
-        LinkedList<Clause> llc = new LinkedList<Clause>();
+            LinkedList<Clause> said = new LinkedList<Clause>();
 
-        Term X  = v_("X");  Term Y  = v_("Y"); Term F = v_("F");
-        
-    // eq(X,X).
-        Clause eqXX = Clause.f__("eq",X,X);
-        llc.add(eqXX);
-        llc.add(Clause.f__("foo", p_(X,Y)).
-            if_ (s_("eq", X, c_("1")),
-                 s_("eq", Y, c_("nil")))
-        );
-        llc.add(Clause.f__("foo", p_(X,Y)).
-        if_ (s_("eq", X, c_("2")),
-             s_("eq", Y, c_("3"))
-             )
-        );
-        llc.add(Clause.f__("foo", l_(X,Y)).
-        if_ (s_("eq", X, c_("2")),
-             s_("eq", Y, c_("3"))
-             )
-        );
-        llc.add(Clause.f__("goal", F).
-            if_ (s_("foo", F)));
+            // eq(X,X).
+            Clause eqXX = Clause.f__(eq( X(), X()));
+            said.add(eqXX);
+            said.add(Clause.f__(foo(p_(X(), Y()))).
+                    if_(    eq( X(), c_("1")),
+                            eq( Y(), c_("nil")))
+            );
+            said.add(Clause.f__(foo(p_(X(), Y()))).
+                    if_(    eq( X(), c_("2")),
+                            eq( Y(), c_("3"))
+                    )
+            );
+            said.add(Clause.f__(foo(l_(X(), Y()))).
+                    if_(    eq( X(), c_("2")),
+                            eq( Y(), c_("3"))
+                    )
+            );
+            said.add(Clause.f__(goal(F())).
+                    if_(foo(F())));
 
-        String expected[] = { "[1]", "[2|3]", "[2,3]" };
+            String expected[] = {"[1]", "[2|3]", "[2,3]"};
 
-        Main.println ("\n==== try_bar calling try_it .... ====");
+            Main.println("\n==== try_bar calling try_it .... ====");
 
-        try_it (llc, expected);
+            try_it(said, expected);
 
-        Main.println ("\n==== try_bar exiting .... ====");
+            Main.println("\n==== try_bar exiting .... ====");
+        }
     }
 
-    private void try_perms() {
-        Main.println ("\n==== try_perms ====");
+    class TryPerms {
+        private Term eq(Term x, Term y) { return s_("eq", x, y); }
 
-        LinkedList<Clause> llc = new LinkedList<Clause>();
-        
-        String expected[] = { "[10,9,8,7,6,5,4,3,2,1]" };
+        private void test() {
+            Main.println("\n==== TryPerms.test() entered ....  ====");
 
-    // eq(X,X).
-        Clause eqXX = Clause.f__("eq",v_("X"),v_("X"));
-        llc.add(eqXX);
+            LinkedList<Clause> llc = new LinkedList<Clause>();
 
-    // sel(X,[X|Xs],Xs).
-        llc.add (Clause.f__("sel", v_("X"), p_(v_("X"),v_("Xs")), v_("Xs")));
+            String expected[] = {"[10,9,8,7,6,5,4,3,2,1]"};
 
-        // sel(X,[Y|Xs],[Y|Ys]):-sel(X,Xs,Ys).
-        llc.add(Clause.f__("sel", v_("X"), p_(v_("Y"),v_("Xs")), p_(v_("Y"),v_("Ys"))).
-            if_ (s_("sel", v_("X"), v_("Xs"), v_("Ys"))));
-              
-        //    perm([],[]).
-        llc.add(Clause.f__("perm",l_(),l_()));
-        
-        //    perm([X|Xs],Zs):-perm(Xs,Ys),sel(X,Zs,Ys).
-        llc.add(Clause.f__("perm",p_(v_("X"),v_("Xs")),v_("Zs")).
-            if_ (   s_("perm", v_("Xs"), v_("Ys")),
-                    s_("sel", v_("X"), v_("Zs"), v_("Ys"))
-            )
-        );
+            // eq(X,X).
+            Clause eqXX = Clause.f__(eq(v_("X"), v_("X")));
+            llc.add(eqXX);
 
-        // app([],Xs,Xs).
-        llc.add(Clause.f__("app", l_(), v_("Xs"), v_("Xs")));
+            // sel(X,[X|Xs],Xs).
+            llc.add(Clause.f__("sel", v_("X"), p_(v_("X"), v_("Xs")), v_("Xs")));
 
-        // app([X|Xs],Ys,[X|Zs]):-app(Xs,Ys,Zs).
-        llc.add(Clause.f__("app", p_(v_("X"),v_("Xs")),v_("Ys"),p_(v_("X"),v_("Zs"))).
-            if_(   s_("app", v_("Xs"),v_("Ys"),v_("Zs"))
-            )
-        );
+            // sel(X,[Y|Xs],[Y|Ys]):-sel(X,Xs,Ys).
+            llc.add(Clause.f__("sel", v_("X"), p_(v_("Y"), v_("Xs")), p_(v_("Y"), v_("Ys"))).
+                    if_(s_("sel", v_("X"), v_("Xs"), v_("Ys"))));
 
-        // nrev([],[]).
-        llc.add(Clause.f__("nrev",l_(),l_()));
+            //    perm([],[]).
+            llc.add(Clause.f__("perm", l_(), l_()));
 
-        // nrev([X|Xs],Zs):-nrev(Xs,Ys),app(Ys,[X],Zs).
-        llc.add(Clause.f__("nrev", p_(v_("X"),v_("Xs")),v_("Zs")).
-            if_(   s_("nrev", v_("Xs"), v_("Ys")),
-                    s_("app",  v_("Ys"), l_(v_("X")),v_("Zs")))
-        );
-        
-        // input([1,2,3,4,5,6,7,8,9,10]).
-        llc.add(Clause.f__("input", l_(
-            c_("1"), c_("2"), c_("3"), c_("4"), c_("5"),
-            c_("6"), c_("7"), c_("8"), c_("9"), c_("10")
-            ))
-        );
+            //    perm([X|Xs],Zs):-perm(Xs,Ys),sel(X,Zs,Ys).
+            llc.add(Clause.f__("perm", p_(v_("X"), v_("Xs")), v_("Zs")).
+                    if_(s_("perm", v_("Xs"), v_("Ys")),
+                            s_("sel", v_("X"), v_("Zs"), v_("Ys"))
+                    )
+            );
 
-        // goal(Y):-input(X),nrev(X,Y),perm(X,Y),perm(Y,X).
-        llc.add(Clause.f__("goal", v_("Y")).
-                if_ (   s_("input", v_("X")),
-                        s_("nrev",  v_("X"), v_("Y")),
-                        s_("perm",  v_("X"), v_("Y")),
-                        s_("perm",  v_("Y"), v_("X"))
-                )
-        );
+            // app([],Xs,Xs).
+            llc.add(Clause.f__("app", l_(), v_("Xs"), v_("Xs")));
 
-        String x_out = "";
-        for (Clause cl : llc)  x_out += cl.toString()+"\n";
-        Main.println (x_out);
+            // app([X|Xs],Ys,[X|Zs]):-app(Xs,Ys,Zs).
+            llc.add(Clause.f__("app", p_(v_("X"), v_("Xs")), v_("Ys"), p_(v_("X"), v_("Zs"))).
+                    if_(s_("app", v_("Xs"), v_("Ys"), v_("Zs"))
+                    )
+            );
 
-        try_it(llc, expected);
+            // nrev([],[]).
+            llc.add(Clause.f__("nrev", l_(), l_()));
 
-        Main.println ("\n==== try_perms exiting .... ====");
+            // nrev([X|Xs],Zs):-nrev(Xs,Ys),app(Ys,[X],Zs).
+            llc.add(Clause.f__("nrev", p_(v_("X"), v_("Xs")), v_("Zs")).
+                    if_(s_("nrev", v_("Xs"), v_("Ys")),
+                            s_("app", v_("Ys"), l_(v_("X")), v_("Zs")))
+            );
+
+            // input([1,2,3,4,5,6,7,8,9,10]).
+            llc.add(Clause.f__("input", l_(
+                    c_("1"), c_("2"), c_("3"), c_("4"), c_("5"),
+                    c_("6"), c_("7"), c_("8"), c_("9"), c_("10")
+                    ))
+            );
+
+            // goal(Y):-input(X),nrev(X,Y),perm(X,Y),perm(Y,X).
+            llc.add(Clause.f__("goal", v_("Y")).
+                    if_(s_("input", v_("X")),
+                            s_("nrev", v_("X"), v_("Y")),
+                            s_("perm", v_("X"), v_("Y")),
+                            s_("perm", v_("Y"), v_("X"))
+                    )
+            );
+
+            String x_out = "";
+            for (Clause cl : llc) x_out += cl.toString() + "\n";
+            Main.println(x_out);
+
+            try_it(llc, expected);
+
+            Main.println("\n==== TryPerms.test() exiting .... ====");
+        }
     }
 
 private class TryJapaneseCode {
@@ -417,116 +409,90 @@ private class TryJapaneseCode {
     }
 }
 
-    private void list_test() {
-        Main.println ("============ list_test entered...");
+private class TryList {
+    private Term c0() { return c_("0"); }
+    private Term c1() { return c_("1"); }
+    private Term c2() { return c_("2"); }
+    private Term V()  { return v_("V"); }
+
+    private Term goal(Term x)  { return s_("goal",x); }
+    private Term zero_and_one(Term x) { return s_("zero_and_one", x); }
+
+    private void test() {
+        Main.println("============ TryList.test() entered...");
 
         Term.reset_gensym();
         Term.set_TarauLog();
 
-        Term c0 = c_("0");
-        Term c1 = c_("1");
-        Term c2 = c_("2");
-        Term l = l_(c0,c1,c2);
+        Term l = l_(c0(), c1(), c2());
         assert l != null;
         assert l.is_a_termlist();
 
-        Main.println ("l = " + l);
-
-        Main.println ("\n list_test: Construct data structures for try_t() case and ...");
-
         String expected[] = {"[0,1,2]", "[1|0]"};
 
-        LinkedList<Clause> llc = new LinkedList<Clause>();
-
-        Term V = v_("V");
+        LinkedList<Clause> said = new LinkedList<Clause>();
 
         Clause x;
-        
-        x = Clause.f__("zero_and_one", l);
+
+        // x = Clause.f__("zero_and_one", l);
+        x = Clause.f__(zero_and_one(l));
         x.flatten();
-        llc.add (x);
+        said.add(x);
 
-        x = Clause.f__("zero_and_one", p_(c1,c0));
+        x = Clause.f__(zero_and_one(p_(c1(), c0())));
         x.flatten();
-        llc.add (x);
+        said.add(x);
 
-        x = Clause.f__("goal",  V).if_ (s_("zero_and_one", V));
+        x = Clause.f__(goal(V())).if_(zero_and_one(V()));
         x.flatten();
-        llc.add (x);
+        said.add(x);
 
-        String x_out = "";
-        for (Clause cl : llc)  x_out += cl.toString()+"\n";
-        Main.println (x_out);
+        String asm_txt = "";
+        for (Clause cl : said) asm_txt += cl.toString() + System.lineSeparator();
+        Main.println(asm_txt);
 
-        Prog P = new Prog(x_out, false);
+        Prog P = new Prog(asm_txt, false);
 
         Term.set_Prolog();
-        /*
-        Main.println ("\n=== list_test: 'Pretty-print' Prolog from it ===");
-        P.ppCode();
-        */
 
         expect_from(P, expected);
 
-        Main.println ("list_test exited...");       
+        Main.println(" ======== TryList.test() exiting...");
     }
+}
 
-    private void try_add() {
-        Main.println ("\n==== try_add() ====");
-        /*
-        the_sum_of(0,X,X).
-        the_sum_of(the_successor_of(X),Y,the_successor_of(Z)):-the_sum_of(X,Y,Z).
-        goal(R):-
-         the_sum_of(the_successor_of(the_successor_of(0)),the_successor_of(the_successor_of(0)),R).
+private class TryAdd {
+    private void test() {
+        Main.println("\n ======== TryAdd.test() ====");
 
-            the_sum_of 0 X X .
-
-            the_sum_of _0 Y _1 and
-              _0 holds the_successor_of X and
-              _1 holds the_successor_of Z
-            if
-            the_sum_of X Y Z .
-
-            goal R
-            if
-              the_sum_of _0 _1 R and
-              _0 holds the_successor_of _2 and
-              _2 holds the_successor_of 0 and
-              _1 holds the_successor_of _3 and
-              _3 holds the_successor_of 0 .
-         */
-
-        // out = "";
         Term.reset_gensym();
 
         LinkedList<Clause> llc = new LinkedList<Clause>();
-        Term vX = v_("X");  Term vY = v_("Y"); Term vZ = v_("Z"); Term c0 = c_("0");
+        Term vX = v_("X");
+        Term vY = v_("Y");
+        Term vZ = v_("Z");
+        Term c0 = c_("0");
         Term succ_X = s_("the_successor_of", vX);
         Term succ_Z = s_("the_successor_of", vZ);
         Term succ_0 = s_("the_successor_of", c0);
         Term vR = v_("R");
 
         llc.add(Clause.f__("the_sum_of", c0, vX, vX));
-        llc.add(Clause.f__("the_sum_of", succ_X,vY,succ_Z).if_ (s_("the_sum_of",vX,vY,vZ)));
+        llc.add(Clause.f__("the_sum_of", succ_X, vY, succ_Z).if_(s_("the_sum_of", vX, vY, vZ)));
 
         Term two = s_("the_successor_of", succ_0);
-        llc.add(Clause.f__("goal", vR).if_ (s_("the_sum_of", two, two, vR)));
+        llc.add(Clause.f__("goal", vR).if_(s_("the_sum_of", two, two, vR)));
 
-        Main.println ("----- try_add: Calling new Prog: --------");
+        Main.println("----- try_add: Calling new Prog: --------");
         String[] these_answers = {
-            "the_successor_of(the_successor_of(the_successor_of(the_successor_of(0))))"
+                "the_successor_of(the_successor_of(the_successor_of(the_successor_of(0))))"
         };
 
-        try_it(llc,these_answers);
-        Main.println ("...exiting try_add");
+        try_it(llc, these_answers);
+        Main.println(" ======== exiting TryAdd.test() . . . ");
     }
+}
 
-    // Tarau's code generates _<#> IDs from these, generally just
-    // past the gensym count after flattening. Not clear where
-    // this should go, if not in flatten().
-    private Term _()            {
-        return v_("_");
-    }
 
 private class TryQueens {
     private Term QueenColumn()  {  return v_("QueenColumn");    }
@@ -824,29 +790,16 @@ Term.reset_gensym();
         assert L != null;
         assert L.is_a_termlist();
 
-        TrySimple nts = new TrySimple();
-        nts.test();
-
-        list_test();
-
-        TestFlatten tfo = new TestFlatten();
-        tfo.test();
-
-        try_t();
-
-        try_add();
-
-        try_big();
-
-        try_bar();  // so basic, should be earlier
-
-        try_perms();
-
-        TryQueens tqs = new TryQueens();
-        tqs.test();
-
-        TryJapaneseCode tjc = new TryJapaneseCode();
-        tjc.test();
+        new TryBar().test();
+        new TrySimple().test();
+        new TryList().test();
+        new TestFlatten().test();
+        new TryT().test();
+        new TryAdd().test();
+        new TryBig().test();
+        new TryPerms().test();
+        new TryQueens().test();
+        new TryJapaneseCode().test();
 
         Main.println ("\n======== End Term test ====================");
      
