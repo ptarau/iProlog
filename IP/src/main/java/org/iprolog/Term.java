@@ -228,6 +228,7 @@ public class Term {
         Ts.next = cdr.shallow_copy();
         assert car.next != Ts.next;
         Term r = new Term (TermPair, "|", Ts);
+        // Term r = new Term (TermList, null, Ts);
         return r;
     }
 
@@ -362,7 +363,7 @@ public class Term {
     }
 
     public Term takes_this(Term t) {
-        assert tag == Compound;
+        assert tag == Compound || tag == TermList;
         assert t != null;
 
         this.Terms = append_elt_to_ll(t.shallow_copy(), terms());
@@ -426,7 +427,6 @@ _1 = p(Z, _2, _3)
         return append_elt_to_ll (Ts, ll);
     }
 
-    // iffy naming here -- doesn't copy next link, so maybe it should be called "shallow_copy"
     public Term shallow_copy() {
       return new Term(this.tag, this.S_, this.Terms);
     }
@@ -435,6 +435,17 @@ _1 = p(Z, _2, _3)
         String n;
         Term v;
         public nvpair(String n, Term v) { this.n = n; this.v = v; }
+    }
+
+    private String annote() {
+        String type = "?";
+        if (this.is_an_equation()) type = "==";
+        if (this.is_a_termpair())  type = ".";
+        if (this.is_a_compound())  type = "(...)";
+        if (this.is_a_termlist())  type = "[...]";
+        if (this.is_a_variable())  type = "$";
+        if (this.is_a_constant())  type = "#";
+        return type;
     }
 
     // Need to figure out side effects:
@@ -488,19 +499,6 @@ _1 = p(Z, _2, _3)
         // dedent();
     }
 
-    private String annote() {
-        String type = "?";
-        if (this.is_an_equation()) type = "==";
-        if (this.is_a_termpair())  type = ".";
-        if (this.is_a_compound())  type = "(...)";
-        if (this.is_a_termlist())  type = "[...]";
-        if (this.is_a_variable())  type = "$";
-        if (this.is_a_constant())  type = "#";
-        return type;
-    }
-
-// nth attempt to rewrite flatten():
-
     public Term flatten() {
         // save successor of this and isolate it
         Term save_next = this.next;
@@ -514,20 +512,8 @@ _1 = p(Z, _2, _3)
         this.flappin(buf, result);
 
         Term tt = this;
+
         for (nvpair x : result) {
-            if (x.v.is_a_termlist()) { // hacky & dubious post-processing
-                Term xvterms = x.v.terms();
-                if (xvterms != null) {
-                    if (xvterms.next != null) {
-                        if (xvterms.next.is_a_variable()) {
-                            if (xvterms.next.v().startsWith("_")) {
-                                x.v.tag = TermPair;
-                                assert x.v.S_ == null;
-                            }
-                        }
-                    }
-                }
-            }
             tt.next = equation(variable(x.n),x.v);
             tt = tt.next;
         }

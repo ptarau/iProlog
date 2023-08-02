@@ -8,7 +8,7 @@
 
  the_sum_of(the_successor_of(X),Y,the_successor_of(Z)):-the_sum_of(X,Y,Z).
  
-gdebug(R):-the_sum_of(0,X,the_successor_of(0)).
+% gdebug(R):-the_sum_of(0,X,the_successor_of(0)).
 
 % R is the goal if
 %   R is the sum of

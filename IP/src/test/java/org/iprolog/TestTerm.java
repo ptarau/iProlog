@@ -8,51 +8,58 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 
 import java.util.LinkedList;
-import java.time.Year;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.Supplier;
 
 public class TestTerm {
 
-    private static final Term v_(String s) { return Term.variable(s); }
-    private static final Term c_(String s) { return Term.constant(s); }
-    private static final Term s_(String s) { return Term.compound(s); }
-    private static final Term s_(String s, Term... ts) {
+    static Term v_(String s) {    return Term.variable(s); }
+    static Term _()          {    return v_("_");        }
+    static Term c_(String s) {    return Term.constant(s); }
+    static Term s_(String s) {    return Term.compound(s); }
+    static Term s_(String s, Term... ts) {
                                         Term xt = Term.compound(s); 
                                         for (Term t : ts)
                                             xt = xt.takes_this(t);
                                         return xt;
                                     }
-    private static final Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
-    private static final Term l_(Term... ts) {
+    static Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
+    static Term l_(Term... ts) {
                                         if (ts.length == 0)
                                             return c_("nil");
                                         return Term.termlist(ts);
-                                    }
-    private static final Term p_(Term car, Term cdr) {
-                                        return Term.termpair(car,cdr);
-                                    }
+                                }
+    static Term pal_(Term[] tal, int i) {
+        if (i == tal.length-2)
+            return Term.termpair(tal[i], tal[i+1]);
+        return Term.termpair (tal[i], pal_(tal, i+1));
+    }
+    static Term p_(Term... Ts) { return pal_(Ts, 0);  }
 
-    // Tarau's code generates _<#> IDs from these, generally just
-    // past the gensym count after flattening. Not clear where
-    // this should go, if not in flatten().
-    private Term _()            {
-        return v_("_");
+    private Clause yes_ (Term hd) {     return Clause.f__(hd); }
+
+    private String m_() {
+        return Thread.currentThread().getStackTrace()[3].getMethodName();
+    }
+    private String f_() {
+        return Thread.currentThread().getStackTrace()[2].getMethodName();
     }
 
-    private Clause yes_ (Term hd) { return Clause.f__(hd); }
+    Term c0() { return c_("0"); }
+    Term c1() { return c_("1"); }
+    Term c2() { return c_("2"); }
+    Term c3() { return c_("3"); }
 
-    private Term c0() { return c_("0"); }
-    private Term c1() { return c_("1"); }
-    private Term c2() { return c_("2"); }
-    private Term c3() { return c_("3"); }
+    Term V()  { return v_(f_()); }
+    Term X()  { return v_(f_()); };
+    Term Y()  { return v_(f_()); };
+    Term Z()  { return v_(f_()); };
 
-    private Term V()  { return v_("V"); }
-    private Term X()  { return v_("X"); };
-    private Term Y()  { return v_("Y"); };
-    private Term Z()  { return v_("Z"); };
+    Term Xs() { return v_(f_()); }
+    Term Ys() { return v_(f_()); }
+    Term Zs() { return v_(f_()); }
 
-    private Term goal(Term x)  { return s_("goal",x); }
+    Term goal(Term x)  { return s_(f_(),x); }
 
     LinkedList<Clause> said;
 
@@ -137,8 +144,6 @@ public class TestTerm {
         Main.println ("... expect_from exiting.");
     }
 
-
-
     private void try_it(LinkedList<Clause> said, String[] whats_expected) {
 
         assert !said.isEmpty();
@@ -161,7 +166,14 @@ public class TestTerm {
         Term.reset_gensym();
         Term.set_TarauLog();
 
-        Main.println ("   ===== try_it(): flatten transform =======");
+        Main.println ("   ===== try_it(): before flatten =======");
+        asm_txt = "";
+        for (Clause cl : said) {
+            asm_txt += cl.toString()+System.lineSeparator();
+        }
+        Main.println ("asm_txt = \n" + asm_txt);
+
+        Main.println ("   ===== try_it(): flattening transform =======");
         asm_txt = "";
         for (Clause cl : said) {
             cl.flatten();
@@ -177,9 +189,9 @@ public class TestTerm {
     }
 
     private class TryT {
-        private  Term good_(Term x)    { return s_("good_", x); }
-        private  Term live_(Term x)    { return s_("live_", x); }
-        private  Term Person()         { return v_("Person");   }
+        private  Term good_(Term x)    { return s_(m_(), x); }
+        private  Term live_(Term x)    { return s_(m_(), x); }
+        private  Term Person()         { return v_(m_());    }
 
         private void test() {
             Main.println("\n==== TryT.test() entered ... ====");
@@ -199,8 +211,8 @@ public class TestTerm {
     }
 
 private class TrySimple {
-    private Term   Foo()            { return  v_("Foo");                 }
-    private Term   dookie(Term x)   { return  s_("dookie", x);           }
+    private Term   Foo()            { return  v_(m_());    }
+    private Term   dookie(Term x)   { return  s_(m_(), x); }
 
     private void test() {
         Main.println(" ======== TrySimple.test() entering....");
@@ -219,16 +231,13 @@ private class TrySimple {
 };
 
     private class TryBig {
-        Term Ys() { return v_("Ys"); }
-        Term Xs() { return v_("Xs"); }
-        Term Zs() { return v_("Zs"); }
         Term append(Term this_, Term that, Term result) {
-            return s_("append", this_, that, result);
+                                              return s_(m_(), this_, that, result);
         }
-        Term nrev(Term x, Term y) { return s_("nref", x, y); }
-        Term dup(Term a, Term b, Term c) { return s_("dup", a, b, c); }
+        Term nrev(Term x, Term y)           { return s_(m_(), x, y); }
+        Term dup(Term a, Term b, Term c)    { return s_(m_(), a, b, c); }
         Term next_number_after(Term a, Term a_plus_1) {
-            return s_("next_number_after", a, a_plus_1);
+                                              return s_(m_(), a, a_plus_1);
         }
 
         private void test() {  // based on Tarau's original progs/big.pl
@@ -263,21 +272,21 @@ private class TrySimple {
             // goal([X,Y]):-dup(18,[a,b,c,d],[X,Y|_]).
             Term l_a_b_c_d = l_(c_("a"), c_("b"), c_("c"), c_("d"));
 
-            Term p = p_(Y(), _());
             say_(goal(l_(X(), Y())))
-                    .if_(dup(c_("18"), l_a_b_c_d, l_(X(), p)));
-
+            //        .if_(dup(c_("18"), l_a_b_c_d, l_(X(), p_(Y(), _()))));
+            //        .if_(dup(c_("18"), l_a_b_c_d, p_(X(), p_(Y(), _()))));
+                    .if_(dup(c_("18"), l_a_b_c_d, p_(X(), Y(), _())));
             String expected[] = {"[a,b]"};
             try_it(said, expected);
 
-            Main.println(" ======== ryBig.test() exiting . . .");
+            Main.println(" ======== TryBig.test() exiting . . .");
         }
     }
 
     private class TryBar {
-        private Term F()  { return v_("F"); }
-        private Term eq(Term x, Term y) { return s_("eq", x, y); }
-        private Term foo(Term x)        { return s_("foo", x);   }
+        private Term F()                { return v_(m_());       }
+        private Term eq(Term x, Term y) { return s_(m_(), x, y); }
+        private Term foo(Term x)        { return s_(m_(), x);    }
 
         private void test() {
 
@@ -305,17 +314,87 @@ private class TrySimple {
         }
     }
 
+    /*
+    Not working, probably because of botches with TermList and TermPair,
+    as if a TermList was not a series of TermPairs.....
+     */
+    class TryMperms {
+
+        private Term G()     {  return v_(m_());     }
+        private Term Gs()    {  return v_(m_());    }
+        private Term Bs()    {  return v_(m_());    }
+        private Term Tail()  {  return v_(m_());  }
+
+        private Term sel(Term a, Term b, Term c) { return s_(m_(), a, b, c); }
+        private Term perm(Term x, Term y)        { return s_(m_(), x, y);    }
+        private Term input(Term x, Term y)       { return s_(m_(), x, y);    }
+        private Term metaint(Term x)             { return s_(m_(), x);       }
+        private Term cls(Term x, Term tail)      { return s_(m_(), x, tail); }
+
+        private void test() {
+            Main.println("\n==== TryMperms.test() entered ....  ====");
+
+            start_new_test();
+
+    // metaint([]).
+            say_( metaint(l_()) );
+    //            metaint([  G|  Gs   ]):-    cls([  G|  Bs  ], Gs  ), metaint(Bs  ).
+            say_( metaint(p_(G(),Gs()))).if_( cls(p_(G(),Bs()), Gs()), metaint(Bs())) ;
+
+    //            cls([  sel(X,   [  X|  Xs  ], Xs  ) | Tail  ], Tail  ) .
+            say_( cls(l_(sel(X(), p_(X(),Xs()), Xs()) , Tail()), Tail()) );
+
+    //            cls([  sel(X,   [  Y|  Xs  ], [  Y|  Ys  ]),    sel(X,  Xs,  Ys  ) |  Tail   ], Tail   ) .
+            say_( cls(l_(sel(X(), p_(Y(),Xs()), p_(Y(),Ys())), p_(sel(X(),Xs(),Ys()) ,  Tail())), Tail()) );
+
+    //            cls([  perm([  ],[  ]) | Tail  ], Tail   ) .
+            say_( cls(p_(perm(l_(),l_()) , Tail()), Tail() ) );
+
+    //            cls([  perm([     X  |  Xs ], Zs  ), perm(Xs,  Ys  ),    sel(X,  Zs,  Ys  ) | Tail   ], Tail  ) .
+    //      say_( cls(l_(perm(l_(p_(X(),Xs())), Zs()), perm(Xs(),Ys()), p_(sel(X(),Zs(),Ys()) , Tail())), Tail()) );
+
+    //      cls([  perm([  X  |Xs  ], Zs  ),    perm(Xs,  Ys  ),    sel(X,  Zs,  Ys  ) | Tail     ], Tail  ) .
+      say_( cls(p_(perm(p_(X(),Xs()), Zs()), p_(perm(Xs(),Ys()), p_(sel(X(),Zs(),Ys()) , Tail()) )), Tail()) );
+/*
+            say_( input (   p_( c_("1"), p_(c_("2"), p_(c_("3"), p_(c_("4"), c_("5") )))) ,
+                            p_( c_("5"), p_(c_("4"), p_(c_("3"), p_(c_("2"), c_("1") )))) )
+            );
+*/
+            say_( input (   l_( c_("1"), c_("2")) ,
+                            l_( c_("2"), c_("1")) )
+            );
+    // goal(Y):-input(X,Y),metaint([perm(X,Y),perm(Y,X)]).
+            Term lll = metaint(l_(perm(X(),Y()),perm(Y(),X())));
+            Main.println ("lll = " + lll);
+            lll.flatten();
+            Main.println ("lll after flatten = " + lll);
+            assert lll.next != null;
+            Main.println ("lll.next = " + lll.next);
+
+            say_(goal(Y())).
+                    if_(    input(X(),Y()),
+                            // metaint(l_(perm(X(),Y()),perm(Y(),X())))     // originally
+                            // metaint (l_( c1(),c2()))
+                            metaint (l_( perm(X(),Y()),c2()))   // looks OK, generates "_0 lists _1 2"
+                            // metaint (l_( perm(X(),Y()),perm(Y(),X())))  // BAD: generates _0 holds list _1 _2
+                    );
+
+            String expected[] = { "[5,4,3,2,1]" };
+            // try_it(said, expected);
+            try_it(said, null);
+
+            Main.println("\n==== TryMperms.test() exiting .... ====");
+        }
+    }
+
     class TryPerms {
         private Term eq(Term x, Term y) { return s_("eq", x, y); }
-        private Term Xs() { return v_("Xs"); }
-        private Term Ys() { return v_("Ys"); }
-        private Term Zs() { return v_("Zs"); }
 
-        private Term sel(Term a, Term b, Term c) { return s_("sel", a, b, c); }
-        private Term perm(Term x, Term y)        { return s_("perm", x, y);   }
-        private Term app(Term a, Term b, Term c) { return s_("app", a, b, c); }
-        private Term nrev(Term x, Term y)        { return s_("nrev", x, y);   }
-        private Term input(Term x)               { return s_("input", x);     }
+        private Term sel(Term a, Term b, Term c) { return s_(m_(), a, b, c); }
+        private Term perm(Term x, Term y)        { return s_(m_(), x, y);    }
+        private Term app(Term a, Term b, Term c) { return s_(m_(), a, b, c); }
+        private Term nrev(Term x, Term y)        { return s_(m_(), x, y);    }
+        private Term input(Term x)               { return s_(m_(), x);       }
 
         private void test() {
             Main.println("\n==== TryPerms.test() entered ....  ====");
@@ -338,11 +417,9 @@ private class TrySimple {
                     if_(    nrev(Xs(), Ys()),
                             app(Ys(), l_(X()), Zs()) );
             say_( input(l_(
-                        c_("1"), c_("2"), c_("3"), c_("4"), c_("5"),
-                        c_("6"), c_("7"), c_("8"), c_("9"), c_("10") )  )
+                    c_("1"), c_("2"), c_("3"), c_("4"), c_("5"),
+                    c_("6"), c_("7"), c_("8"), c_("9"), c_("10") )  )
             );
-
-            // goal(Y):-input(X),nrev(X,Y),perm(X,Y),perm(Y,X).
             say_(goal(Y())).
                     if_(    input(X()),
                             nrev(X(), Y()),
@@ -358,10 +435,10 @@ private class TrySimple {
 
 private class TryJapaneseCode {
 
-        Term   いきる(Term x)      {  return s_("いきる", x);      }
-        Term   人()               {  return v_("人");             }
-        Term   いいです(Term x)    {  return s_("いいです", x);     }
-        Term goal(Term x)         {  return s_("goal", x);       }
+        Term いきる(Term x)   {  return s_(m_(), x);      }
+        Term 人()            {  return v_(m_());         }
+        Term いいです(Term x) {  return s_(m_(), x);      }
+        Term goal(Term x)   {  return s_(m_(), x);      }
 
     private void test() {
         Main.println("\n==== try_t_J ====");
@@ -385,14 +462,75 @@ private class TryJapaneseCode {
 
 private class TryList {
 
-    private Term zero_and_one(Term x) { return s_("zero_and_one", x); }
+    private Term zero_and_one(Term x) { return s_(m_(), x); }
+    private Term metaint(Term x)      { return s_(m_(), x); }
+    private Term perm(Term x )        { return s_(m_(), x); }
+    private Term dumb2(Term x, Term y) { return s_(m_(), x, y); }
+    private Term dumb3(Term x, Term y) { return s_(m_(), x, y); }
+
+    private void flatten_and_show(Term g) {
+        Main.println ("\n     g was " + g);
+        g.flatten();
+        Main.println ("     after flatten: ");
+        for (Term t = g; t != null; t = t.next) {
+            Main.println ("                elt = " + t);
+        }
+        Term.reset_gensym();
+    }
 
     private void test() {
         Main.println("============ TryList.test() entered...");
 
         Term.reset_gensym();
         Term.set_TarauLog();
+// Pattern: second elt of list for metaint is perm(Y)
+/*
+        flatten_and_show(metaint(l_(c3())));        // OK
+        flatten_and_show(metaint(l_(perm(X()))));   // OK
+        flatten_and_show(metaint(l_(X())));         // OK
+*/
+        Main.println("---");
+        /*
+            flatten_and_show(metaint(l_(c2(), X())));               // OK,  _0 lists 2 X
+            flatten_and_show(metaint(l_(c1(), c2())));              // OK
+            flatten_and_show(metaint(l_(perm(X()), c2())));         // OK,  _0 lists _1 2
+         */
+            flatten_and_show(metaint(l_(c2(), perm(X()))));         // BAD: _0 holds list 2 _1
+        /*
+            flatten_and_show(metaint(l_(perm(X()), perm(Y()))));    // BAD: _0 holds list _1 _2
+            flatten_and_show(metaint(l_(perm(c1()), perm(Y()))));    // BAD: _0 holds list _1 _2
+            flatten_and_show(metaint(l_(perm(X()), perm(c1()))));    // BAD: _0 holds list _1 _2
+            flatten_and_show(metaint(l_(perm(c1()), perm(c2()))));   // BAD: _0 holds list _1 _2
+            flatten_and_show(metaint(l_(perm(c1()), c2())));         // OK: _0 lists _1 2
+            flatten_and_show(metaint(dumb2(perm(c1()), c2())));         // OK: _0 holds dumb _1 2
+            flatten_and_show(metaint(dumb2(perm(c1()), perm(c2()))));   // OK: _0 holds dumb2 _1 _2
+        */
+        // Pattern?
+        //   arg to compound is
+        //      2-elt ls
+        //      2nd elt of ls is compound
 
+
+        Main.println("---");
+        /*
+        flatten_and_show(metaint(l_(c1(), c2(),c3())));              // OK
+        flatten_and_show(metaint(l_(perm(X()), c2(), c3())));        // OK
+        flatten_and_show(metaint(l_(c2(), c3(), perm(X()))));        // OK
+        flatten_and_show(metaint(l_(perm(X()), c3(), perm(Y()))));   // OK
+        flatten_and_show(metaint(l_(c2(), c3(), X())));              // OK
+        flatten_and_show(metaint(l_(perm(X()), perm(Y()), perm(Y()))));   // OK
+        flatten_and_show(metaint(l_(perm(X()), perm(Y()), perm(Y()))));   // OK
+         */
+        Main.println("---");
+
+        /*
+            flatten_and_show((l_(perm(X()), perm(Y()))));   // OK - lists _0 _1
+            flatten_and_show((l_(c1(), c2())));             // OK - lists 1 2
+            flatten_and_show((l_(perm(X()), c2())));        // OK - lists _0 2
+            flatten_and_show((l_(c2(), perm(X()))));        // OK - lists 2 _0
+            flatten_and_show((l_(perm(X()), perm(Y()))));   // OK - lists _0 _1
+            flatten_and_show((l_(c2(), X())));              // OK - lists 2 X
+        */
         Term l = l_(c0(), c1(), c2());
         assert l != null;
         assert l.is_a_termlist();
@@ -426,13 +564,15 @@ private class TryList {
 
         expect_from(P, expected);
 
+
+
         Main.println(" ======== TryList.test() exiting...");
     }
 }
 
 private class TryAdd {
-        Term  the_sum_of(Term a1, Term a2, Term Sum) {  return s_("the_sum_of", a1,a2,Sum); }
-        Term  the_successor_of(Term x) {  return s_("the_successor_of", x); }
+        Term  the_sum_of(Term a1, Term a2, Term Sum)    {  return s_(m_(), a1,a2,Sum);  }
+        Term  the_successor_of(Term x)                  {  return s_(m_(), x);          }
 
     private void test() {
         Main.println("\n ======== TryAdd.test() ====");
@@ -461,26 +601,28 @@ private class TryAdd {
     }
 }
 
-private class TryQueens { Term QueenColumn()  {  return v_("QueenColumn");    }
-    Term Q()            {  return v_("Q");              }
-    Term Qs()           {  return v_("Qs");             }
-    Term Columns()      {  return v_("Columns");        }
-    Term Rows()         {  return v_("Rows");           }
-    Term LeftDiags()    {  return v_("LeftDiags");      }
-    Term RightDiags()   {  return v_("RightDiags");     }
-    Term OtherColumns() {  return v_("OtherColumns");   }
-    Term OtherRows()    {  return v_("OtherRows");      }
+private class TryQueens {
+    Term QueenColumn()  {  return v_("QueenColumn");    }
+    Term Q()            {  return v_(m_());                }
+    Term Qs()           {  return v_(m_());                }
+    Term Columns()      {  return v_(m_());                }
+    Term Rows()         {  return v_(m_());                }
+    Term LeftDiags()    {  return v_(m_());                }
+    Term RightDiags()   {  return v_(m_());                }
+    Term OtherColumns() {  return v_(m_());                }
+    Term OtherRows()    {  return v_(m_());                }
+
     Term this_queen_doesnt_fight_in(Term a, Term b, Term c, Term d) {
-        return s_("this_queen_doesnt_fight_in", a, b, c, d);
+                                      return s_(m_(), a, b, c, d);
     }
     Term these_queens_dont_fight_on_these_lines(Term a, Term b, Term c, Term d) {
-        return s_("these_queens_dont_fight_on_these_lines", a, b, c, d);
+                                      return s_(m_(), a, b, c, d);
     }
     Term these_queens_can_be_in_these_places(Term a, Term b) {
-        return s_("these_queens_can_be_in_these_places", a, b);
+                                      return s_(m_(), a, b);
     }
-    Term qs(Term cols, Term rows)  { return s_("qs", cols, rows); }
-    Term goal(Term Rows) { return s_("goal", Rows); }
+    Term qs(Term cols, Term rows)   { return s_(m_(), cols, rows); }
+    Term goal(Term Rows)            { return s_(m_(), Rows); }
 
     private void test() {
         Main.println("\n==== TryQueens.test() ====");
@@ -541,6 +683,83 @@ private class TryQueens { Term QueenColumn()  {  return v_("QueenColumn");    }
         Main.println(" ======== exiting TryQueens.test() . . . .");
     }
 }
+
+    private class TryLambdas {
+
+        Term Vs()           {  return v_(m_());                }
+        Term N()            {  return v_(m_());                }
+        Term A()            {  return v_(m_());                }
+        Term B()            {  return v_(m_());                }
+        Term T()            {  return v_(m_());                }
+        Term L()            {  return v_(m_());                }
+        Term N1()           {  return v_(m_());                }
+        Term N2()           {  return v_(m_());                }
+        Term N3()           {  return v_(m_());                }
+        Term Lam()          {  return v_(m_());                }
+        Term Size()         {  return v_(m_());                }
+
+        Term zero()         {  return c_(m_());                }
+
+        Term l(Term a, Term b) { return s_(m_(), a,b); }
+        Term s(Term a) { return s_(m_(), a); }
+        Term a(Term x, Term y) { return s_(m_(), x,y); }
+
+        Term genLambda(Term a, Term b, Term c, Term d) { return s_(m_(),a,b,c,d); }
+        Term memb(Term a,Term b)      { return s_(m_(), a,b);  }
+        Term genClosedLambdaTerm(Term L, Term T) { return s_(m_(), L,T); }
+        Term some(Term x)   { return s_(m_(), x);              }
+
+        Term goal(Term Lam)            { return s_(m_(), Lam); }
+
+        private void test() {
+
+            Main.println("\n==== TryLambdas.test() ====");
+
+            Term.reset_gensym();
+            start_new_test();
+
+            // genLambda(X,Vs,N,N):-memb(X,Vs).
+            say_(genLambda(X(),Vs(),N(),N())).if_(memb(X(),Vs()));
+
+            // genLambda(l(X,A),Vs,s(N1),N2):-genLambda(A,[X|Vs],N1,N2).
+            say_(genLambda(l(X(),A()), Vs(),s(N1()),N2()))
+                    .if_(genLambda(A(),p_(X(),Vs()),N1(),N2()));
+
+            //   genLambda(a(A,  B  ), Vs,   s(N1),  N3):-genLambda(A,Vs,N1,N2),genLambda(B,Vs,N2,N3).
+            say_(genLambda(a(A(),B()), Vs(), s(N1()),N3()))
+                    .if_(   genLambda(A(),Vs(),N1(),N2()),
+                            genLambda(B(),Vs(),N2(),N3())  );
+
+            // memb(X,[X|_]).
+            say_(memb(X(),p_(X(),_())));
+
+            // memb(X,[_|Xs]):-memb(X,Xs).
+            say_(memb(X(),p_(_(),X()))).if_(memb(X(),Xs()));
+
+            // genClosedLambdaTerm(L,T):-genLambda(T,[],L,zero).
+            say_(genClosedLambdaTerm(L(),T())).if_(genLambda(T(),l_(),L(),zero()));
+
+            // % nine(s(s(s(s(s(s(s(s(s(zero)))))))))).
+
+            // some((s(s(zero)))).
+            say_(some(s(s(zero()))));
+
+            // goal(Lam):-some(Size),genClosedLambdaTerm(Size,Lam).
+            say_(goal(Lam()))
+                    .if_(   some(Size()),
+                            genClosedLambdaTerm(Size(),Lam()) );
+
+            String[] these_answers = {
+                    "l(V134,l(V157,V157))",
+                    "l(V134,l(V157,V134))",
+                    "l(V134,a(V134,V134))"
+            };
+            try_it(said, these_answers);
+            // try_it(said, null);
+
+            Main.println(" ======== exiting TryQueens.test() . . . .");
+        }
+    }
 
     private void test_gensym() {
         String gs = Term.gensym();
@@ -604,8 +823,8 @@ private class TryQueens { Term QueenColumn()  {  return v_("QueenColumn");    }
     }
 
     private class TestFlatten {
-        Term a() { return c_("a"); }
-        Term glom(Term x) { return s_("glom", x); }
+        Term a()            { return c_(m_());    }
+        Term glom(Term x)   { return s_(m_(), x); }
 
         private void test() {
             Main.println("\n-----====< TestFlatten.test entered >====-----");
@@ -704,18 +923,26 @@ private class TryQueens { Term QueenColumn()  {  return v_("QueenColumn");    }
         assert L != null;
         assert L.is_a_termlist();
 
+        Term xxx = l_(c0(),c1(),c2());
+        Main.println ("xxx = " + xxx);
+        for (Term t = xxx; t != null; t = t.next)
+            Main.println ("   >>>>>>> " + t);
+        Term yyy = p_(xxx,c3());
+
         new TryBar().test();
         new TrySimple().test();
         new TryList().test();
         new TestFlatten().test();
         new TryT().test();
+        new TryMperms().test();
         new TryAdd().test();
-        new TryBig().test();
         new TryPerms().test();
         new TryQueens().test();
         new TryJapaneseCode().test();
 
+        new TryBig().test();
+        //new TryLambdas().test();
+
         Main.println ("\n======== End Term test ====================");
-     
     }
 }
