@@ -183,7 +183,7 @@ public class TestTerm {
         Main.println ("   ===== try_it(): Calling new Prog: ===============");
         Prog P = new Prog(asm_txt, false);
 
-        expect_from(P, whats_expected); 
+        expect_from(P, whats_expected);
 
         Main.println ("  ===== exiting try_it()");
     }
@@ -684,6 +684,17 @@ private class TryQueens {
     }
 }
 
+    Term v_() { return v_(m_()); }
+
+private class Funny {
+        private Term voodoo() { return v_(); }
+
+        String prove() {
+            return "voodoo() called from class method yields " + voodoo();
+        }
+
+}
+
     private class TryLambdas {
 
         Term Vs()           {  return v_(m_());                }
@@ -700,16 +711,18 @@ private class TryQueens {
 
         Term zero()         {  return c_(m_());                }
 
-        Term l(Term a, Term b) { return s_(m_(), a,b); }
-        Term s(Term a) { return s_(m_(), a); }
-        Term a(Term x, Term y) { return s_(m_(), x,y); }
+        Term l(Term a, Term b)        { return s_(m_(), a,b);    }
+        Term s(Term a)                { return s_(m_(), a);      }
+        Term a(Term x, Term y)        { return s_(m_(), x,y);    }
 
-        Term genLambda(Term a, Term b, Term c, Term d) { return s_(m_(),a,b,c,d); }
-        Term memb(Term a,Term b)      { return s_(m_(), a,b);  }
-        Term genClosedLambdaTerm(Term L, Term T) { return s_(m_(), L,T); }
-        Term some(Term x)   { return s_(m_(), x);              }
+        Term genLambda(Term a, Term b, Term c, Term d)
+                                      { return s_(m_(),a,b,c,d); }
+        Term memb(Term a,Term b)      { return s_(m_(), a,b);    }
+        Term genClosedLambdaTerm(Term L, Term T)
+                                      { return s_(m_(), L,T);    }
+        Term some(Term x)             { return s_(m_(), x);      }
 
-        Term goal(Term Lam)            { return s_(m_(), Lam); }
+        Term goal(Term Lam)           { return s_(m_(), Lam);    }
 
         private void test() {
 
@@ -718,12 +731,13 @@ private class TryQueens {
             Term.reset_gensym();
             start_new_test();
 
-            // genLambda(X,Vs,N,N):-memb(X,Vs).
-            say_(genLambda(X(),Vs(),N(),N())).if_(memb(X(),Vs()));
+            //   genLambda(X  ,Vs,  N  ,N   ) :- memb(X,Vs).
+            say_(genLambda(X(),Vs(),N(),N()))
+                    .if_(   memb(X(),Vs())  );
 
-            // genLambda(l(X,A),Vs,s(N1),N2):-genLambda(A,[X|Vs],N1,N2).
+            //   genLambda(l(X,  A  ), Vs  ,s(N1  ),N2):-genLambda(A,[X|Vs],N1,N2).
             say_(genLambda(l(X(),A()), Vs(),s(N1()),N2()))
-                    .if_(genLambda(A(),p_(X(),Vs()),N1(),N2()));
+                    .if_(   genLambda(A(),p_(X(),Vs()),N1(),N2())  );
 
             //   genLambda(a(A,  B  ), Vs,   s(N1),  N3):-genLambda(A,Vs,N1,N2),genLambda(B,Vs,N2,N3).
             say_(genLambda(a(A(),B()), Vs(), s(N1()),N3()))
@@ -733,15 +747,17 @@ private class TryQueens {
             // memb(X,[X|_]).
             say_(memb(X(),p_(X(),_())));
 
-            // memb(X,[_|Xs]):-memb(X,Xs).
-            say_(memb(X(),p_(_(),X()))).if_(memb(X(),Xs()));
+            //   memb(X,  [  _|  Xs])  :- memb(X,Xs).
+            say_(memb(X(),p_(_(),Xs())))
+                    .if_(   memb(X(),Xs())  );
 
-            // genClosedLambdaTerm(L,T):-genLambda(T,[],L,zero).
-            say_(genClosedLambdaTerm(L(),T())).if_(genLambda(T(),l_(),L(),zero()));
+            //   genClosedLambdaTerm(L,  T   ) :-genLambda(T,[],L,zero).
+            say_(genClosedLambdaTerm(L(),T()))
+                    .if_(   genLambda(T(),l_(),L(),zero())  );
 
             // % nine(s(s(s(s(s(s(s(s(s(zero)))))))))).
 
-            // some((s(s(zero)))).
+            //   some((s(s(zero)))).
             say_(some(s(s(zero()))));
 
             // goal(Lam):-some(Size),genClosedLambdaTerm(Size,Lam).
@@ -754,8 +770,8 @@ private class TryQueens {
                     "l(V134,l(V157,V134))",
                     "l(V134,a(V134,V134))"
             };
-            try_it(said, these_answers);
-            // try_it(said, null);
+            // try_it(said, these_answers);
+            try_it(said, null);
 
             Main.println(" ======== exiting TryQueens.test() . . . .");
         }
@@ -941,7 +957,9 @@ private class TryQueens {
         new TryJapaneseCode().test();
 
         new TryBig().test();
-        //new TryLambdas().test();
+        new TryLambdas().test();
+
+        Main.println ("voodoo = " + new Funny().prove());
 
         Main.println ("\n======== End Term test ====================");
     }

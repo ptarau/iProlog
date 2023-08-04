@@ -124,6 +124,7 @@ public class Prog extends Engine implements Spliterator<Object> {
       Term t = Term.variable("_" + f_of_args[1]);
       terms.add(t);
     } else {
+      Main.println ("make_terms_from: default case.");
       Term f = functor_and_args(f_of_args);
       terms.add(f);
     }

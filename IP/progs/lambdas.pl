@@ -11,7 +11,7 @@ memb(X,[_|Xs]):-memb(X,Xs).
 genClosedLambdaTerm(L,T):-genLambda(T,[],L,zero).
 
 % nine(s(s(s(s(s(s(s(s(s(zero)))))))))).
-some((s(s(zero)))).
+some(s(s(zero))).
 
 goal(Lam):-some(Size),genClosedLambdaTerm(Size,Lam).
 

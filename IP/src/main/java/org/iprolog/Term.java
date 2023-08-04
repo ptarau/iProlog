@@ -466,6 +466,7 @@ _1 = p(Z, _2, _3)
         // indent();
         String s_ = "";
         if (S_ != null) s_ = S_;
+        if (S_ != null) s_ = S_;
         // Main.println (tabs()+s_+annote());
         Term new_terms = null;
         for (Term t = terms(); t != null; t = t.next)
