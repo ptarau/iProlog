@@ -75,6 +75,6 @@ public class TestLambdas extends TestTerm {
                 "l(V134,a(V134,V134))"
         };
         // try_it(said, these_answers);
-        try_it(said, null);
+        try_it(said, these_answers,false);
     }
 }
