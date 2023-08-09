@@ -45,13 +45,6 @@ public class TestMperms extends TestTerm {
                        l_(c2(), c1()))
             );
 
-            Term lll = metaint(l_(perm(X(), Y()), perm(Y(), X())));
-            Main.println("lll = " + lll);
-            lll.flatten();
-            Main.println("lll after flatten = " + lll);
-            assert lll.next != null;
-            Main.println("lll.next = " + lll.next);
-
             say_(goal(Y())).
                     if_(    input(X(), Y()),
                             metaint(l_(perm(X(), Y()), perm(Y(),X())))

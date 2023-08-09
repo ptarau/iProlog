@@ -79,6 +79,5 @@ public class TestQueens extends TestTerm {
                 "[2,0,3,1]"
         };
         try_it(said, these_answers);
-
     }
 }

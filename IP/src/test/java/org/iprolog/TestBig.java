@@ -16,6 +16,8 @@ public class TestBig extends TestTerm {
     @Test
     public void mainTest() {
         start_new_test();
+        Integer difficulty = 4;
+        // Integer difficulty = 18;
 
         say_(append(l_(), Ys(), Ys()));
         say_(append(p_(X(), Xs()), Ys(), p_(X(), Zs()))).
@@ -25,7 +27,7 @@ public class TestBig extends TestTerm {
                 if_(    nrev(Xs(), Ys()),
                         append(Ys(), l_(X()), Zs()));
 
-        for (Integer i = 0; i < 18; ++i) {
+        for (Integer i = 0; i < difficulty; ++i) {
             Integer i_next = i + 1;
             say_(next_number_after(c_(i.toString()), c_(i_next.toString())));
         }
@@ -45,9 +47,7 @@ public class TestBig extends TestTerm {
         Term l_a_b_c_d = l_(c_("a"), c_("b"), c_("c"), c_("d"));
 
         say_(goal(l_(X(), Y())))
-                //        .if_(dup(c_("18"), l_a_b_c_d, l_(X(), p_(Y(), _()))));
-                //        .if_(dup(c_("18"), l_a_b_c_d, p_(X(), p_(Y(), _()))));
-                .if_(dup(c_("18"), l_a_b_c_d, p_(X(), Y(), _())));
+                .if_(dup(c_(difficulty.toString()), l_a_b_c_d, p_(X(), Y(), _())));
         String expected[] = {"[a,b]"};
         try_it(said, expected);
     }

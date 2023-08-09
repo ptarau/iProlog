@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class TestIntMap {
     @Test
     public void mainTest() {
-        System.out.println ("*** testing IntMap ***");
+        // System.out.println ("*** testing IntMap ***");
         IntMap im = new IntMap();
         assertNotNull(im);
         assertFalse(im.contains(1));
@@ -28,7 +28,7 @@ public class TestIntMap {
         for ( int i = 0; i < 100000; ++i )
             assertEquals(Integer.valueOf(i), map.get( i ));
 
-        Main.println ("Done with adapted tests");
+        // Main.println ("Done with adapted tests");
 //=======================
 
         im.put(1,2);
@@ -41,7 +41,7 @@ public class TestIntMap {
         
         // Not clear yet how to test IntMap's intersect(...)
 
-        System.out.println ("*** test IntMap DONE ***");
+        // System.out.println ("*** test IntMap DONE ***");
     }
 
 }

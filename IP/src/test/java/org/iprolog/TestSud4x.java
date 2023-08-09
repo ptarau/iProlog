@@ -38,8 +38,7 @@ public class TestSud4x extends TestTerm {
     Term ins(Term a, Term b, Term c) {return s_(m_(),a,b,c);}
     Term goal(Term a) {return s_(m_(),a); }
 
-    // Term call(Term f, Term x, Term y) { return s_(m_(),f,x,y); }
-    Term call(Term f, Term x, Term y) { return s_(f.v(),x,y); }
+
 
     Term Xss()  { return v_(m_()); }
     Term Xsss() { return v_(m_()); }
@@ -50,28 +49,29 @@ public class TestSud4x extends TestTerm {
         start_new_test();
 
         say_(s4x4(l_(
-  l_(
-     l_(S11(),S12(), S13(),S14()),
-     l_(S21(),S22(), S23(),S24()),
+              l_(
+                 l_(S11(),S12(), S13(),S14()),
+                 l_(S21(),S22(), S23(),S24()),
 
-     l_(S31(),S32(), S33(),S34()),
-     l_(S41(),S42(), S43(),S44())
-  ),
-  l_(
-     l_(S11(),S21(), S31(),S41()),
-     l_(S12(),S22(), S32(),S42()),
+                 l_(S31(),S32(), S33(),S34()),
+                 l_(S41(),S42(), S43(),S44())
+              ),
+              l_(
+                 l_(S11(),S21(), S31(),S41()),
+                 l_(S12(),S22(), S32(),S42()),
 
-     l_(S13(),S23(), S33(),S43()),
-     l_(S14(),S24(), S34(),S44())
-  ),
-  l_(
-     l_(S11(),S12(), S21(),S22()),
-     l_(S13(),S14(), S23(),S24()),
+                 l_(S13(),S23(), S33(),S43()),
+                 l_(S14(),S24(), S34(),S44())
+              ),
+              l_(
+                 l_(S11(),S12(), S21(),S22()),
+                 l_(S13(),S14(), S23(),S24()),
 
-     l_(S31(),S32(), S41(),S42()),
-     l_(S33(),S34(), S43(),S44())
-  )
-        )));
+                 l_(S31(),S32(), S41(),S42()),
+                 l_(S33(),S34(), S43(),S44())
+              )
+        )))
+                .if_(true_());
     // :-
     //            true.
     say_(sudoku(Xss()))
@@ -103,7 +103,7 @@ public class TestSud4x extends TestTerm {
     say_(ins(X(),Xs(),p_(X(),Xs())));
     //   ins(X,  [  Y  |Xs  ],[  Y  |Ys  ]):-ins(X,Xs,Ys).
     say_(ins(X(),p_(Y(),Xs()),p_(Y(),Ys())))
-            .if_(   ins(X(),Xs(),Ys()));
+            .if_(   ins(X(),Xs(),Ys())  );
 
     say_(goal(Xss())).if_(  sudoku(Xss()));
 

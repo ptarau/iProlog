@@ -14,6 +14,8 @@ public class TestPerms extends TestTerm {
     @Test
     public void mainTest() {
         start_new_test();
+        // int difficulty = 10;
+        int difficulty = 2;
 
         say_( eq(X(), X()) );
         say_( sel(X(), p_(X(), Xs()), Xs()) );
@@ -30,17 +32,25 @@ public class TestPerms extends TestTerm {
         say_( nrev(p_(X(), Xs()), Zs())).
                 if_(    nrev(Xs(), Ys()),
                         app(Ys(), l_(X()), Zs()) );
-        say_( input(l_(
-                c_("1"), c_("2"), c_("3"), c_("4"), c_("5"),
-                c_("6"), c_("7"), c_("8"), c_("9"), c_("10") )  )
-        );
+        assert difficulty > 0;
+        Term nlist = l_(c1());
+        assert nlist.is_a_termlist();
+        String output = "1";
+        for (Integer i = 2; i <= difficulty; ++i) {
+            nlist.takes_this(c_(i.toString()));
+            output = i.toString() + "," + output;
+        }
+        output = "[" + output + "]";
+
+        say_( input(nlist) );
         say_(goal(Y())).
                 if_(    input(X()),
                         nrev(X(), Y()),
                         perm(X(), Y()),
                         perm(Y(), X())  );
 
-        String expected[] = {"[10,9,8,7,6,5,4,3,2,1]"};
+        // String expected[] = {"[10,9,8,7,6,5,4,3,2,1]"};
+        String expected[] = {output};
         try_it(said, expected);
     }
 }

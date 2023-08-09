@@ -92,14 +92,14 @@ public class Prog extends Engine implements Spliterator<Object> {
     final String name = f_of_args[0].toString();
 
     if (f_of_args.length == 3 && isInfixOp(name)) {
-      Main.println ("~~~~~~~ isInfixOp case: "+name+" ~~~~~~~");
+      // Main.println ("~~~~~~~ isInfixOp case: "+name+" ~~~~~~~");
       Term t = Term.compound(name);
       t.takes_this(term_made_from(f_of_args[1]));
       t.takes_this(term_made_from(f_of_args[2]));
       terms.add(t);
     } else
     if (f_of_args.length == 3 && isListCons(name)) {
-        Main.println ("~~~~~~~ isInfixOp case: "+name+" ~~~~~~~");
+        // Main.println ("~~~~~~~ isInfixOp case: "+name+" ~~~~~~~");
         terms.add(term_made_from(f_of_args[1]));
         Object tail = f_of_args[2];
         for (;;) {
@@ -120,11 +120,11 @@ public class Prog extends Engine implements Spliterator<Object> {
           }
         }
     } else if (f_of_args.length == 2 && "$VAR".equals(name)) { // when?
-      Main.println("$$$$$$$$$$ $VAR $$$$$$$$$$$$$$");
+      // Main.println("$$$$$$$$$$ $VAR $$$$$$$$$$$$$$");
       Term t = Term.variable("_" + f_of_args[1]);
       terms.add(t);
     } else {
-      Main.println ("make_terms_from: default case.");
+      // Main.println ("make_terms_from: default case.");
       Term f = functor_and_args(f_of_args);
       terms.add(f);
     }

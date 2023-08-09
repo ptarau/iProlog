@@ -47,6 +47,9 @@ public class TestTerm {
         return Thread.currentThread().getStackTrace()[2].getMethodName();
     }
 
+    Term call(Term f, Term... ts) { return s_(f.v(),ts); }
+    Term true_(){ return null;     }
+
     Term c0() { return c_("0"); }
     Term c1() { return c_("1"); }
     Term c2() { return c_("2"); }
@@ -95,18 +98,18 @@ public class TestTerm {
         Object POJO_Ans;
 
         Term.set_Prolog();
-
+/*
         if (whats_expected != null) {
             Main.println ("whats_expected =");
             for (String s : whats_expected) {
                 Main.println ("  Looks like " + s + " when prolog_mode =  " + Term.in_Prolog_mode);
             }
         }
-
+ */
         // Going through the Java Object interface, unfortunately.
 
         int n_expected = whats_expected.length;
-        Main.println ("n_expected = " + n_expected);
+        // Main.println ("n_expected = " + n_expected);
 
         Boolean yielded_something = false;
         while ((POJO_Ans = P.POJO_ask()) != null) {
@@ -119,7 +122,7 @@ public class TestTerm {
                 assert false;
             }
 
-            Main.println ("\nIn POJO_ask() loop....");
+            // Main.println ("\nIn POJO_ask() loop....");
             assert POJO_Ans instanceof Object[];  // because it'll be "[goal, <answer>]"
 
             Object[] POJO_goal_answers = (Object[]) POJO_Ans;
@@ -136,8 +139,8 @@ public class TestTerm {
             String to_compare = "";
             for (Term t = args; t != null; t = t.next) {
                 to_compare += t.toString();
-                Prog.println ("  to_compare = " + to_compare);
-                Prog.println ("  goal ["+(i++)+"] = " + t);
+                // Prog.println ("  to_compare = " + to_compare);
+                // Prog.println ("  goal ["+(i++)+"] = " + t);
             }
  
             String sg = P.showTerm(POJO_goal_answers[0]);
@@ -148,19 +151,19 @@ public class TestTerm {
             String show_POJO_object = P.showTerm(POJO_goal_answers[1]);
 
             if (whats_expected != null) {
-                Prog.println ("  to_compare = " + to_compare);
-                Prog.println ("  show_POJO_object = " + show_POJO_object);
+                // Prog.println ("  to_compare = " + to_compare);
+                // Prog.println ("  show_POJO_object = " + show_POJO_object);
                 assert Arrays.asList(whats_expected).contains(show_POJO_object);
             } else {
-                Main.println (" yielding: " + show_POJO_object);
+                // Main.println (" yielding: " + show_POJO_object);
             }
         }
-        Main.println ("whats_expected: " + whats_expected);
-        Main.println ("yielded_something = " + yielded_something);
-        Main.println ("complete = " + complete);
+        // Main.println ("whats_expected: " + whats_expected);
+        // Main.println ("yielded_something = " + yielded_something);
+        // Main.println ("complete = " + complete);
         assert whats_expected == null || yielded_something;
 
-        Main.println ("... expect_from exiting.");
+        // Main.println ("... expect_from exiting.");
     }
 
     protected void try_it(LinkedList<Clause> said, String[] whats_expected) {
@@ -170,7 +173,7 @@ public class TestTerm {
     protected void try_it(LinkedList<Clause> said, String[] whats_expected, boolean complete) {
 
         assert !said.isEmpty();
-        Main.println (" ===== try_it() entering....");
+        // Main.println (" ===== try_it() entering....");
         String s = "[";
 
         if (whats_expected == null)
@@ -183,32 +186,32 @@ public class TestTerm {
                 }
         }
         s += "]";
-        Main.println ("     whats_expected = " + s);
+        // Main.println ("     whats_expected = " + s);
 
         String asm_txt;
         Term.reset_gensym();
         Term.set_TarauLog();
 
-        Main.println ("   ===== try_it(): before flatten =======");
+        // Main.println ("   ===== try_it(): before flatten =======");
         asm_txt = "";
         for (Clause cl : said) {
             asm_txt += cl.toString()+System.lineSeparator();
         }
-        Main.println ("asm_txt = \n" + asm_txt);
+        // Main.println ("asm_txt = \n" + asm_txt);
 
-        Main.println ("   ===== try_it(): flattening transform =======");
+        // Main.println ("   ===== try_it(): flattening transform =======");
         asm_txt = "";
         for (Clause cl : said) {
             cl.flatten();
             asm_txt += cl.toString()+System.lineSeparator();
         }
 
-        Main.println ("   ===== try_it(): Calling new Prog: ===============");
+        // Main.println ("   ===== try_it(): Calling new Prog: ===============");
         Prog P = new Prog(asm_txt, false);
 
         expect_from(P, whats_expected, complete);
 
-        Main.println ("  ===== exiting try_it()");
+        // Main.println ("  ===== exiting try_it()");
     }
 
     private class TryT {
@@ -217,7 +220,7 @@ public class TestTerm {
         private  Term Person()         { return v_(m_());    }
 
         private void test() {
-            Main.println("\n==== TryT.test() entered ... ====");
+            // Main.println("\n==== TryT.test() entered ... ====");
 
             start_new_test();
 
@@ -238,7 +241,7 @@ private class TrySimple {
     private Term   dookie(Term x)   { return  s_(m_(), x); }
 
     private void test() {
-        Main.println(" ======== TrySimple.test() entering....");
+        // Main.println(" ======== TrySimple.test() entering....");
 
         start_new_test();
 
@@ -249,7 +252,7 @@ private class TrySimple {
         String expected[] = {"nil", "0"};
         try_it(said, expected);
 
-        Main.println (" ======= TrySimple.test() exiting ....");
+        // Main.println (" ======= TrySimple.test() exiting ....");
     }
 };
 
@@ -260,7 +263,7 @@ private class TrySimple {
 
         private void test() {
 
-            Main.println("\n==== TryBar.test() (list composition with | symbol) entered ... ====");
+            // Main.println("\n==== TryBar.test() (list composition with | symbol) entered ... ====");
 
             start_new_test();
 
@@ -280,7 +283,7 @@ private class TrySimple {
             String expected[] = {"[1]", "[2|3]", "[2,3]"};
             try_it(said, expected);
 
-            Main.println("\n==== TryBar.test() exiting .... ====");
+            // Main.println("\n==== TryBar.test() exiting .... ====");
         }
     }
 
@@ -293,11 +296,11 @@ private class TryList {
     private Term dumb3(Term x, Term y) { return s_(m_(), x, y); }
 
     private void flatten_and_show(Term g) {
-        Main.println ("\n     g was " + g);
+        // Main.println ("\n     g was " + g);
         g.flatten();
-        Main.println ("     after flatten: ");
+        // Main.println ("     after flatten: ");
         for (Term t = g; t != null; t = t.next) {
-            Main.println ("                elt = " + t);
+            // Main.println ("                elt = " + t);
         }
         Term.reset_gensym();
     }
@@ -333,7 +336,7 @@ private class TryList {
 
         String asm_txt = "";
         for (Clause cl : said) asm_txt += cl.toString() + System.lineSeparator();
-        Main.println(asm_txt);
+        // Main.println(asm_txt);
 
         Prog P = new Prog(asm_txt, false);
 
@@ -341,7 +344,7 @@ private class TryList {
 
         expect_from(P, expected, true);
 
-        Main.println(" ======== TryList.test() exiting...");
+        // Main.println(" ======== TryList.test() exiting...");
     }
 }
 
@@ -364,7 +367,7 @@ private class TryList {
             // assert expected.length == r.size();
             int i = 0;
             for (Term t = r; t != null; t = t.next) {
-                Main.println ("Comparing t <<<"+t+">>> to expected["+i+"] <<<"+expected[i]+">>>");
+                // Main.println ("Comparing t <<<"+t+">>> to expected["+i+"] <<<"+expected[i]+">>>");
                 assert t.is_same_as (expected[i]);
                 ++i;
             }
@@ -391,9 +394,9 @@ private class TryList {
         Term l = l_(a,a1);
         Term l1 = l_(a,a1);
         Term l2 = l_(a,v);
-        Main.println ("\n ---------> l is <<<" + l + ">>>, l1 = <<<" + l1 + ">>>");
+        // Main.println ("\n ---------> l is <<<" + l + ">>>, l1 = <<<" + l1 + ">>>");
         assert l.is_same_as(l1);
-        Main.println ("\n ---------> l2 is <<<"+l2+" l1 is <<<"+l1+">>>");
+        // Main.println ("\n ---------> l2 is <<<"+l2+" l1 is <<<"+l1+">>>");
         assert l2.is_same_as(l1);
 
         Term s = s_("foo");
@@ -412,7 +415,7 @@ private class TryList {
         Term glom(Term x)   { return s_(m_(), x); }
 
         private void test() {
-            Main.println("\n-----====< TestFlatten.test entered >====-----");
+            // Main.println("\n-----====< TestFlatten.test entered >====-----");
 
             test_is_same_as();
 
@@ -427,28 +430,28 @@ private class TryList {
             Term v_2 = v_(Term.gensym());
 
             // quux(blah(a)).
-            Main.println("quux(blah(a)).");
+            // Main.println("quux(blah(a)).");
             Term blah_a = s_("blah", a());
             Term quux_blah_a = s_("quux", blah_a);
             Term exp1[] = {s_("quux", v_0), e_(v_0, blah_a)};
             check_flattening(quux_blah_a, exp1);
 
             // whiz([a,a]).
-            Main.println ("whiz([a,a]).");
+            // Main.println ("whiz([a,a]).");
             Term l_a_a = l_(a(), a());
             Term whiz_a_a = s_("whiz", l_a_a);
             Term exp2[] = {s_("whiz", v_0), e_(v_0, l_a_a)};
             check_flattening(whiz_a_a, exp2);
 
             // foo(bar(X),r).
-            Main.println ("foo(bar(X),r).");
+            // Main.println ("foo(bar(X),r).");
             Term bar_X = s_("bar", v_("X"));
             Term foo_bar_X_r = s_("foo", bar_X, c_("r"));
             Term exp3[] = {s_("foo", v_0, c_("r")), e_(v_0, bar_X)};
             check_flattening(foo_bar_X_r, exp3);
 
             // foo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]).
-            Main.println ("foo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]).");
+            // Main.println ("foo(bar(X),r):-glom(X),quux(blah(X)),whiz([a,a]).");
             Clause cl = Clause.f__("foo", bar_X, c_("r")).
                     if_(s_("glom", v_("X")),
                             s_("quux", s_("blah", v_("X"))),
@@ -462,7 +465,7 @@ private class TryList {
             //}
             check_flattening(cl.body, null);
 
-            Main.println("==== moo ===============================================");
+            // Main.println("==== moo ===============================================");
 
             Term nnn = s_("moo", l_(l_(l_(a()))));
 
@@ -475,7 +478,7 @@ private class TryList {
             Term exp6[] = {s_("goo", v_0), e_(v_0, s_("x", v_1)), e_(v_1, s_("y", a()))};
             check_flattening(mmm, exp6);
 
-            Main.println("\n-----====< TestFlatten.test... >====-----\n");
+            // Main.println("\n-----====< TestFlatten.test... >====-----\n");
         }
     }
 
@@ -484,10 +487,6 @@ private class TryList {
         Main.println ("************* Start Term test ********************");
 
         Term tt = s_("a",c_("b"));
-        
-        // Term.CustomIterator it = new Term.CustomIterator(tt);
-        for (Term x = tt; x != null; x = x.next)
-            { Main.println ("!!!!!!!!!!! x = " + x + "!!!!!!!!!!!!!!"); }
 
         test_gensym();
 
@@ -509,9 +508,11 @@ private class TryList {
         assert L.is_a_termlist();
 
         Term xxx = l_(c0(),c1(),c2());
+        /*
         Main.println ("xxx = " + xxx);
         for (Term t = xxx; t != null; t = t.next)
             Main.println ("   >>>>>>> " + t);
+         */
         Term yyy = p_(xxx,c3());
 
         new TryBar().test();

@@ -366,11 +366,11 @@ s += "]";
   }
   Clause[] dload_from_x(final String s, Boolean fromFile) {
 
-    Main.println ("\ndload_from_x:s (len="+s.length()+") = \n" + s);
+    // Main.println ("\ndload_from_x:s (len="+s.length()+") = \n" + s);
 
     final ArrayList<ArrayList<ArrayList<String>>> clause_asm_list = Toks.toSentences(s, fromFile);
 
-    Main.println ("clause_asm_list = " + clause_asm_list);
+    // Main.println ("clause_asm_list = " + clause_asm_list);
 
     final ArrayList<Clause> compiled_clauses = new ArrayList<Clause>();
 
@@ -726,13 +726,6 @@ s += "]";
     }
     return x;
   }
-/* 
-  // To be overridden:
-  static LinkedList<Term>
-  make_terms_from(final Object[] oa) {
-    return null;
-  }
-*/  
 
   /**
    * Raw display of a term - to be overridden.

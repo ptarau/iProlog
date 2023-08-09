@@ -19,8 +19,6 @@ public class TestToks {
 
     @Test
     public void mainTest () {
-        System.out.println ("<<<<<<<<<< Test Toks >>>>>>>>>>>");
-
         Toks T = Toks.makeToks("Hello 123 nothing .", false);
         assertNotNull(T);
 
