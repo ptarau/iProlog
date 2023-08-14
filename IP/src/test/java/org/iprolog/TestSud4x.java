@@ -38,8 +38,6 @@ public class TestSud4x extends TestTerm {
     Term ins(Term a, Term b, Term c) {return s_(m_(),a,b,c);}
     Term goal(Term a) {return s_(m_(),a); }
 
-
-
     Term Xss()  { return v_(m_()); }
     Term Xsss() { return v_(m_()); }
     Term F()    { return v_(m_()); }
