@@ -17,29 +17,56 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import java.util.Arrays;
 import static java.lang.System.out;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@interface LPTv {
+@interface LPTv_ {
+}
+
+@interface LPTs_ {
+}
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.SOURCE)
+@interface LPTvar_ {
 }
 
 public class TestProg extends TestTerm {
-
-    public interface TermFunction {
-        public Term f();
+    public interface TermFunction0 {
+        public Term f0();
     }
-    Term pred(LPvar t) {
-        return s_(m_(),t.run.f());
+
+    public interface TermFunction1 {
+        public Term f1(LPvar x);
+    }
+
+    public interface TermFunctionN extends TermFunction0 {
+        public Term fn(Term... args);
     }
 
     private class LPvar {
-        TermFunction run;
+        TermFunction0 run;
     }
 
-    @LPTv LPvar Nothing;
-    @LPTv LPvar Something;
+    Term pred(LPvar t) {
+        return s_(m_(),t.run.f0());
+    }
+
+    @LPTv_ LPvar Nothing;
+    @LPTv_ LPvar Something;
+
+    LPvar q1_(LPvar x) {
+        String nm = f_();   // don't call as arg to a fn
+        LPvar r = new LPvar();
+        r.run = ()->s_(nm, x.run.f0());
+        return r;
+    };
+
+    @LPTs_ LPvar some_struct(LPvar x) { return q1_(x); }
 
     @Test
     public void mainTest() {
@@ -60,22 +87,35 @@ public class TestProg extends TestTerm {
 
                 if (field_type.endsWith("LPvar")) {
                     LPvar x = new LPvar();
-                    x.run = (() -> v_(field_name));
+                    x.run = ((TermFunction0) (() -> v_(field_name)));
                     f.set(this, x);
                 }
         }
 
         assert Something != null;
         assert Something.run != null;
-        Main.println ("Something = " + Something.run.f());
+        Main.println ("Something = " + Something.run.f0());
 
  } catch (IllegalAccessException x) {
         x.printStackTrace();
  } catch (IllegalArgumentException x) {
         x.printStackTrace();
  }
+        Method ms[] = tc.getDeclaredMethods();
+        for (Method m : ms) {
+
+            String method_type = m.getReturnType().getName();
+
+            if (method_type.endsWith("LPstr")) {
+                String method_name = m.getName();
+                Main.println ("method " + m.getName());
+            }
+        }
 
         Term result = pred(Nothing);
         Main.println("pred(Nothing): " + result);
+
+        LPvar r = some_struct(Nothing);
+        Main.println ("some_struct(Nothing) = " + r.run.f0());
     }
 }

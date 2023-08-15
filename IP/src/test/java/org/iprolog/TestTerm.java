@@ -43,8 +43,8 @@ public class TestTerm {
     public String m_() {
         return Thread.currentThread().getStackTrace()[2].getMethodName();
     }
-    private String f_() {
-        return Thread.currentThread().getStackTrace()[2].getMethodName();
+    public String f_() {
+        return Thread.currentThread().getStackTrace()[3].getMethodName();
     }
 
     Term call(Term f, Term... ts) { return s_(f.v(),ts); }
