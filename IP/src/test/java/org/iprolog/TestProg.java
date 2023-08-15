@@ -22,51 +22,37 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import static java.lang.System.out;
 
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-@interface LPTv_ {
-}
-
-@interface LPTs_ {
-}
-
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.SOURCE)
-@interface LPTvar_ {
-}
-
 public class TestProg extends TestTerm {
-    public interface TermFunction0 {
+
+    public interface TermFn0 {
         public Term f0();
     }
 
-    public interface TermFunction1 {
-        public Term f1(LPvar x);
-    }
-
-    public interface TermFunctionN extends TermFunction0 {
-        public Term fn(Term... args);
-    }
-
     private class LPvar {
-        TermFunction0 run;
+        TermFn0 run;
+    }
+
+    LPvar qn_(LPvar... xs) {
+        String nm = f_();
+        LPvar r = new LPvar();
+        Term xts[] = new Term[xs.length];
+        int i = 0;
+        for (LPvar x : xs) {
+            xts[i] = xs[i].run.f0();
+            ++i;
+        }
+        r.run = ()->s_(nm,xts);
+        return r;
     }
 
     Term pred(LPvar t) {
         return s_(m_(),t.run.f0());
     }
 
-    @LPTv_ LPvar Nothing;
-    @LPTv_ LPvar Something;
-
-    LPvar q1_(LPvar x) {
-        String nm = f_();   // don't call as arg to a fn
-        LPvar r = new LPvar();
-        r.run = ()->s_(nm, x.run.f0());
-        return r;
-    };
-
-    @LPTs_ LPvar some_struct(LPvar x) { return q1_(x); }
+    LPvar Nothing;
+    LPvar Something;
+    LPvar some_struct(LPvar x) { return qn_(x); }
+    LPvar other_struct(LPvar x, LPvar y)  { return qn_(x,y); }
 
     @Test
     public void mainTest() {
@@ -87,7 +73,7 @@ public class TestProg extends TestTerm {
 
                 if (field_type.endsWith("LPvar")) {
                     LPvar x = new LPvar();
-                    x.run = ((TermFunction0) (() -> v_(field_name)));
+                    x.run = ((TermFn0) (() -> v_(field_name)));
                     f.set(this, x);
                 }
         }
@@ -106,7 +92,7 @@ public class TestProg extends TestTerm {
 
             String method_type = m.getReturnType().getName();
 
-            if (method_type.endsWith("LPstr")) {
+            if (method_type.endsWith("LPvar")) {
                 String method_name = m.getName();
                 Main.println ("method " + m.getName());
             }
@@ -117,5 +103,9 @@ public class TestProg extends TestTerm {
 
         LPvar r = some_struct(Nothing);
         Main.println ("some_struct(Nothing) = " + r.run.f0());
+        r = some_struct(some_struct(Something));
+        Main.println ("some_struct(some_struct(Something)) = " + r.run.f0());
+        r = other_struct(Something,Nothing);
+        Main.println ("other_struct(Something,Nothing) = " + r.run.f0());
     }
 }
