@@ -1,26 +1,9 @@
 package org.iprolog;
 
-/*
-The direction to take with this:
-  - use reflection to read field values
-  - try to see how those fields were annotated
-  - initialize them with lambdas accordingly
-
-  https://docs.oracle.com/javase/tutorial/reflect/member/fieldValues.html
- */
 import org.junit.jupiter.api.Test;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
-import java.util.Arrays;
-import static java.lang.System.out;
 
 public class TestProg extends TestTerm {
 
@@ -32,80 +15,97 @@ public class TestProg extends TestTerm {
         TermFn0 run;
     }
 
-    LPvar qn_(LPvar... xs) {
-        String nm = f_();
-        LPvar r = new LPvar();
+    private Term[] make_xts(LPvar[] xs) {
         Term xts[] = new Term[xs.length];
         int i = 0;
         for (LPvar x : xs) {
             xts[i] = xs[i].run.f0();
             ++i;
         }
-        r.run = ()->s_(nm,xts);
+        return xts;
+    }
+
+    LPvar S_(LPvar... xs) {
+        String nm = f_();  // misses the right stack frame if called as arg to s_()
+        LPvar r = new LPvar();
+        r.run = ()->s_(nm,make_xts(xs));
         return r;
+    }
+
+    LPvar L_(LPvar... xs) {
+        LPvar r = new LPvar();
+        r.run = ()->l_(make_xts(xs));
+        return r;
+    }
+
+    // -----------------------------------------
+
+    private void show_LPvar_methods() {
+        Method ms[] = this.getClass().getDeclaredMethods();
+        String s = "";
+        String sep = "";
+        for (Method m : ms) {
+            String method_type = m.getReturnType().getName();
+            if (method_type.endsWith("LPvar")) {
+                s = s + sep + m.getName();
+                sep = ", ";
+            }
+        }
+        Main.println ("LPvar methods are: " + s);
+    }
+
+    private void show_LPvar_fields() {
+        Field fs[] = this.getClass().getDeclaredFields();
+        for (Field f : fs)
+            if (f.getType().getName().endsWith("LPvar"))
+                Main.println("   field name: " + f.getName());
     }
 
     Term pred(LPvar t) {
         return s_(m_(),t.run.f0());
     }
-
     LPvar Nothing;
     LPvar Something;
-    LPvar some_struct(LPvar x) { return qn_(x); }
-    LPvar other_struct(LPvar x, LPvar y)  { return qn_(x,y); }
+    LPvar some_struct(LPvar x) { return S_(x); }
+    LPvar other_struct(LPvar x, LPvar y)  { return S_(x,y); }
 
     @Test
     public void mainTest() {
 
         Class tc = this.getClass();
         Field fs[] = tc.getDeclaredFields();
-        String tcname = tc.getName();
 
-        Main.println ("tcname = " + tcname);
+        // show_LPvar_fields();
+        // show_LPvar_methods();
 
- try {
-        for (Field f : fs) {
-            String field_name = f.getName();
-            String field_type = f.getType().getName();
-
-            Main.println("   field name: " + field_name);
-            Main.println("   field class: " + field_type);
-
-                if (field_type.endsWith("LPvar")) {
+        try {
+            for (Field f : fs)
+                if (f.getType().getName().endsWith("LPvar")) {
                     LPvar x = new LPvar();
-                    x.run = ((TermFn0) (() -> v_(field_name)));
+                    x.run = ()->v_(f.getName());
                     f.set(this, x);
                 }
-        }
+         } catch (IllegalAccessException x) {
+                x.printStackTrace();
+         }
 
         assert Something != null;
         assert Something.run != null;
-        Main.println ("Something = " + Something.run.f0());
-
- } catch (IllegalAccessException x) {
-        x.printStackTrace();
- } catch (IllegalArgumentException x) {
-        x.printStackTrace();
- }
-        Method ms[] = tc.getDeclaredMethods();
-        for (Method m : ms) {
-
-            String method_type = m.getReturnType().getName();
-
-            if (method_type.endsWith("LPvar")) {
-                String method_name = m.getName();
-                Main.println ("method " + m.getName());
-            }
-        }
-
+        assert "Something".compareTo(Something.run.f0().toString()) == 0;
+        assert Nothing != null;
+        assert Nothing.run != null;
+        assert "Nothing".compareTo(Nothing.run.f0().toString()) == 0;
         Term result = pred(Nothing);
-        Main.println("pred(Nothing): " + result);
-
+        assert "pred(Nothing)".compareTo(result.toString()) == 0;
         LPvar r = some_struct(Nothing);
-        Main.println ("some_struct(Nothing) = " + r.run.f0());
+        assert "some_struct(Nothing)".compareTo(r.run.f0().toString()) == 0;
         r = some_struct(some_struct(Something));
-        Main.println ("some_struct(some_struct(Something)) = " + r.run.f0());
+        assert "some_struct(some_struct(Something))".compareTo(r.run.f0().toString()) == 0;
         r = other_struct(Something,Nothing);
-        Main.println ("other_struct(Something,Nothing) = " + r.run.f0());
+        assert "other_struct(Something,Nothing)".compareTo(r.run.f0().toString()) == 0;
+        r = L_();
+        assert "nil".compareTo(r.run.f0().toString()) == 0;
+        r = L_(Something,Nothing);
+        assert "[Something,Nothing]".compareTo(r.run.f0().toString()) == 0;
     }
 }
