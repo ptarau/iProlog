@@ -16,6 +16,7 @@ public class TestProg extends TestTerm {
     LPvar some_struct(LPvar x) { return S_(x); }
     LPvar other_struct(LPvar x, LPvar y)  { return S_(x,y); }
     LPvar goal(LPvar x) { return S_(x); }
+    LPvar goal(String c) { return S_(C_(c)); }
 
     @Test
     public void mainTest() {
@@ -47,7 +48,10 @@ public class TestProg extends TestTerm {
         assert "[Something,Nothing]".compareTo(r.run.fn().toString()) == 0;
 
         assert C0 != null;
+        assert C1 != null;
         r = goal(C0);
+        Main.println ("r = " + r.run.fn().toString());
+        r = goal("0");
         Main.println ("r = " + r.run.fn().toString());
     }
 }

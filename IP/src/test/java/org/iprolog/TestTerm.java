@@ -97,6 +97,12 @@ public class TestTerm {
         return r;
     }
 
+    LPvar C_(String c) {
+        LPvar r = new LPvar();
+        r.run = ()->c_(c);
+        return r;
+    }
+
     LPvar L_(LPvar... xs) {
         LPvar r = new LPvar();
         r.run = ()->l_(make_xts(xs));

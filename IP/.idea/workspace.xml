@@ -157,7 +157,7 @@
       <command value="mvn clean" />
     </option>
   </component>
-  <component name="RunManager" selected="JUnit.TestProg.mainTest">
+  <component name="RunManager" selected="JUnit.TestProg">
     <configuration name="TestJapaneseCode.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="IP" />
       <extension name="coverage">
@@ -237,8 +237,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.TestProg.mainTest" />
         <item itemvalue="JUnit.TestProg" />
+        <item itemvalue="JUnit.TestProg.mainTest" />
         <item itemvalue="JUnit.TestTerm" />
         <item itemvalue="JUnit.TestJapaneseCode.mainTest" />
         <item itemvalue="JUnit.TestMperms" />
@@ -313,12 +313,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java</url>
-          <line>386</line>
+          <line>392</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java</url>
-          <line>391</line>
+          <line>397</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>
