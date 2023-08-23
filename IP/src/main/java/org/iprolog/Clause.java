@@ -81,8 +81,18 @@ class Clause {
     return this;
   }
 
-  public Clause if_() {
+  public Clause if_(LPvar... body_list) {
     adding_args = false;
+    assert body == null;
+
+    for (LPvar f : body_list) {
+      // Main.println ("   Clause.if__: adding <<<" + t + ">>> to body...");
+      if (body == null) {
+        body = f.run.fn();
+      }  else {
+        body = Term.append_elt_to_ll (f.run.fn(), body);
+      }
+    }
     return this;
   }
 

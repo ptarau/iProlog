@@ -18,6 +18,10 @@ public class TestProg extends TestTerm {
     LPvar goal(LPvar x) { return S_(x); }
     LPvar goal(String c) { return S_(C_(c)); }
 
+    Term foo(Term x) { return (s_(m_(),x)); }
+    LPvar is_zero(LPvar x) { return S_(x); }
+    LPvar X;
+
     @Test
     public void mainTest() {
 
@@ -47,11 +51,11 @@ public class TestProg extends TestTerm {
         r = L_(Something,Nothing);
         assert "[Something,Nothing]".compareTo(r.run.fn().toString()) == 0;
 
-        assert C0 != null;
-        assert C1 != null;
-        r = goal(C0);
-        Main.println ("r = " + r.run.fn().toString());
-        r = goal("0");
-        Main.println ("r = " + r.run.fn().toString());
+        say_(is_zero(C_("0")));
+        say_(goal(X)).if_(is_zero(X));
+
+        String expected[] = { "0" };
+        Main.println ("Starting try_it in TestProg");
+        try_it (said, expected, true);
     }
 }

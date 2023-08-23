@@ -24,9 +24,6 @@ public class TestClause {
         Clause ft_a = ft.__(a);
         assert ft_a != null;
         assert ft_a == ft;
-        Clause ft_a_if = ft_a.if_();
-        Clause ft_a_if_b = ft_a_if.__(b);
-        assert ft == ft_a_if_b;
 
         // Main.println ("ft.head = " + ft.head.toString());
         // Main.println ("ft.body = " + ft.body.toString());

@@ -1,2 +1,5 @@
-package org.iprolog;public class LPvar {
+package org.iprolog;
+
+public class LPvar {
+    TermFn run;
 }

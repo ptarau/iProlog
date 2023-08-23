@@ -1,2 +1,5 @@
-package org.iprolog;public interface TermFn {
+package org.iprolog;
+
+public interface TermFn {
+    Term fn();
 }
