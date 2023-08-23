@@ -5,14 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/LPvar.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/TermFn.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Clause.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Clause.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestClause.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestClause.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestAdd.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestAdd.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestJapaneseCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestJapaneseCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestProg.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestProg.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -163,7 +158,23 @@
       <command value="mvn clean" />
     </option>
   </component>
-  <component name="RunManager" selected="JUnit.TestJapaneseCode">
+  <component name="RunManager" selected="JUnit.TestAdd.mainTest">
+    <configuration name="TestAdd.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.iprolog.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.iprolog" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestAdd" />
+      <option name="METHOD_NAME" value="mainTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="TestJapaneseCode" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="IP" />
       <extension name="coverage">
@@ -226,29 +237,13 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TestToks.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="IP" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.iprolog.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="org.iprolog" />
-      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestToks" />
-      <option name="METHOD_NAME" value="mainTest" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.TestJapaneseCode" />
+        <item itemvalue="JUnit.TestAdd.mainTest" />
         <item itemvalue="JUnit.TestJapaneseCode.mainTest" />
+        <item itemvalue="JUnit.TestJapaneseCode" />
         <item itemvalue="JUnit.TestProg.mainTest" />
         <item itemvalue="JUnit.TestTerm" />
-        <item itemvalue="JUnit.TestToks.mainTest" />
       </list>
     </recent_temporary>
   </component>
