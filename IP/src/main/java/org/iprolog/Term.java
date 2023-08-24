@@ -354,7 +354,7 @@ public class Term {
             case TermList:  r =  list_start + terms_to_str(list_elt_sep) + list_end;
                             break;
             case TermPair:  if (in_Prolog_mode)
-                                r = terms_to_str ("|");
+                                r = list_start + terms_to_str ("|") + list_end;
                             else
                                 r = cons + terms_to_str (list_elt_sep);
                             break;

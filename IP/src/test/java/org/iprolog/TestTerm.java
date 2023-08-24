@@ -69,15 +69,7 @@ public class TestTerm {
     Term Zs() { return v_(m_()); }
 
     Term goal(Term x)  { return s_(m_(),x); }
-/*
-    public interface TermFn {
-        public Term fn();
-    }
 
-    public class LPvar {
-        TermFn run;
-    }
-*/
     protected Term[] make_xts(LPvar[] xs) {
         Term xts[] = new Term[xs.length];
         int i = 0;
@@ -108,6 +100,23 @@ public class TestTerm {
         r.run = ()->l_(make_xts(xs));
         return r;
     }
+
+    LPvar P_(LPvar x, LPvar y) {
+        LPvar r = new LPvar();
+        r.run = ()->p_(x.run.fn(),y.run.fn());
+        return r;
+    }
+
+    LPvar paf_ (LPvar[] taf, int i) {
+        LPvar r = new LPvar();
+        if (i == taf.length-2) {
+            r.run = () -> (Term.termpair(taf[i].run.fn(), taf[i + 1].run.fn()));
+            return r;
+        }
+        r.run = ()->(Term.termpair (taf[i].run.fn(), paf_(taf, i+1).run.fn()));
+        return r;
+    }
+    LPvar P_(LPvar... Fs) {  return paf_ (Fs, 0);  }
 
     private void init_LPvars (Class<?> tc) {
         // Main.println ("Entering init_LPvars, class: " + tc.getName());
