@@ -57,7 +57,7 @@ public class TestProg extends TestTerm {
         say_(goal(X)).if_(is_zero(X));
 
         String expected[] = { "0" };
-        Main.println ("Starting try_it in TestProg");
+
         try_it (said, expected, true);
     }
 }
