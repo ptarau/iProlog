@@ -4,74 +4,69 @@ import org.junit.jupiter.api.Test;
 
 public class TestQueens extends TestTerm {
 
-    Term QueenColumn()  {  return v_("QueenColumn");    }
-    Term Q()            {  return v_(m_());                }
-    Term Qs()           {  return v_(m_());                }
-    Term Columns()      {  return v_(m_());                }
-    Term Rows()         {  return v_(m_());                }
-    Term LeftDiags()    {  return v_(m_());                }
-    Term RightDiags()   {  return v_(m_());                }
-    Term OtherColumns() {  return v_(m_());                }
-    Term OtherRows()    {  return v_(m_());                }
+    LPvar QueenColumn;
+    LPvar Q,Qs;
+    LPvar Columns,Rows,LeftDiags,RightDiags,OtherColumns,OtherRows;
+    LPvar _;
 
-    Term this_queen_doesnt_fight_in(Term a, Term b, Term c, Term d) {
-        return s_(m_(), a, b, c, d);
+    LPvar this_queen_doesnt_fight_in(LPvar a, LPvar b, LPvar c, LPvar d) {
+        return S_(a, b, c, d);
     }
-    Term these_queens_dont_fight_on_these_lines(Term a, Term b, Term c, Term d) {
-        return s_(m_(), a, b, c, d);
+    LPvar these_queens_dont_fight_on_these_lines(LPvar a, LPvar b, LPvar c, LPvar d) {
+        return S_(a, b, c, d);
     }
-    Term these_queens_can_be_in_these_places(Term a, Term b) {
-        return s_(m_(), a, b);
+    LPvar these_queens_can_be_in_these_places(LPvar a, LPvar b) {
+        return S_(a, b);
     }
-    Term qs(Term cols, Term rows)   { return s_(m_(), cols, rows); }
-    Term goal(Term Rows)            { return s_(m_(), Rows); }
+    LPvar qs(LPvar cols, LPvar rows)   { return S_(cols, rows); }
+    LPvar goal(LPvar Rows)            { return S_(Rows); }
 
     @Test
     public void mainTest() {
         start_new_test();
 
         say_( this_queen_doesnt_fight_in(
-                QueenColumn(),
-                p_(QueenColumn(), _()),
-                p_(QueenColumn(), _()),
-                p_(QueenColumn(), _())  )
+                QueenColumn,
+                P_(QueenColumn, _),
+                P_(QueenColumn, _),
+                P_(QueenColumn, _)  )
         );
         say_( this_queen_doesnt_fight_in(
-                Q(), p_(_(),Rows()), p_(_(),LeftDiags()), p_(_(),RightDiags()) )
+                Q, P_(_,Rows), P_(_,LeftDiags), P_(_,RightDiags) )
         ).if_(this_queen_doesnt_fight_in(
-                Q(), Rows(), LeftDiags(), RightDiags() )
+                Q, Rows, LeftDiags, RightDiags )
         );
         say_( these_queens_dont_fight_on_these_lines(
-                l_(), _(), _(), _() )
+                L_(), _, _, _ )
         );
         say_( these_queens_dont_fight_on_these_lines(
-                p_(QueenColumn(), Qs()),
-                Rows(),
-                LeftDiags(),
-                p_(_(), RightDiags()) )
+                P_(QueenColumn, Qs),
+                Rows,
+                LeftDiags,
+                P_(_, RightDiags) )
         ).
                 if_(    these_queens_dont_fight_on_these_lines(
-                        Qs(), Rows(), p_(_(), LeftDiags()), RightDiags() ),
+                        Qs, Rows, P_(_, LeftDiags), RightDiags ),
                         this_queen_doesnt_fight_in(
-                                QueenColumn(), Rows(), LeftDiags(), RightDiags() )
+                                QueenColumn, Rows, LeftDiags, RightDiags )
                 );
-        say_( these_queens_can_be_in_these_places(l_(), l_()) );
+        say_( these_queens_can_be_in_these_places(L_(), L_()) );
         say_( these_queens_can_be_in_these_places(
-                p_(_(),OtherColumns()),
-                p_(_(),OtherRows()) )
+                P_(_,OtherColumns),
+                P_(_,OtherRows) )
         ).if_(  these_queens_can_be_in_these_places(
-                OtherColumns(),
-                OtherRows())
+                OtherColumns,
+                OtherRows)
         );
-        say_( qs(Columns(), Rows())).
+        say_( qs(Columns, Rows)).
                 if_(    these_queens_can_be_in_these_places(
-                        Columns(),
-                        Rows() ),
+                        Columns,
+                        Rows ),
                         these_queens_dont_fight_on_these_lines(
-                                Columns(),Rows(),_(),_() )
+                                Columns,Rows,_,_ )
                 );
-        say_( goal(Rows())).
-                if_(    qs(l_(c0(),c1(),c2(),c3()),Rows())
+        say_( goal(Rows)).
+                if_(    qs(L_(C_("0"),C_("1"),C_("2"),C_("3")),Rows)
                 );
 
         String[] these_answers = {
