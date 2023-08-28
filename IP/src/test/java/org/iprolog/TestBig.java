@@ -4,50 +4,56 @@ import org.junit.jupiter.api.Test;
 
 public class TestBig extends TestTerm {
 
-    Term append(Term this_, Term that, Term result) {
-        return s_(m_(), this_, that, result);
-    }
-    Term nrev(Term x, Term y)           { return s_(m_(), x, y); }
-    Term dup(Term a, Term b, Term c)    { return s_(m_(), a, b, c); }
-    Term next_number_after(Term a, Term a_plus_1) {
-        return s_(m_(), a, a_plus_1);
-    }
+    LPvar append(LPvar this_, LPvar that, LPvar result) {
+                                              return S_(this_, that, result);   }
+    LPvar nrev(LPvar x, LPvar y)            { return S_(x, y);                  }
+    LPvar dup(LPvar a, LPvar b, LPvar c)    { return S_(a, b, c);               }
+    LPvar next_number_after(LPvar a, LPvar a_plus_1) {
+                                              return S_(a, a_plus_1);           }
+    LPvar goal(LPvar x)                     { return S_(x);                     }
+
+    LPvar R,XX,N,N1;
+    LPvar X,Xs,Y,Ys,Z,Zs;
+    LPvar _;
 
     @Test
     public void mainTest() {
         start_new_test();
-        Integer difficulty = 4;
-        // Integer difficulty = 18;
+        Integer hardness_level =
+                4
+                // 18
+        ;
+        LPvar difficulty = C_(hardness_level.toString());
 
-        say_(append(l_(), Ys(), Ys()));
-        say_(append(p_(X(), Xs()), Ys(), p_(X(), Zs()))).
-                if_(append(Xs(), Ys(), Zs()));
-        say_(nrev(l_(), l_()));
-        say_(nrev(p_(X(),Xs()), Zs())).
-                if_(    nrev(Xs(), Ys()),
-                        append(Ys(), l_(X()), Zs()));
+        LPvar a = C_("a");
+        LPvar b = C_("b");
+        LPvar c = C_("c");
+        LPvar d = C_("d");
+        LPvar zero = C_("0");
 
-        for (Integer i = 0; i < difficulty; ++i) {
+        say_(append(L_(), Ys, Ys));
+        say_(append(P_(X, Xs), Ys, P_(X, Zs))).
+                if_(    append(Xs, Ys, Zs) );
+
+        say_(nrev(L_(), L_()));
+        say_(nrev(P_(X,Xs), Zs)).
+                if_(    nrev(Xs, Ys),
+                        append(Ys, L_(X), Zs) );
+
+        for (Integer i = 0; i < hardness_level; ++i) {
             Integer i_next = i + 1;
-            say_(next_number_after(c_(i.toString()), c_(i_next.toString())));
+            say_(next_number_after(C_(i.toString()), C_(i_next.toString())));
         }
-        say_(dup(c0(), X(), X()));
+        say_(dup(zero, X, X));
 
-        Term R = v_("R");
-        Term XX = v_("XX");
-        Term N = v_("N");
-        Term N1 = v_("N1");
-        // dup(N,X,R):-next_number_after(N1,N),append(X,X,XX),dup(N1,XX,R).
-        said.add(Clause.f__(dup(N, X(), R)).
+        say_(dup(N, X, R)).
                 if_(    next_number_after(N1, N),
-                        append(X(), X(), XX),
-                        dup(N1, XX, R)));
+                        append(X, X, XX),
+                        dup(N1, XX, R) );
 
-        // goal([X,Y]):-dup(18,[a,b,c,d],[X,Y|_]).
-        Term l_a_b_c_d = l_(c_("a"), c_("b"), c_("c"), c_("d"));
+        say_(goal(L_(X, Y)))
+                .if_(   dup(difficulty, L_(a, b, c, d), P_(X, Y, _)) );
 
-        say_(goal(l_(X(), Y())))
-                .if_(dup(c_(difficulty.toString()), l_a_b_c_d, p_(X(), Y(), _())));
         String expected[] = {"[a,b]"};
         try_it(said, expected);
     }

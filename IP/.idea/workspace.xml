@@ -6,9 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progs/mperms.pl" beforeDir="false" afterPath="$PROJECT_DIR$/progs/mperms.pl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestMperms.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestMperms.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestProg.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestProg.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestBig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestBig.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -159,8 +157,8 @@
       <command value="mvn clean" />
     </option>
   </component>
-  <component name="RunManager" selected="JUnit.TestMperms">
-    <configuration name="TestLambdas.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="JUnit.TestBig.mainTest">
+    <configuration name="TestBig" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="IP" />
       <extension name="coverage">
         <pattern>
@@ -169,7 +167,22 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="org.iprolog" />
-      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestLambdas" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestBig" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestBig.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.iprolog.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.iprolog" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestBig" />
       <option name="METHOD_NAME" value="mainTest" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
@@ -207,22 +220,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TestPerms.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="IP" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.iprolog.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="org.iprolog" />
-      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestPerms" />
-      <option name="METHOD_NAME" value="mainTest" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="TestProg.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="IP" />
       <extension name="coverage">
@@ -241,11 +238,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.TestBig.mainTest" />
+        <item itemvalue="JUnit.TestBig" />
         <item itemvalue="JUnit.TestMperms" />
         <item itemvalue="JUnit.TestMperms.mainTest" />
         <item itemvalue="JUnit.TestProg.mainTest" />
-        <item itemvalue="JUnit.TestLambdas.mainTest" />
-        <item itemvalue="JUnit.TestPerms.mainTest" />
       </list>
     </recent_temporary>
   </component>
