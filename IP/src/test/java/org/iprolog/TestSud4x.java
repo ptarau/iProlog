@@ -131,6 +131,7 @@ public class TestSud4x extends TestTerm {
     LPvar X,Xs,Y,Ys,Z,Zs;
     LPvar Xss,Xsss,F;
     LPvar _;
+    LPvar nil;
 
     @Test
     public void mainTest() {
@@ -159,10 +160,7 @@ public class TestSud4x extends TestTerm {
                         L_(S33,S34, S43,S44)
                 )
         )))
-                // .if_(true_())
-        ; // ????????????
-        // :-
-        //            true.
+                .if_(true_());
 
         say_(sudoku(Xss))
                 .if_(   s4x4(P_(Xss,Xsss)),
@@ -171,27 +169,20 @@ public class TestSud4x extends TestTerm {
                                 P_(Xss,Xsss)  )  );
 
         say_(map1x(_,_,L_()));
-
-        //   map1x(F,  Y,  [  X|Xs    ]):- call(F,Y,X),map1x(F,Y,Xs).
         say_(map1x(F,Y,P_(X,Xs)))
                 .if_(   call(F,Y,X),map1x(F,Y,Xs)
                 );
 
-        //   map11(_  ,_  ,[  ]).
         say_(map11(_,_,L_()));
-        //   map11(F,  X,  [  Y|  Ys  ] ):-map1x(F,X,Y),map11(F,X,Ys).
         say_(map11(F,X,P_(Y,Ys)))
                 .if_(   map1x(F,X,Y),
                         map11(F,X,Ys) );
 
-        //   permute([ ],[ ]).
         say_(permute(L_(),L_()));
-        //   permute([  X  |Xs  ],Zs  ):-permute(Xs,Ys),ins(X,Ys,Zs).
         say_(permute(P_(X,Xs),Zs))
                 .if_(   permute(Xs,Ys),ins(X,Ys,Zs)  );
 
         say_(ins(X,Xs,P_(X,Xs)));
-        //   ins(X,  [  Y  |Xs  ],[  Y  |Ys  ]):-ins(X,Xs,Ys).
         say_(ins(X,P_(Y,Xs),P_(Y,Ys)))
                 .if_(   ins(X,Xs,Ys)  );
 
@@ -204,14 +195,6 @@ public class TestSud4x extends TestTerm {
                 "[[1,2,3,4],[3,4,1,2],[4,3,2,1],[2,1,4,3]]",
                 "[[1,2,3,4],[3,4,2,1],[2,1,4,3],[4,3,1,2]]"
         };
-
-        Term.set_Prolog();
-        Main.println("--- sud4x translated ---");
-        for (Clause x : said) {
-            Main.println (x.toString());
-        }
-        Main.println("------------------------");
-        Term.set_TarauLog();
 
         try_it(said, expected, false);
     }

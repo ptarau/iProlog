@@ -6,10 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progs/sud4x.pl" beforeDir="false" afterPath="$PROJECT_DIR$/progs/sud4x.pl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Term.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Term.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestSud4x.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestSud4x.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,21 +158,6 @@
     </option>
   </component>
   <component name="RunManager" selected="JUnit.TestSud4x.mainTest">
-    <configuration name="TestMperms" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="IP" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.iprolog.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="org.iprolog" />
-      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestMperms" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="TestPerms.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="IP" />
       <extension name="coverage">
@@ -202,6 +184,21 @@
       </extension>
       <option name="PACKAGE_NAME" value="org.iprolog" />
       <option name="MAIN_CLASS_NAME" value="org.iprolog.TestQueens" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestSud4x" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.iprolog.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.iprolog" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestSud4x" />
       <option name="TEST_OBJECT" value="class" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -241,10 +238,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="JUnit.TestSud4x.mainTest" />
+        <item itemvalue="JUnit.TestSud4x" />
         <item itemvalue="JUnit.TestTerm" />
         <item itemvalue="JUnit.TestQueens" />
         <item itemvalue="JUnit.TestPerms.mainTest" />
-        <item itemvalue="JUnit.TestMperms" />
       </list>
     </recent_temporary>
   </component>
