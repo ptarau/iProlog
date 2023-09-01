@@ -29,8 +29,11 @@ public class TestTerm {
                                     }
     static Term e_(Term lhs, Term rhs) { return Term.equation (lhs,rhs); }
     static Term l_(Term... ts) {
+
                                         if (ts.length == 0)
                                             return c_("nil");
+                                            // return c_("[]");
+
                                         return Term.termlist(ts);
                                 }
     static Term pal_(Term[] tal, int i) {
@@ -51,7 +54,15 @@ public class TestTerm {
     }
 
     Term call(Term f, Term... ts) { return s_(f.v(),ts); }
-    Term true_(){ return null;     }
+
+    LPvar call(LPvar f, LPvar... ls)       {
+        LPvar r = new LPvar();
+        r.run = ()->s_(f.run.fn().toString(), make_xts(ls));
+        return r;
+        // return S_(ls);
+    }
+
+    Term true_()                  { return null;         }  // ????
 
     Term c0() { return c_("0"); }
     Term c1() { return c_("1"); }
@@ -214,6 +225,7 @@ public class TestTerm {
         // Going through the Java Object interface, unfortunately.
 
         int n_expected = whats_expected.length;
+        // Main.println ("n_expected = " + n_expected);
 
         Boolean yielded_something = false;
         while ((POJO_Ans = P.POJO_ask()) != null) {
@@ -309,6 +321,8 @@ public class TestTerm {
             cl.flatten();
             asm_txt += cl.toString()+System.lineSeparator();
         }
+        // Main.println ("   ===== try_it(): after flattening =======");
+        // Main.println ("asm_txt = \n" + asm_txt);
 
         // Main.println ("   ===== try_it(): Calling new Prog: ===============");
         Prog P = new Prog(asm_txt, false);

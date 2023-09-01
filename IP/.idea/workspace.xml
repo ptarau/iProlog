@@ -6,7 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestLambdas.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestLambdas.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/progs/sud4x.pl" beforeDir="false" afterPath="$PROJECT_DIR$/progs/sud4x.pl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Term.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Term.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestSud4x.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestSud4x.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -157,53 +160,7 @@
       <command value="mvn clean" />
     </option>
   </component>
-  <component name="RunManager" selected="JUnit.TestLambdas">
-    <configuration name="TestBig" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="IP" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.iprolog.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="org.iprolog" />
-      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestBig" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestBig.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="IP" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.iprolog.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="org.iprolog" />
-      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestBig" />
-      <option name="METHOD_NAME" value="mainTest" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestLambdas" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="IP" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.iprolog.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="org.iprolog" />
-      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestLambdas" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
+  <component name="RunManager" selected="JUnit.TestSud4x.mainTest">
     <configuration name="TestMperms" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="IP" />
       <extension name="coverage">
@@ -215,6 +172,22 @@
       <option name="PACKAGE_NAME" value="org.iprolog" />
       <option name="MAIN_CLASS_NAME" value="org.iprolog.TestMperms" />
       <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestPerms.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.iprolog.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.iprolog" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestPerms" />
+      <option name="METHOD_NAME" value="mainTest" />
+      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -234,12 +207,43 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="TestSud4x.mainTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.iprolog.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.iprolog" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestSud4x" />
+      <option name="METHOD_NAME" value="mainTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestTerm" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="IP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.iprolog.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.iprolog" />
+      <option name="MAIN_CLASS_NAME" value="org.iprolog.TestTerm" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.TestLambdas" />
+        <item itemvalue="JUnit.TestSud4x.mainTest" />
+        <item itemvalue="JUnit.TestTerm" />
         <item itemvalue="JUnit.TestQueens" />
-        <item itemvalue="JUnit.TestBig.mainTest" />
-        <item itemvalue="JUnit.TestBig" />
+        <item itemvalue="JUnit.TestPerms.mainTest" />
         <item itemvalue="JUnit.TestMperms" />
       </list>
     </recent_temporary>
@@ -312,14 +316,18 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java</url>
-          <line>403</line>
+          <line>417</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java</url>
-          <line>408</line>
+          <line>422</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.AssertionError" package="java.lang" />
+          <option name="timeStamp" value="8" />
+        </breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>

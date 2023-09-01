@@ -259,6 +259,7 @@ public class Term {
     protected static String list_elt_sep;
     protected static String list_end;
     protected static String cons;
+    protected static String nil;
     
     // See Toks; there, I squeeze out whitespace
     // from these. Used for pretty-printing the
@@ -278,6 +279,7 @@ public class Term {
         list_elt_sep = " ";
         list_end = "";
         cons = "list ";
+        nil = "nil";
 
         in_Prolog_mode = false;
     }
@@ -295,6 +297,7 @@ public class Term {
         list_elt_sep = ",";
         list_end = "]";
         cons = "(.)";
+        nil = "[]";
 
         return in_Prolog_mode = true;
     }
@@ -351,7 +354,10 @@ public class Term {
                                 }
                             }
                             break;
-            case TermList:  r =  list_start + terms_to_str(list_elt_sep) + list_end;
+            case TermList:  if (this.Terms == null)
+                                r = nil;
+                            else
+                                r = list_start + terms_to_str(list_elt_sep) + list_end;
                             break;
             case TermPair:  if (in_Prolog_mode)
                                 r = list_start + terms_to_str ("|") + list_end;
