@@ -107,8 +107,6 @@ class Engine {
     imaps = index(clauses, vmaps);
   }
 
-
-
   /**
    * Tags of our heap cells. These can also be seen as
    * instruction codes in a compiled implementation.
@@ -127,12 +125,11 @@ class Engine {
                                   // that could be an atom or a variable.)" -- HHG doc
     // G - ground?
 
-  final private static int BAD = 7;
   final public static int n_tag_bits = 3;
+  final private static int TAG_MASK = (1<<n_tag_bits)-1;
+  final private static int BAD = TAG_MASK;
   final public static int MAX_N = 1 << (Integer.SIZE-(n_tag_bits+1));
   // to allow for tag & 1 sign bit -----------------------^
-
-
 
   /**
    * Tags an integer value while (optionally) flipping it into a negative
@@ -141,25 +138,25 @@ class Engine {
    * do not mix them up at runtime. Not negating the argument doesn't
    * seem to affect results, and improves performance only slightly (< 5%).
    */
-  final private static int maybe_invert(final int w) {
-    return -w;
-  }
+  final private static int maybe_invert(final int w) { return -w; }
   final private static int tag(final int t, final int w) {
-    return maybe_invert((w << 3) + t);
+    assert t <= BAD;
+    assert t >= 0;
+    return maybe_invert((w << n_tag_bits) + t);
   }
 
   /**
    * Removes tag after (maybe) flipping sign.
    */
   final private static int detag(final int w) {
-    return maybe_invert(w) >> 3;
+    return maybe_invert(w) >> n_tag_bits;
   }
 
   /**
    * Extracts the tag of a cell.
    */
   final private static int tagOf(final int w) {
-    return maybe_invert(w) & 7;
+    return maybe_invert(w) & TAG_MASK;
   }
 
   /**
@@ -204,8 +201,6 @@ class Engine {
   }
 
   private final void clear() {
-    //for (int i = 0; i <= top; i++)
-    //heap[i] = 0;
     top = -1;
   }
 
@@ -436,149 +431,6 @@ s += "]";
     return all_clauses;
   }
 
-  private int do_it ( int k,
-                      Term t,
-                      LinkedHashMap<String, IntStack> refs,
-                      IntStack cells,
-                      IntStack goals,
-                      ArrayList<Clause> Clauses) {
-/* 
-    for (final String[] ws : Rss) { // for each head or body element
-
-      final int l = ws.length;
-      goals.push(tag(R, k++));
-      cells.push(tag(A, l));
-
-      for (String w : ws) { // gen code for 'element' (= head/body subterm)
-
-        if (1 == w.length())  // when would this be?
-          w = "c:" + w;
-
-        final String arg = w.substring(2);
-
-        switch (w.charAt(0)) {  // gen code for subterm:
-          // Constant
-          case 'c': cells.push(encode(C, arg));              k++; break;
-          // small iNt
-          case 'n': cells.push(encode(N, arg));              k++; break;
-          // Variable
-          case 'v': put_ref (arg, refs, k);
-                    // "just in case we miss this:" ??
-                    //  P. Tarau comment
-                    cells.push(tag(BAD, k));                 k++; break;
-          // 'Holds' ('=')
-          case 'h': put_ref (arg, refs, k - 1);
-                    cells.set(k - 1, tag(A, l - 1));
-                    goals.pop();
-                                                                  break;
-          default: Main.pp("FORGOTTEN=" + w);
-        } // end subterm
-      } // end element
-    }
-    */
-    return k;
-  }
-
-  // NOT CALLED YET
-  private final static LinkedList<Term>
-  expand_lists_to_holds(Term lt) {
-
-    assert (false);
-
-    if (!lt.is_a_termlist())
-      return null;
-/*
-    LinkedList<Term> xf = new LinkedList<Term>();
-    int l = lt.args().size();
-
-    for (int i = 1; i < l; i++) {
-      
-      final String[] Rs = new String[4];
-      final String Vi = 1 == i ? V : V + "__" + (i - 1);
-      final String Vii = V + "__" + i;
-      Rs[0] = "h:" + Vi;      // 'h' -> "holds" -> "="
-      Rs[1] = "c:list";
-      Rs[2] = Ws.get(i);
-      Rs[3] = i == l - 1 ? "c:nil" : "v:" + Vii;
-      Rss.add(Rs);
-       
-    }
-    */
-
-    return null;
-  }
-
-  // NOT CALLED YET
-  static LinkedList<Term>
-  expand_list_stmt (LinkedList<Term> head_or_body) {
-
-    assert (false);
-
-    LinkedList<Term> llt = new LinkedList<Term>();
-
-    for (Term t : head_or_body) {
-      final LinkedList<Term> any_expansion = expand_lists_to_holds(t);
-      if (any_expansion == null)
-        llt.add (t);
-      else
-        llt.addAll (any_expansion);
-    }
-
-    return llt;
-  }
-
-  // NOT CALLED YET
-  private final static Clause
-  expand_lists_stmts(final Clause cl) {
-
-    assert (false);
-/*
-    Main.println("\nexpand_lists_stmts(cl): calling on cl.head....");
-
-    cl.head = expand_list_stmt(cl.head);
-    Main.println("\nexpand_lists_stmts(cl): calling on cl.body....");
-    cl.body = expand_list_stmt(cl.body);
-
-    Main.println ("\nResulting clause:\n" + cl.toString());
-
-    Main.println ("...exiting expand_lists_stmts(Clause cl)");
-
-    return cl;
-*/
-    return null;
-  }
-
-  // NOT CALLED YET
-  Clause[] dload_from_x(LinkedList<Clause> these_clauses) {
-
-    assert(false);
-/*
-    final ArrayList<Clause> compiled_clauses = new ArrayList<Clause>();
-
-    for (final Clause cl : these_clauses) { // for each clause
-
-      final LinkedHashMap<String, IntStack> refs = new LinkedHashMap<String, IntStack>();
-      final IntStack cells = new IntStack();
-      final IntStack goals = new IntStack();
-
-      Main.println ("Just before expand_lists_stmts(cl)");
-      final Clause xcl = expand_lists_stmts(cl);
-      int k = 0;
-
-      for (Term t : xcl.head)
-        k = do_it(k, t, refs, cells, goals, compiled_clauses);
-
-      for (Term t : xcl.body)
-        k = do_it(k, t, refs, cells, goals, compiled_clauses);
-
-      linker(refs, cells, goals, compiled_clauses);
-    }  // end clause set
-
-    return condensed_clauses (compiled_clauses);
-*/
-    return null;
-  }
-  
   void linker(  LinkedHashMap<String,IntStack> refs,
                 IntStack cells,
                 IntStack goals,

@@ -15,6 +15,7 @@ if javac -J-Duser.language=en \
  # java -cp "$TARGET" iProlog.Main "progs/$1.pl"
  # java -cp "$TARGET/org/iprolog" org.iprolog.Main "progs/$1.pl"
  java -Duser.language=en \
+	 -ea \
 	 -cp "$TARGET" org.iprolog.Main progs/$1.pl
  echo -n "--Hit Enter to continue:";
  read;
