@@ -140,24 +140,14 @@ public class Prog extends Engine implements Spliterator<Object> {
   }
 
   public static String make_string_from(final Object[] f_of_args) {
-    if (f_of_args.length == 0) {
-      // assert false;
-      return ("nil");
-    }
+    assert f_of_args.length > 0;
+
     final StringBuffer buf = new StringBuffer();
 
     final String name = f_of_args[0].toString();
 
-    if (f_of_args.length == 3 && isInfixOp(name)) {
-         ////////////////////////////////////
-        /// Doesn't look right.
-       /// Seems like it should be args 1 0 2.
-      //////////////////////////////////////
-      Main.println ("+++++++++++++ isInfixOp case ++++++++++++++");
-      buf.append(Term.args_start + maybeNull(f_of_args[0]) + name + Term.args_end);
-    } else if (f_of_args.length == 3 && isListCons(name)) {
-      buf.append('[');
-      {
+    if (f_of_args.length == 3 && isListCons(name)) {
+        buf.append('[');
         buf.append(maybeNull(f_of_args[1]));
         Object tail = f_of_args[2];
         for (;;) {
@@ -168,21 +158,12 @@ public class Prog extends Engine implements Spliterator<Object> {
             break;
           }
           final Object[] list = (Object[]) tail;
-          if (!(list.length == 3 && isListCons(list[0]))) {
-            buf.append("|" + maybeNull(tail));
-            break;
-          } else {
-            //if (i > 1)
-            buf.append(Term.arg_sep);
-            buf.append(maybeNull(list[1]));
-            tail = list[2];
-          }
+          buf.append(Term.arg_sep);
+          buf.append(maybeNull(list[1]));
+          tail = list[2];
         }
-      }
+
       buf.append(']');
-    } else if (f_of_args.length == 2 && "$VAR".equals(name)) { // when?
-      Main.println("$$$$$$$$$$ $VAR $$$$$$$$$$$$$$");
-      buf.append("_" + f_of_args[1]);
     } else {
       buf.append(maybeNull(f_of_args[0]) + Term.args_start);
       String sep = "";
@@ -305,5 +286,4 @@ public class Prog extends Engine implements Spliterator<Object> {
     }
     return ok;
   }
-
 }

@@ -139,9 +139,9 @@ class Engine {
    * number when we want to ensure that untagged cells are always negative
    * and the tagged ones are always positive - a simple way to ensure we
    * do not mix them up at runtime. Not negating the argument doesn't
-   * seem to affect results, and may improve performance slightly.
+   * seem to affect results, and improves performance only slightly (< 5%).
    */
-  final private static int maybe_invert(int w) {
+  final private static int maybe_invert(final int w) {
     return -w;
   }
   final private static int tag(final int t, final int w) {
