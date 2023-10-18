@@ -747,7 +747,7 @@ s += "]";
   }
 
   /**
-   * to be overriden as a printer for spines
+   * to be overridden as a printer for spines
    */
   void ppSpines() {
     // override
