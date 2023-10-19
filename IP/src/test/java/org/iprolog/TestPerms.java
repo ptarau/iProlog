@@ -17,7 +17,7 @@ public class TestPerms extends TestTerm {
     @Test
     public void mainTest() {
         start_new_test();
-        // int difficulty = 10;
+
         int difficulty = 2;
 
         say_( eq(X,X) );

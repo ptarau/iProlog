@@ -54,7 +54,7 @@ public class TestBig extends TestTerm {
         say_(goal(L_(X, Y)))
                 .if_(   dup(difficulty, L_(a, b, c, d), P_(X, Y, _)) );
 
-        String expected[] = {"[a,b]"};
+        String[] expected = {"[a,b]"};
         try_it(said, expected);
     }
 }
