@@ -18,7 +18,7 @@ import java.util.LinkedList;
  * I'll cross that bridge (if it looks sturdy enough)
  * when I come to it.
  */
-class Clause {
+public class Clause {
 
   // import/export version:
 

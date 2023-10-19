@@ -6,9 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestBig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestBig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestPerms.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestPerms.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Clause.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Clause.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/JLPAPI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/JLPAPI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/LPvar.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/LPvar.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/ptaraudactyl-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/target/ptaraudactyl-1.0-SNAPSHOT.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

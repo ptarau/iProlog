@@ -11,10 +11,10 @@ public class JLPAPI {
     }
     public Term v_()                {    return v_(m_());         }
 
-    static Term _()          {    return v_("_");        }
-    static Term c_(String s) {    return Term.constant(s); }
-    static Term s_(String s) {    return Term.compound(s); }
-    static Term s_(String s, Term... ts) {
+    public static Term _()          {    return v_("_");        }
+    public static Term c_(String s) {    return Term.constant(s); }
+    public static Term s_(String s) {    return Term.compound(s); }
+    public static Term s_(String s, Term... ts) {
         Term xt = Term.compound(s);
         for (Term t : ts)
             xt = xt.takes_this(t);
@@ -41,7 +41,7 @@ public class JLPAPI {
 
     public Term call(Term f, Term... ts) { return s_(f.v(),ts); }
 
-    LPvar call(LPvar f, LPvar... ls)       {
+    public LPvar call(LPvar f, LPvar... ls)       {
         LPvar r = new LPvar();
         r.run = ()->s_(f.run.fn().toString(), make_xts(ls));
         return r;
@@ -58,13 +58,13 @@ public class JLPAPI {
         return xts;
     }
 
-    Term true_()                  { return null;         }  // ????
+    public Term true_()                  { return null;         }  // ????
 
-    Term c0() { return c_("0"); }
-    Term c1() { return c_("1"); }
-    Term c2() { return c_("2"); }
-    Term c3() { return c_("3"); }
-    Term c4() { return c_("4"); }
+    public Term c0() { return c_("0"); }
+    public Term c1() { return c_("1"); }
+    public Term c2() { return c_("2"); }
+    public Term c3() { return c_("3"); }
+    public Term c4() { return c_("4"); }
 
     Term V()  { return v_(m_()); }
     Term X()  { return v_(m_()); }
@@ -75,28 +75,28 @@ public class JLPAPI {
     Term Ys() { return v_(m_()); }
     Term Zs() { return v_(m_()); }
 
-    Term goal(Term x)  { return s_(m_(),x); }
+    public Term goal(Term x)  { return s_(m_(),x); }
 
-    LPvar S_(LPvar... xs) {
+    public LPvar S_(LPvar... xs) {
         String nm = f_();  // misses the right stack frame if called as arg to s_()
         LPvar r = new LPvar();
         r.run = ()->s_(nm,make_xts(xs));
         return r;
     }
 
-    LPvar C_(String c) {
+    public LPvar C_(String c) {
         LPvar r = new LPvar();
         r.run = ()->c_(c);
         return r;
     }
 
-    LPvar L_(LPvar... xs) {
+    public LPvar L_(LPvar... xs) {
         LPvar r = new LPvar();
         r.run = ()->l_(make_xts(xs));
         return r;
     }
 
-    LPvar P_(LPvar x, LPvar y) {
+    public LPvar P_(LPvar x, LPvar y) {
         LPvar r = new LPvar();
         r.run = ()->p_(x.run.fn(),y.run.fn());
         return r;
@@ -110,7 +110,7 @@ public class JLPAPI {
         r.run = ()->(Term.termpair (taf[i].run.fn(), paf_(taf, i+1).run.fn()));
         return r;
     }
-    LPvar P_(LPvar... Fs) {  return paf_ (Fs, 0);  }
+    public LPvar P_(LPvar... Fs) {  return paf_ (Fs, 0);  }
 
     public void init_LPvars (Class<?> tc) {
         // Main.println ("Entering init_LPvars, class: " + tc.getName());
@@ -121,6 +121,7 @@ public class JLPAPI {
                 if (f.getType().getName().endsWith("LPvar")) {
                     LPvar x = new LPvar();
                     x.run = () -> v_(f.getName());
+                    f.setAccessible(true); // TODO - turn off after running? Security!
                     f.set(this, x);
                     // Main.println (f.getName());
                 }
@@ -129,14 +130,14 @@ public class JLPAPI {
         }
     }
 
-    protected void init_LPvars() {
+    public void init_LPvars() {
         Class tc = this.getClass();
         init_LPvars(tc);
         tc = tc.getSuperclass();
         init_LPvars(tc);
     }
 
-    protected void show_LPvar_methods() {
+    public void show_LPvar_methods() {
         Method[] ms = this.getClass().getDeclaredMethods();
         StringBuilder s = new StringBuilder();
         String sep = "";
@@ -150,7 +151,7 @@ public class JLPAPI {
         Main.println ("LPvar methods are: " + s);
     }
 
-    protected void show_LPvar_fields() {
+    public void show_LPvar_fields() {
         Field[] fs = this.getClass().getDeclaredFields();
         for (Field f : fs)
             if (f.getType().getName().endsWith("LPvar"))
@@ -159,13 +160,13 @@ public class JLPAPI {
 
     public LinkedList<Clause> said;
 
-    private Clause say_(Clause cl) {
+    public Clause say_(Clause cl) {
         assert said != null;
         said.add (cl);
         return cl;
     }
 
-    protected Clause say_(LPvar hd) {
+    public Clause say_(LPvar hd) {
         assert said != null;
         Term t = hd.run.fn();
         assert t != null;
@@ -174,7 +175,7 @@ public class JLPAPI {
         said.add(cl);
         return cl;
     }
-    protected Clause say_(Term hd)   {
+    public Clause say_(Term hd)   {
         assert said != null;
         Clause cl = yes_(hd);
         said.add (cl);
