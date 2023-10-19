@@ -2,6 +2,7 @@
 package org.iprolog;
 //import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -45,17 +46,14 @@ public class Prog extends Engine implements Spliterator<Object> {
   }
 
   public static Term term_made_from(Object O) {
+    assert (O != null);
     if (!(O instanceof Object[])) {
       if (O instanceof String || O instanceof Integer) {
-        Term t = Term.constant (O.toString());
-        assert t != null;
-        return t;
+        return Term.constant (O.toString());
       }
     } else {
-      assert (O != null);
-      Object oa[] = (Object[]) O;
+      Object[] oa = (Object[]) O;
       // should try to make sure oa[0] is a functor first
-      assert (oa != null);
       if (oa.length == 0) {
         Main.println ("oa.length == 0! O is " + O.toString());
         Main.println ("O type is " + O.getClass().getTypeName());
@@ -65,19 +63,19 @@ public class Prog extends Engine implements Spliterator<Object> {
       }
       Term f = Term.compound(oa[0].toString());
       for (int i = 1; i < oa.length; ++i) {
-          f.takes_this (term_made_from(oa[i]));
+          f.takes_this (Objects.requireNonNull(term_made_from(oa[i])));
       }
       return f;
     }
     return null;
   }
 
-  static Term functor_and_args(final Object f_of_args[]) {
+  static Term functor_and_args(final Object[] f_of_args) {
 
     Term f = Term.compound(f_of_args[0].toString());
     for (int i = 1; i < f_of_args.length; ++i) {
       // Prog.println("f.takes_this on term_made_from f_of_args["+i+"]:");
-      f.takes_this(term_made_from(f_of_args[i]));
+      f.takes_this(Objects.requireNonNull(term_made_from(f_of_args[i])));
     }
     return f;
   }
@@ -88,14 +86,14 @@ public class Prog extends Engine implements Spliterator<Object> {
   public static LinkedList<Term>
   make_terms_from(final Object[] f_of_args) {
 
-    final LinkedList<Term> terms = new LinkedList<Term>();
+    final LinkedList<Term> terms = new LinkedList<>();
     final String name = f_of_args[0].toString();
 
     if (f_of_args.length == 3 && isInfixOp(name)) {
       // Main.println ("~~~~~~~ isInfixOp case: "+name+" ~~~~~~~");
       Term t = Term.compound(name);
-      t.takes_this(term_made_from(f_of_args[1]));
-      t.takes_this(term_made_from(f_of_args[2]));
+      t.takes_this(Objects.requireNonNull(term_made_from(f_of_args[1])));
+      t.takes_this(Objects.requireNonNull(term_made_from(f_of_args[2])));
       terms.add(t);
     } else
     if (f_of_args.length == 3 && isListCons(name)) {
@@ -142,7 +140,7 @@ public class Prog extends Engine implements Spliterator<Object> {
   public static String make_string_from(final Object[] f_of_args) {
     assert f_of_args.length > 0;
 
-    final StringBuffer buf = new StringBuffer();
+    final StringBuilder buf = new StringBuilder();
 
     final String name = f_of_args[0].toString();
 
@@ -154,7 +152,7 @@ public class Prog extends Engine implements Spliterator<Object> {
           if ("[]".equals(tail) || "nil".equals(tail))
             break;
           if (!(tail instanceof Object[])) {
-            buf.append("|" + maybeNull(tail));
+            buf.append("|").append(maybeNull(tail));
             break;
           }
           final Object[] list = (Object[]) tail;
@@ -165,10 +163,10 @@ public class Prog extends Engine implements Spliterator<Object> {
 
       buf.append(']');
     } else {
-      buf.append(maybeNull(f_of_args[0]) + Term.args_start);
+      buf.append(maybeNull(f_of_args[0])).append(Term.args_start);
       String sep = "";
       for (int i = 1; i < f_of_args.length; i++) {
-        buf.append(sep + maybeNull(f_of_args[i]));
+        buf.append(sep).append(maybeNull(f_of_args[i]));
         sep = Term.arg_sep;
       }
       buf.append(Term.args_end);
@@ -191,12 +189,12 @@ public class Prog extends Engine implements Spliterator<Object> {
   }
 
   String showClause(final Clause s) {
-    final StringBuffer buf = new StringBuffer();
+    final StringBuilder buf = new StringBuilder();
     final int l = s.hgs.length;
     buf.append("\n ");
     buf.append(showTerm(s.hgs[0]));
     if (l > 1) {
-      buf.append(Term.if_sym + "\n");
+      buf.append(Term.if_sym).append("\n");
       for (int i = 1; i < l; i++) {
         final int e = s.hgs[i];
         buf.append("   ");
@@ -206,7 +204,11 @@ public class Prog extends Engine implements Spliterator<Object> {
     } else {
       buf.append("\n");
     }
-    buf.append("--- base=" + s.base + " neck=" + s.neck + " -----\n");
+    buf     .append("--- base=")
+            .append(s.base)
+            .append(" neck=")
+            .append(s.neck)
+            .append(" -----\n");
     buf.append(showCells(s.base, s.len)); // TODO
     buf.append("\n");
     buf.append(showCell(s.hgs[0]));
@@ -277,7 +279,7 @@ public class Prog extends Engine implements Spliterator<Object> {
     return Long.MAX_VALUE;
   }
 
-  @Override
+  // @Override
   public boolean tryAdvance(final Consumer<Object> action) {
     final Object R = POJO_ask();
     final boolean ok = null != R;
