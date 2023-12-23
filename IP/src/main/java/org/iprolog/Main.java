@@ -19,6 +19,8 @@ public class Main {
     Main.println ("Setting Taraulog....");
     Term.set_TarauLog();
 
+    Prog.println("==============================================================");
+
     Engine P;
 
     if (p) {
@@ -48,6 +50,7 @@ public class Main {
 
     pp("CODE");
     P.ppCode();
+    P.
 
     pp("RUNNING");
     final long t1 = System.nanoTime();

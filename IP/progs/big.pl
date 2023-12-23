@@ -35,6 +35,6 @@ next_number_after(17,18).
 dup(0,X,X).
 dup(N,X,R):-next_number_after(N1,N),append(X,X,XX),dup(N1,XX,R).
 
-% goal([X,Y]):-dup(10,[a,b,c,d],R),nrev(R,[X,Y|_]).
+goal([X,Y]):-dup(2,[a,b,c,d],R),nrev(R,[X,Y|_]).
 
-goal([X,Y]):-dup(18,[a,b,c,d],[X,Y|_]).
+% goal([X,Y]):-dup(18,[a,b,c,d],[X,Y|_]).

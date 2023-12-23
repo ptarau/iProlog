@@ -1,0 +1,14 @@
+org\iprolog\Spine.class
+org\iprolog\IMap.class
+org\iprolog\IntList.class
+org\iprolog\JLPAPI.class
+org\iprolog\IntMap.class
+org\iprolog\Prog.class
+org\iprolog\Clause.class
+org\iprolog\IntStack.class
+org\iprolog\Toks.class
+org\iprolog\Term$nvpair.class
+org\iprolog\Term.class
+org\iprolog\Engine.class
+org\iprolog\Main.class
+org\iprolog\ObStack.class

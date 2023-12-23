@@ -170,6 +170,9 @@ public class Clause {
   Clause(final int len, final int[] hgs, final int base, final int neck, final int[] xs) {
     this.hgs = hgs;
     this.base = base;
+
+    Prog.println("     $$$$$$$$$$$$$$$$$$ Clause constructor: base<-" + base);
+
     this.len = len;
     this.neck = neck;
     this.xs = xs;

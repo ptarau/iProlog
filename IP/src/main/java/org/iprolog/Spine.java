@@ -17,7 +17,7 @@ class Spine {
   final int base; // top of the heap when this Spine was created
                   // "base of the heap where the clause starts" [HHG doc]
 
-  final IntList goal_stack; // with the top one ready to unfold
+  final IntList goals; // with the top one ready to unfold
                             // "immutable list of the locations
                             // of the goal elements accumulated
                             // by unfolding clauses so far" [HHG doc]
@@ -40,19 +40,20 @@ class Spine {
   /**
    * Creates a spine - as a snapshot of some runtime elements.
    */
-  Spine(final int[]   goal_stack_0
+  Spine(final int[]   goal_refs_0
        ,final int     base
        ,final IntList goal_stack
        ,final int     trail_top
        ,final int     k
        ,final int[]   cs
        ) {
-    this.head = goal_stack_0[0];
+    this.head = goal_refs_0[0];
     this.base = base;
     // prepends the goals of clause with head:
-    this.goal_stack = IntList.tail(IntList.concat(goal_stack_0, goal_stack));
+    this.goals = IntList.tail(IntList.concat(goal_refs_0, goal_stack));
     this.trail_top = trail_top;
     this.k = k;
+    // Prog.println("\n     *** in new Spine() spine.base = " + base + " spine.kount=" + this.k + "\n");
     this.cs = cs;
   }
 
@@ -62,9 +63,10 @@ class Spine {
   Spine(final int head, final int trail_top) {
     this.head = head;
     this.base = 0;
-    this.goal_stack = IntList.empty;
+    this.goals = IntList.empty;
     this.trail_top = trail_top;
     this.k = -1;
+    // Prog.println("\n     *** in Spine(h,tt): spine.base = " + this.base + " spine.kount=" + this.k + "\n");
     this.cs = null;
   }
 }

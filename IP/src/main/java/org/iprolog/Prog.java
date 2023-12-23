@@ -80,9 +80,6 @@ public class Prog extends Engine implements Spliterator<Object> {
     return f;
   }
 
-  // Trying to export via Java Object is annoying
-  // What about a binExportTerm()?
-
   public static LinkedList<Term>
   make_terms_from(final Object[] f_of_args) {
 
@@ -249,7 +246,7 @@ public class Prog extends Engine implements Spliterator<Object> {
   @Override
   void ppc(final Spine S) {
     //stats();
-    final IntList bs = S.goal_stack;
+    final IntList bs = S.goals;
     pp("\nppc: trail_top=" + S.trail_top + ", k=" + S.k + " len=" + IntList.len(bs));
     ppGoals(bs);
   }

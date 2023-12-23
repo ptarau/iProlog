@@ -36,17 +36,18 @@ import java.util.*;
  */
 
 class Engine {
+	int n_matches = 0;
 
   Spine query;
 
   final static int MAXIND = 3; // number of index args
-  final static int START_INDEX = 20;  // if # of clauses < START_INDEX, turn off indexing
+  final static int START_INDEX = 2;  // if # of clauses < START_INDEX, turn off indexing
 
   /* Trimmed-down clauses ready to be quickly relocated to the heap: */
   /* (Not clear what "trimmed-down" means.) */
   final Clause[] clauses;
 
-  final int[] cls; // if no indexing, [0..clauses.length-1]
+  final int[] clause_list; // if no indexing, [0..clauses.length-1]
 
   /* Symbol table - made of map (syms) + reverse map from ints to syms (slist) */
   final LinkedHashMap<String, Integer> syms; // syms->ints
@@ -57,7 +58,7 @@ class Engine {
    /* heap - contains code for 'and' clauses and their copies created during execution
    */
   private int heap[];
-  private int top;
+  private int heap_top;
   static int MINSIZE = 1 << 15; // power of 2
 
   /* trail - undo list for variable bindings; facilitates retrying failed goals
@@ -97,7 +98,7 @@ class Engine {
     // Main.println ("Calling dload_from_x");
     clauses = dload_from_x(s, fromFile); // load "natural language" source
 
-    cls = toNums(clauses); // initially an array  [0..clauses.length-1]
+    clause_list = toNums(clauses); // initially an array  [0..clauses.length-1]
       // Used in indexing (somehow)
 
     query = init();  /* initial spine built from query from which execution starts */
@@ -189,19 +190,19 @@ class Engine {
 
   private final void makeHeap(final int size) {
     heap = new int[size];
-    clear();
+    clear_heap();
   }
 
-  private final int getTop() {
-    return top;
+  private final int get_heap_top() {
+    return heap_top;
   }
 
-  private final int setTop(final int top) {
-    return this.top = top;
+  private final int set_heap_top(final int top) {
+    return this.heap_top = top;
   }
 
-  private final void clear() {
-    top = -1;
+  private final void clear_heap() {
+    heap_top = -1;
   }
 
   /**
@@ -209,12 +210,12 @@ class Engine {
    * element is assigned. This means top points to the last assigned
    * element - which can be returned with peek().
    */
-  private final void push(final int i) {
-    heap[++top] = i;
+  private final void push_to_heap(final int i) {
+    heap[++heap_top] = i;
   }
 
-  final int size() {
-    return top + 1;
+  final int heap_size() {
+    return heap_top + 1;
   }
 
   /**
@@ -231,7 +232,7 @@ class Engine {
   }
 
   private void ensureSize(final int more) {
-    if (1 + top + more >= heap.length) {
+    if (1 + heap_top + more >= heap.length) {
       expand();
     }
   }
@@ -244,7 +245,6 @@ class Engine {
     }
     return clauses;
   }
-
 
   /**
   * Expands "Xs lists .." statements to "Xs holds" statements.
@@ -384,11 +384,16 @@ s += "]";
 // Main.println ("Stepping through raw_asm arraylist...");
 
         final int l = ws.length;
+
+            Prog.println("%%%% l = ws.length = " + l + " for...");
+
         goals.push(tag(R, k++));
         assert goals.size() > 0;
         cells.push(tag(A, l));
 
         for (String w : ws) { // gen code for 'element' (= head/body subterm)
+
+          Prog.println ("   ..." + w);
 
         // Main.println ("at w = " + w);
 
@@ -406,6 +411,7 @@ s += "]";
             case 'v': put_ref (arg, refs, k);
                       // "just in case we miss this:" ??
                       //  P. Tarau comment
+                      Prog.println("    &&&& v case, k = " + k);
                       cells.push(tag(BAD, k));                 k++; break;
             // 'Holds' ('=')
             case 'h': put_ref (arg, refs, k - 1);
@@ -419,6 +425,10 @@ s += "]";
 
       assert cells.size() > 0;
       assert goals.size() > 0;
+
+      // Prog.println("****** ref dump ******");
+      // for (String sx : refs.keySet())
+      //   Prog.println ("  " + sx + "->" + refs.get(sx));
 
       linker(refs, cells, goals, compiled_clauses);
     }  // end clause set
@@ -436,8 +446,11 @@ s += "]";
                 IntStack goals,
                 ArrayList<Clause> Clauses) {
 
-    // assert goals.size() > 0;
     assert cells.size() > 0;
+
+            // Prog.println("cells upon entering linker()");
+            // for (int i = 0; i < cells.size(); ++i) Prog.println(showCell(cells.get(i)));
+            // Prog.println ("refs.size()=" + refs.size());
 
     final Iterator<IntStack> K = refs.values().iterator();
 
@@ -453,9 +466,11 @@ s += "]";
           break;
         }
       }
+      // Prog.println ("leader = " + leader);
       if (-1 == leader) {
         // for vars, first V others U
         leader = Is.get(0);
+        // Prog.println ("Leader not found, so leader <- " + leader);
         for (final int i : Is.toArray()) {
           if (i == leader) {
             cells.set(i, tag(V, i));
@@ -465,6 +480,9 @@ s += "]";
 
         }
       } else {
+
+                // Prog.println("=============== leader found" + leader);
+
         for (final int i : Is.toArray()) {
           if (i == leader) {
             continue;
@@ -477,17 +495,15 @@ s += "]";
     final int neck;
     if (1 == goals.size())
       neck = cells.size();
-    else {
-      // int gi = goals.get(1);
-      // Main.println ("gi=" + gi + " goals.size()=" + goals.size());
-      assert goals.size() > 0;
-
+    else
       neck = detag(goals.get(1));
-    }
 
     final int[] hgs = goals.toArray();
 
     assert hgs.length > 0;
+
+          // Prog.println("cells before entering putClause()");
+          // for (int i = 0; i < cells.size(); ++i) Prog.println(showCell(cells.get(i)));
 
     final Clause C = putClause(cells.toArray(), hgs, neck);
 
@@ -554,10 +570,16 @@ s += "]";
    * above savedTop.
    */
   private void unwindTrail(final int savedTop) {
+	  // Prog.println("savedTop=" + savedTop);
+	  // Prog.println("unwindTrail heap.getTop()=" + heap_top);
     while (savedTop < trail.getTop()) {
       final int href = trail.pop();
 
       assert tagOf(href) == V || tagOf(href) == U;
+
+      int x = detag(href);
+
+      // Prog.println("   href=" + showCell(href) + " detag(href) = " + x);
 
       setRef(href, href);
     }
@@ -602,7 +624,7 @@ s += "]";
   void ppTrail() {
     for (int i = 0; i <= trail.getTop(); i++) {
       final int t = trail.get(i);
-      Main.pp("trail[" + i + "]=" + showCell(t) + ":" + showTerm(t));
+      // Main.pp("trail[" + i + "]=" + showCell(t) + ":" + showTerm(t));
     }
   }
 
@@ -758,9 +780,12 @@ s += "]";
    * to trail bindings below a given heap address "base".
    */
   final private boolean unify(final int base) {
+    // Prog.println ("  Entering unify(), unify_stack.getTop()=" + ustack.getTop());
     while (!ustack.isEmpty()) {
       final int x1 = deref(ustack.pop());
       final int x2 = deref(ustack.pop());
+      // Prog.println("      unify loop: x1=" + showCell(x1) + " x2=" + showCell(x2));
+      // Prog.println("      unify loop: unify_stack.getTop() =" + ustack.getTop());
       if (x1 != x2) {
         final int t1 = tagOf(x1);
         final int t2 = tagOf(x2);
@@ -772,41 +797,70 @@ s += "]";
             heap[w2] = x1;
             if (w2 <= base) {
               trail.push(x2);
+              // Prog.println("x1 & x2 vars, w2>w1, x2 pushed: " + showCell(x2));
             }
           } else { // x2 nonvar or older
             heap[w1] = x2;
             if (w1 <= base) {
               trail.push(x1);
+              // Prog.println("x1 var, x2 nonvar or older, x1 pushed: " + showCell(x1));
             }
           }
         } else if (isVAR(x2)) { /* x1 is NONVAR */
           heap[w2] = x1;
           if (w2 <= base) {
             trail.push(x2);
+            // Prog.println("x1 nonvar, x2 older, x2 pushed: " + showCell(x2));
           }
         } else if (R == t1 && R == t2) { // both should be R
           if (!unify_args(w1, w2))
             return false;
         } else
           return false;
+        // Prog.println("      unify loop: unify_stack.getTop() NOW =" + ustack.getTop());
       }
     }
     return true;
   }
 
+  String showCS(String prompt, IntStack cs) {
+    String s = prompt + ":";
+    for (int i = 0; i < cs.size(); ++i) {
+      s += " ";
+      s += showCell(cs.get(i));
+    }
+    return s;
+  }
+
+  String showHeap(String prompt) {
+    String s = prompt + ":";
+    for (int i = 0; i < heap_size(); ++i) {
+      s += " ";
+      s += showCell(heap[i]);
+    }
+    return s;
+  }
+
   final private boolean unify_args(final int w1, final int w2) {
+    // Prog.println("                Entered unify_args(" + w1 + "," + w2 + ")");
     final int v1 = heap[w1];
     final int v2 = heap[w2];
     // both should be A
+    assert tagOf(v1) == A;
+    assert tagOf(v2) == A;
     final int n1 = detag(v1);
     final int n2 = detag(v2);
+    // Prog.println("               n1=" + n1 + " n2=" + n2);
     if (n1 != n2)
       return false;
+    // Prog.println("               continuing");
     final int b1 = 1 + w1;
     final int b2 = 1 + w2;
+    // Prog.println("                n1-1=" + (n1-1));
     for (int i = n1 - 1; i >= 0; i--) {
       final int i1 = b1 + i;
       final int i2 = b2 + i;
+      // Prog.println("                       i1=" + i1 + " i2=" + i2);
       final int u1 = heap[i1];
       final int u2 = heap[i2];
       if (u1 == u2) {
@@ -814,6 +868,8 @@ s += "]";
       }
       ustack.push(u2);
       ustack.push(u1);
+      // Prog.println("                       "+ showCS("unify_stack", ustack));
+      // Prog.println("                       "+ showHeap("heap"));
     }
     return true;
   }
@@ -822,7 +878,8 @@ s += "]";
    * Places a clause built by the Toks reader on the heap.
    */
   Clause putClause(final int[] cells, final int[] hgs, final int neck) {
-    final int base = size();
+
+    final int base = heap_size();
     // The following seems to depend on V==0 . . .
     assert V==0;
     final int b = tag(V, base);
@@ -832,11 +889,13 @@ s += "]";
 
 // System.out.println ("---- putClause: hgs.length="+hgs.length+" -----");
 
-    for (int i = 0; i < hgs.length; i++) {
+    for (int i = 0; i < hgs.length; i++)
       hgs[i] = relocate(b, hgs[i]);
-    }
+
     final int[] xs = getIndexables(hgs[0]);
+
 //  System.out.println ("---- putClause: returning -----");
+    // Prog.println ("---- base being set to " + base);
     return new Clause(len, hgs, base, neck, xs);
   }
 
@@ -857,11 +916,22 @@ s += "]";
    * b has cell structure, i.e, index, shifted left 3 bits, with tag 0 (==V)
    */
   final private void pushCells(final int b, final int from, final int to, final int base) {
+  if (false) {
+    // Prog.println("");
+    // Prog.println("??? pushCells(" + showCell(b) + " from=" + from + " to=" + to
+    //        + " with base=" + base);
+    }
     assert tagOf(b) == V;
     assert V == 0;
     ensureSize(to - from);
     for (int i = from; i < to; i++) {
-      push(relocate(b, heap[base + i]));
+      int c = heap[base+i];
+      int cr = relocate(b,c);
+    // if (false) {
+    //   Prog.println("???    heap.get(" + (base + i) + ")=" + showCell(c)
+    //          + " relocated by " + showCell(b) + " =" + showCell(cr));
+    // }
+      push_to_heap(cr);
     }
   }
 
@@ -871,7 +941,7 @@ s += "]";
   final private void pushCells(final int b, final int from, final int to, final int[] cells) {
     ensureSize(to - from);
     for (int i = from; i < to; i++) {
-      push(relocate(b, cells[i]));
+      push_to_heap(relocate(b, cells[i]));
     }
   }
 
@@ -879,11 +949,21 @@ s += "]";
    * Copies and relocates the head of clause C from heap to heap.
    */
   final private int pushHead(final int b, final Clause C) {
+
+    // Prog.println("+++ pushHead:" + " b = " + showCell(b)
+    //        + " C.neck = " + C.neck
+    //        + " C.base = " + C.base);
+    // Prog.println(showHeap("+++ pushHead entered with heap"));
+
     assert tagOf(b) == V;
     assert V == 0;
     pushCells(b, 0, C.neck, C.base);
     final int head = C.hgs[0];
-    return relocate(b, head);
+    int reloc_head = relocate(b, head);
+    // Prog.println("+++ pushHead: head=" + showCell(head) + " b = " + showCell(b) + " C.neck = " + C.neck + " C.base = " + C.base);
+    // Prog.println(showHeap("+++ pushHead exiting with heap"));
+
+    return reloc_head;
   }
 
   /**
@@ -966,6 +1046,7 @@ s += "]";
    * for execution, could possibly match the current goal, an
    * abstraction of which has been placed in xs.
    * ("abstraction of which"???)
+   * Supposedly, none of these "abstractions" can == -1
    */
   private final boolean possible_match(final int[] xs, final Clause C0) {
     for (int i = 0; i < MAXIND; i++) {
@@ -977,6 +1058,7 @@ s += "]";
       if (x != y)
         return false;
     }
+    ++n_matches;
     return true;
   }
 
@@ -997,27 +1079,42 @@ s += "]";
   final private Spine unfold(final Spine G) {
 
     final int trail_top = trail.getTop();
-    final int heap_top = getTop();
+    // Prog.println("unfold: trail_top=" + trail_top);
+    // Prog.println("unfold: get_heap_top()=" + get_heap_top());
+    final int saved_heap_top = get_heap_top();
     final int base = heap_top + 1;
     ///////////////////////////////////////////////
-    if (G.goal_stack == null) {
+    if (G.goals == null) {
       return null;
     }
     ///////////////////////////////////////////////
-    final int goal = IntList.head(G.goal_stack);
+    final int goal = IntList.head(G.goals);
 
-    makeIndexArgs(G, goal);
+    // makeIndexArgs(G, goal);
 
     final int last = G.cs.length;
     // G.k: "index of the last clause [that]
           // the top goal of [this] Spine [G]
           // has tried to match so far " [HHG doc]
+
+    // Prog.println("before unfold loop: G->kount=" + G.k);
+    // for (int i = 0; i<G.cs.length; ++i)
+    //   Prog.println ("G.cs[" + i + "]=" + G.cs[i]);
+    // for (int k = G.k; k < last; k++) {
+    //   Prog.println("clauses[" +G.cs[k] + "].base=" + clauses[G.cs[k]].base);
+    // }
+
     for (int k = G.k; k < last; k++) {
+      // Prog.println("unfold loop: k = " + k);
       final Clause C0 = clauses[G.cs[k]];
 
-      if (!possible_match(G.xs, C0))
-        continue;
+      // Prog.println ("C0.base=" + C0.base);
+      // Prog.println ("     " + showHeap("heab before pushHead"));
 
+      // if (!possible_match(G.xs, C0))
+      //    continue;
+
+      // Prog.println("??????? possible match? ???????");
       final int base0 = base - C0.base;
       final int b = tag(V, base0);
       assert V == 0;
@@ -1027,19 +1124,35 @@ s += "]";
 
       ustack.push(head);
       ustack.push(goal);
+      // Prog.println("pushed to unify_stack: head=" + showCell(head) + " goal=" + showCell(goal));
+      // Prog.println("                       "+ showCS("unify_stack", ustack));
+      // Prog.println("                       "+ showHeap("heap"));
+      // Prog.println("                       base=" + base);
 
       if (!unify(base)) {
+        // Prog.println ("!!!!!! unify failed !!!!! trail_top=" + trail_top + " saved_heap_top=" + saved_heap_top);
         unwindTrail(trail_top);
-        setTop(heap_top);
+        set_heap_top(saved_heap_top);
+        // Prog.println ("!!!!!! unify continues with trail.getTop()=" + trail.getTop() + " heap_top=" + get_heap_top());
         continue;
       }
       final int[] goals = pushBody(b, head, C0);
-      final IntList new_goals = IntList.tail(IntList.concat(goals, IntList.tail(G.goal_stack)));
+
+      // Prog.println("$$$$$$$$$$$ goals after pushBody:");
+      // for (int i = 0; i < goals.length; ++i) { Prog.println(" " + showCell(goals[i]));}
+
+      final IntList new_goals = IntList.tail(IntList.concat(goals, IntList.tail(G.goals)));
       G.k = k + 1;
-      if (!IntList.isEmpty(new_goals))
-        return new Spine(goals, base, IntList.tail(G.goal_stack), trail_top, 0, cls);
-      else
+
+      // Prog.println("\n     *** spine.base = " + G.base + " UPDATED spine.kount=" + G.k + "\n");
+
+      if (!IntList.isEmpty(new_goals)) {
+        // Prog.println("\n     *** new_goals NOT empty --new Spine with initial kount=0\n");
+        return new Spine(goals, base, IntList.tail(G.goals), trail_top, 0, clause_list);
+      } else {
+        // Prog.println("\n     *** new_goals empty--new Spine being generated by answer()\n");
         return answer(trail_top);
+      }
     } // end for
     return null;
   }
@@ -1056,10 +1169,13 @@ s += "]";
    * Returns the initial spine built from the query from which execution starts.
    */
   Spine init() {
-    final int base = size();
+    final int base = heap_size();
+    Prog.println("init(): base=" + base);
 
     final Clause G = getQuery();
-    final Spine Q = new Spine(G.hgs, base, IntList.empty, trail.getTop(), 0, cls);
+    // Prog.println("trail.getTop()=" + trail.getTop());
+    final Spine Q = new Spine(G.hgs, base, IntList.empty, trail.getTop(), 0, clause_list);
+    // Prog.println("Q.k=" + Q.k);
     spines.push(Q);
     return Q;
   }
@@ -1078,6 +1194,7 @@ s += "]";
    * top goal of this spine.
    */
   final private boolean hasClauses(final Spine S) {
+    // Prog.println("hasClauses: S.base= "+S.base+" S.k=" + S.k + " S.cs.length=" + S.cs.length);
     return S.k < S.cs.length;
   }
 
@@ -1085,7 +1202,7 @@ s += "]";
    * True when there are goals left to solve.
    */
   final private boolean any_goals_left(final Spine S) {
-    return !IntList.isEmpty(S.goal_stack);
+    return !IntList.isEmpty(S.goals);
   }
 
   /**
@@ -1097,7 +1214,7 @@ s += "]";
   final private void popSpine() {
     final Spine G = spines.pop();
     unwindTrail(G.trail_top);
-    setTop(G.base - 1);
+    set_heap_top(G.base - 1);
   }
 
   /**
@@ -1107,9 +1224,11 @@ s += "]";
    * returns null.
    */
   final Spine yield() {
+	  // Prog.println("Entering yield()");
     while (!spines.isEmpty()) {
       final Spine G = spines.peek(); // "The active component of a Spine is the topmost goal
                                      // in [its]] immutable [goal_stack]" [HHG doc]
+      // Prog.println ("  yield: G.k=" + G.k);
       if (!hasClauses(G)) {
         popSpine(); // no clauses left
         continue;
@@ -1121,6 +1240,7 @@ s += "]";
                     // the topmost Spine is popped off." [HHG doc]
         continue;
       }
+      // Prog.println ("  yield: C.k=" + C.k);
       if (any_goals_left(C)) {
         spines.push(C);
         continue;
@@ -1151,6 +1271,7 @@ s += "]";
    * an external representation of symbols, numbers and variables." [HHG doc]
    */
   Object POJO_ask() {
+    // Prog.println(" POJO_ask(), spines.peek().k=" + spines.peek().k);
     query = yield();
     if (null == query)
       return null;
@@ -1168,6 +1289,8 @@ s += "]";
     long ctr = 0L;
     int MAX_OUTPUT_LINES = 5;
 
+    // Prog.println(" &&&& run(): spines.peek().k=" + spines.peek().k);
+
     for (;; ctr++) {
       final Object A = POJO_ask();
       if (null == A) {
@@ -1179,6 +1302,7 @@ s += "]";
     if(ctr>MAX_OUTPUT_LINES)
       Prog.println("...");
     Prog.println("TOTAL ANSWERS=" + ctr);
+    Prog.println("Total matches=" + n_matches);
   }
 
   // Indexing extensions - ony active if START_INDEX clauses or more.
@@ -1203,6 +1327,9 @@ s += "]";
   }
 
   final IMap<Integer>[] index(final Clause[] clauses, final IntMap[] vmaps) {
+
+	  // Prog.println ("Entered index() with START_INDEX=" + START_INDEX);
+	  // Prog.println ("  clauses.length=" + clauses.length);
     if (clauses.length < START_INDEX)
       return null;
 
@@ -1210,6 +1337,7 @@ s += "]";
     for (int i = 0; i < clauses.length; i++) {
       final Clause c = clauses[i];
 
+      // Prog.println ("C["+i+"]="+c.toString());
       put(imaps, vmaps, c.xs, i + 1); // $$$ UGLY INC
 
     }

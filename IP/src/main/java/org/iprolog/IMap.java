@@ -8,6 +8,7 @@ final class IMap<K> implements java.io.Serializable {
   private final HashMap<K, IntMap> map;
 
   IMap() {
+	  System.out.println ("IMap created");
     map = new HashMap<K, IntMap>();
   }
 
@@ -41,9 +42,7 @@ final class IMap<K> implements java.io.Serializable {
     return ok;
   }
 
-  public final boolean remove(final K key) {
-    return null != map.remove(key);
-  }
+  public final boolean remove(final K key) { return null != map.remove(key);  }
 
   public final int size() {
     final Iterator<K> I = map.keySet().iterator();
@@ -113,8 +112,8 @@ final class IMap<K> implements java.io.Serializable {
       vims[i] = vim;
     }
 
-    //Main.pp("-------ims=" + Arrays.toString(ims));
-    //Main.pp("-------vims=" + Arrays.toString(vims));
+    Main.pp("-------ims=" + Arrays.toString(ims));
+    Main.pp("-------vims=" + Arrays.toString(vims));
 
     final IntStack cs = IntMap.intersect(ims, vims); // $$$ add vmaps here
     final int[] is = cs.toArray();

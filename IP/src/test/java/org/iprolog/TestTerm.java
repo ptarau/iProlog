@@ -324,7 +324,7 @@ public class TestTerm extends JLPAPI {
     protected void try_it(LinkedList<Clause> said, String[] whats_expected, boolean complete) {
 
         assert !said.isEmpty();
-        // Main.println (" ===== try_it() entering....");
+        Main.println (" ===== try_it() entering....");
         String s = "[";
 
         if (whats_expected == null)
@@ -344,7 +344,7 @@ public class TestTerm extends JLPAPI {
 
         expect_from(P, whats_expected, complete);
 
-        // Main.println ("  ===== exiting try_it()");
+        Main.println ("  ===== exiting try_it()");
     }
 
     private class TryT {
