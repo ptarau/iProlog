@@ -19,5 +19,12 @@
 *.tar.gz
 *.rar
 
+# Visual Studio
+*.pch
+*.ipch
+*.exe
+*.obj
+*.pdb
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*

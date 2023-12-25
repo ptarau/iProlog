@@ -112,8 +112,8 @@ final class IMap<K> implements java.io.Serializable {
       vims[i] = vim;
     }
 
-    Main.pp("-------ims=" + Arrays.toString(ims));
-    Main.pp("-------vims=" + Arrays.toString(vims));
+    // Main.pp("-------ims=" + Arrays.toString(ims));
+    // Main.pp("-------vims=" + Arrays.toString(vims));
 
     final IntStack cs = IntMap.intersect(ims, vims); // $$$ add vmaps here
     final int[] is = cs.toArray();
