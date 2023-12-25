@@ -56,6 +56,7 @@ Engine::~Engine() { }
  * Builds a new engine from a natural-language-style assembler.nl file
  */
 Engine::Engine(string asm_nl_source) {
+    n_matches = 0;
 #if 0
     /// tests
     int offset = 10;
@@ -166,11 +167,9 @@ Spine* Engine::unfold(Spine *G) {
         cout << "C0.base=" << C0->base << endl;
         cout << "     " << showCS("heap before pushHead", heap) << endl;
 #endif
-#if 1  // ignore indexing for now--this always skips
-        if (!C0->possible_match(G->index_vector))
-            continue;
-#endif
 
+        if (!possible_match(G->index_vector, *C0))
+            continue;
 #if 0
         cout << "???????? possible match? ??????" << endl;
 #endif
@@ -992,13 +991,22 @@ vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
 }
 
 void Engine::makeIndexArgs(Spine *G, cell goal) {
+#if 0
+    cout << "makeIndexArgs() entered..." << endl;
+#endif
     if (G->index_vector[0] != -1 || G->goals->size() == 0)
         return;
-
+#if 0
+    cout << "  makeIndexArgs() found work to do..." << endl;
+#endif
     size_t p = 1L + size_t(cell::detag(goal));
     size_t n = min(MAXIND, cell::detag(getRef(goal)));
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n; i++) {
         G->index_vector[size_t(i)] = cell2index(deref(cell_at(p + i))).as_int();
+#if 0
+        cout << "    G->index_vector[" << i << "]=" << G->index_vector[size_t(i)] << endl;
+#endif
+    }
 
     //if (imaps) throw "IMap TBD";
 }

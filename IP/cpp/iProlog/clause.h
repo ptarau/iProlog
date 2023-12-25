@@ -27,21 +27,6 @@ namespace iProlog {
 
         Clause() : index_vector{ -1, -1, -1 }, len(size_t(0)), base(size_t(0)), neck(size_t(0)) {}
         Clause(int len_0, vector<cell> goal_refs_0, int base_0, int neck_0, t_index_vector xs);
-
-
-        inline bool possible_match(const t_index_vector& an_index_vector) {
-#ifndef NO_INDEXING
-            for (size_t i = 0; i < MAXIND; i++) {
-                int x = an_index_vector[i];
-                int y = index_vector[i];
-                if (0 == x || 0 == y)
-                    continue;
-                if (x != y)
-                    return false;
-            }
-#endif
-            return true;
-        }
     };
 
 } // end namespace

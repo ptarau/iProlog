@@ -6,19 +6,17 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progs/add.pl" beforeDir="false" afterPath="$PROJECT_DIR$/progs/add.pl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progs/big.pl" beforeDir="false" afterPath="$PROJECT_DIR$/progs/big.pl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progs/lambdas.pl" beforeDir="false" afterPath="$PROJECT_DIR$/progs/lambdas.pl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progs/perms.pl" beforeDir="false" afterPath="$PROJECT_DIR$/progs/perms.pl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progs/queens.pl" beforeDir="false" afterPath="$PROJECT_DIR$/progs/queens.pl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Clause.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Clause.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/FileContentIndex/3025896e-a182-4567-b2e3-bf8258d168ea.vsidx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/.suo" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/.suo" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/Browse.VC.db" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/Browse.VC.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/CellStack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/CellStack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/CellStack.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/CellStack.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/Engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/Engine.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/clause.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/clause.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/clause.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/clause.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/engine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/engine.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/iProlog.vcxproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/iProlog.vcxproj.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/IMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/IMap.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Prog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Prog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Spine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Spine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Toks.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Toks.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/iprolog/TestTerm.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -56,9 +56,8 @@ public:
 
     Engine(string asm_nl_source);
     virtual ~Engine();
-    string stats() const;
-
     int n_matches;
+    string stats() const;
 
 protected:
 
@@ -199,6 +198,22 @@ protected:
         }
 
         return s;
+    }
+
+    inline bool possible_match(const t_index_vector& an_index_vector, Clause &C) {
+        for (size_t i = 0; i < MAXIND; i++) {
+            int x = an_index_vector[i];
+            int y = C.index_vector[i];
+            if (0 == x || 0 == y)
+                continue;
+            if (x != y)
+                return false;
+        }
+#if 1
+        cout << "*** possible match found" << endl;
+#endif
+        ++n_matches;
+        return true;
     }
 };
 

@@ -28,7 +28,6 @@ namespace iProlog {
         inline CellStack() : CellStack(SIZE) { }
 
         inline CellStack(int size) {
-            cout << "CellStack(" << size << ") called..." << endl;
             stack = vector<cell>(size);
             clear();
         }
@@ -42,8 +41,6 @@ namespace iProlog {
         }
 
         inline void clear() {
-            //for (int i = 0; i <= top; i++)
-            //stack[i] = 0;
             top = -1;
         }
 
@@ -81,6 +78,7 @@ namespace iProlog {
         inline CellStack &operator=(CellStack c) {
             for (int i = 0; i < c.size(); ++i)
                 stack[i] = c.stack[i];
+            top = c.top;
         }
 
         inline int size() {

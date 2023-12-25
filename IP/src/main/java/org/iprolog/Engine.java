@@ -993,8 +993,10 @@ s += "]";
    */
   final private void makeIndexArgs(final Spine G, final int goal) {
 
+    // Prog.println("makeIndexArgs() entered...");
     if (null != G.xs)  // made only once
       return;
+    // Prog.println("  makeIndexArgs() Found work to do ...");
 
     final int p = 1 + detag(goal);
     final int n = Math.min(MAXIND, detag(getRef(goal)));
@@ -1004,6 +1006,7 @@ s += "]";
     for (int i = 0; i < n; i++) {
       final int cell = deref(heap[p + i]);
       xs[i] = cell2index(cell);
+      // Prog.println("    G->index_vector[" + i + "]=" + xs[i]);
     }
 
     G.xs = xs;
@@ -1059,6 +1062,7 @@ s += "]";
         return false;
     }
     ++n_matches;
+    // Prog.println("*** possible match found");
     return true;
   }
 
@@ -1090,7 +1094,7 @@ s += "]";
     ///////////////////////////////////////////////
     final int goal = IntList.head(G.goals);
 
-    // makeIndexArgs(G, goal);
+    makeIndexArgs(G, goal);
 
     final int last = G.cs.length;
     // G.k: "index of the last clause [that]
@@ -1111,8 +1115,8 @@ s += "]";
       // Prog.println ("C0.base=" + C0.base);
       // Prog.println ("     " + showHeap("heab before pushHead"));
 
-      // if (!possible_match(G.xs, C0))
-      //    continue;
+      if (!possible_match(G.xs, C0))
+          continue;
 
       // Prog.println("??????? possible match? ???????");
       final int base0 = base - C0.base;
