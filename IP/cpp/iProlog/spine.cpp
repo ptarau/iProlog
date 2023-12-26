@@ -18,7 +18,7 @@ namespace iProlog {
     Spine::Spine(
         vector<cell> goal_refs_0, // was gs0/goal_stack_0 [Java]
         size_t base_0,               // base
-        CellList * goals_0,        // was gs/goal_stack [Java]
+        shared_ptr<CellList> goals_0,        // was gs/goal_stack [Java]
         int trail_top_0,
         int k_0,
         vector<size_t> unifiables_0)

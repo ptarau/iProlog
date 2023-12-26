@@ -202,7 +202,7 @@ Spine* Engine::unfold(Spine *G) {
         }
 
         vector<cell> goals = pushBody(b, head, *C0);
-        CellList* tl = CellList::tail(G->goals);
+        shared_ptr<CellList> tl = CellList::tail(G->goals);
 #if 0
         cout << "    *** new_goals size=" << new_goals->size() << endl;
 #endif

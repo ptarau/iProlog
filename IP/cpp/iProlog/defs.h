@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <array>
+#include <memory>
 #include "Integer.h"
 #include "CellStack.h"
 

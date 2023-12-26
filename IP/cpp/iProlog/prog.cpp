@@ -16,16 +16,16 @@ using namespace std;
 
 namespace iProlog {
 
-        void Prog::ppGoals(CellList* bs) {
+        void Prog::ppGoals(shared_ptr<CellList> bs) {
 #if 0
             cout << "ppGoals(IntList) <stub>" << endl;
 #endif
-            for (CellList* bp = bs; bs != nullptr; bs = CellList::tail(bs)) {
+            for (shared_ptr<CellList> bp = bs; bs != nullptr; bs = CellList::tail(bs)) {
                 pp(showTerm(exportTerm(CellList::head(bp))));
             }
         }
         void Prog::ppc(Spine &S) {
-            CellList *bs = S.goals;
+            shared_ptr<CellList> bs = S.goals;
             pp(cstr("\nppc: t=") + S.trail_top + ",kount=" + S.kount + "len=" + bs->size());
             ppGoals(bs);
         }

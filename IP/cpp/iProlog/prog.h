@@ -20,7 +20,7 @@ namespace iProlog {
 		string showClause(const Clause& s);
 		string showTerm(Object O);
 
-		void ppGoals(CellList* bs);
+		void ppGoals(shared_ptr<CellList> bs);
 
 	private:
 		static string maybeNull(const Object& O);

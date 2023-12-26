@@ -18,7 +18,7 @@ namespace iProlog {
 
     private:
         cell head_;
-        CellList* tail_;
+        shared_ptr<CellList> tail_;
 
         // Singleton list
     public:
@@ -26,21 +26,21 @@ namespace iProlog {
   
         CellList(cell h) : head_(h), tail_(nullptr) { }
 
-        inline static bool isEmpty(CellList* Xs) { return nullptr == Xs; }
+        inline static bool isEmpty(shared_ptr<CellList> Xs) { return nullptr == Xs; }
 
-        static cell head(CellList* Xs) {
+        static cell head(shared_ptr<CellList> Xs) {
             assert(Xs != nullptr);
             return Xs->head_;
         }
 #if 0  // strange error message from this:
         static const CellList* empty = nullptr;
 #endif
-        static CellList* tail(CellList *Xs) {
+        static shared_ptr<CellList> tail(shared_ptr<CellList> Xs) {
             return Xs->tail_;
         }
 
-        static CellList *cons(cell X, CellList *Xs) {
-            CellList *cl = new CellList(X);
+        static shared_ptr<CellList> cons(cell X, shared_ptr<CellList> Xs) {
+            shared_ptr<CellList> cl = make_shared<CellList>(X);
             cl->tail_ = Xs;
             return cl;
         }
@@ -49,14 +49,14 @@ namespace iProlog {
         size_t size() const {
             if (this == nullptr) return 0;
             size_t sum = 1;
-            for (CellList* p = tail_; p != nullptr; p = p->tail_)
+            for (shared_ptr<CellList> p = tail_; p != nullptr; p = p->tail_)
                 ++sum;
             return sum;
         }
 
         // append CellList Ys to CellList made from int array xs, return result
-        static CellList *concat(vector<cell> xs, CellList*Ys) {
-            CellList *Zs = Ys;
+        static shared_ptr<CellList> concat(vector<cell> xs, shared_ptr<CellList> Ys) {
+            shared_ptr<CellList> Zs = Ys;
             if (xs.size() < 1) abort();
             for (int i = int(xs.size()) - 1; i >= 0; i--) {
 #if 0
@@ -72,7 +72,7 @@ namespace iProlog {
         }
 
         // push Zs CellList onto new stack, return stack (tos = last)
-        static vector<cell> toCells(CellList *Xs) {
+        static vector<cell> toCells(shared_ptr<CellList> Xs) {
             vector<cell> is = vector<cell>();
             while (!isEmpty(Xs)) {
                 cell c = head(Xs);
@@ -83,14 +83,15 @@ namespace iProlog {
         }
 
         // CellList len (note O(n) running time)
-        static size_t len(CellList *Xs) {
+        static size_t len(shared_ptr<CellList> Xs) {
             return toCells(Xs).size();
         }
 
         string toString() {
             string s = "[";
             string sep = "";
-            vector<cell> elts = toCells(this);
+            shared_ptr<CellList> x = shared_ptr<CellList>(this);
+            vector<cell> elts = toCells(x);
             for (cell x : elts) {
                 s += sep;
                 sep = ",";
