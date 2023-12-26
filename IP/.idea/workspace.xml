@@ -6,7 +6,18 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/IMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/IMap.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/FileContentIndex/cc2de9f6-2a22-4ead-9a44-ba33ab982902.vsidx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/.suo" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/.suo" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/Browse.VC.db" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/Browse.VC.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/19184d7e7c8ef958/CLAUSE.ipch" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/19184d7e7c8ef958/CLAUSE.ipch" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/4ece33c5e7054a56/SPINE.ipch" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/4ece33c5e7054a56/SPINE.ipch" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/b827d72d23680dd3/ENGINE.ipch" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/b827d72d23680dd3/ENGINE.ipch" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/Engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/Engine.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/engine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/engine.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/iProlog.vcxproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/iProlog.vcxproj.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/spine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/spine.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

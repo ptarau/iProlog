@@ -282,15 +282,16 @@ int main(int argc, char *argv[])
 
         // assume SWI-Prolog already takes care of .pl => .pl.nl
 
+
+#if 1
+            auto p = new iProlog::Prog(file2string(pl_nl));
+#else
         string s = "";
         s += "f 0 .\n";
         s += "\n";
         s += "goal X\n";
         s += "if\n";
         s += " f X .\n";
-#if 1
-            auto p = new iProlog::Prog(file2string(pl_nl));
-#else
             auto p = new iProlog::Prog(s);
 #endif
         p->ppCode();

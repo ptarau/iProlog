@@ -38,7 +38,7 @@ namespace iProlog {
                     // Ignore the first in the list? Why? We already have
                     // "head = goals_0[0]" above. I see this again in
                     // unfold(). 
-        if (goals == nullptr) abort();
+        // if (goals == nullptr) abort();
         unifiables = unifiables_0;
     }
 

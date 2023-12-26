@@ -202,8 +202,7 @@ Spine* Engine::unfold(Spine *G) {
         }
 
         vector<cell> goals = pushBody(b, head, *C0);
-
-        CellList *new_goals = CellList::tail(CellList::concat(goals, CellList::tail(G->goals)));
+        CellList* tl = CellList::tail(G->goals);
 #if 0
         cout << "    *** new_goals size=" << new_goals->size() << endl;
 #endif
@@ -213,13 +212,13 @@ Spine* Engine::unfold(Spine *G) {
 #if 0
         cout << endl << "     *** spine.base = " << G->base << " UPDATED spine.kount=" << G->kount << endl << endl;
 #endif
-        if (!CellList::isEmpty(new_goals)) {
+        if (goals.size() != 0 || tl != nullptr) {
 #if 0
             std::cout << endl << "     *** new_goals NOT empty: new Spine with initial kount=0" << endl << endl;
 #endif
             Spine* sp = new Spine(goals
                                 , base
-                                , CellList::tail(G->goals)
+                                , tl
                                 , saved_trail_top
                                 , 0
                                 , clause_list

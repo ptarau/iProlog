@@ -209,7 +209,7 @@ protected:
             if (x != y)
                 return false;
         }
-#if 1
+#if 0
         cout << "*** possible match found" << endl;
 #endif
         ++n_matches;
