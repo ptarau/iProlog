@@ -685,7 +685,7 @@ Spine *Engine::init() {
                                             //  the top goal of [this] Spine
                                             //  has tried to match so far" [HHG doc]
 #endif
-    spines.push_back(*Q);
+    spines.push_back(Q);
     return Q;
 }
 
@@ -695,7 +695,7 @@ Spine *Engine::init() {
  * more answers by forcing backtracking."
  */
 Spine* Engine::answer(int trail_top) {
-    return new Spine(spines[0].head, trail_top);
+    return new Spine(spines[0]->head, trail_top);
 }
 
 /**
@@ -786,10 +786,11 @@ void Engine::unwindTrail(int savedTop) {
  */
 void Engine::popSpine() {
 
-    Spine G = spines.back();
-    int new_base = int(G.base) - 1;
-    int savedTop = G.trail_top;
+    Spine *G = spines.back();
+    int new_base = int(G->base) - 1;
+    int savedTop = G->trail_top;
     spines.pop_back();
+    delete G;
     assert(spines_top >= 0);
 #if 0
     cout << "popSpine: savedTop=" << savedTop << endl;
@@ -813,7 +814,7 @@ Spine* Engine::yield_() {
     cout << "Entering yield_() with spines.size()=" << spines.size() << endl;
 #endif
     while (!spines.empty()) {
-        Spine* G = &spines.back(); // was "peek()" in Java
+        Spine* G = spines.back(); // was "peek()" in Java
 #if 0
         cout << "----- Calling hasClauses, spines.size()=" << spines.size() << " ---- - " << endl;
 #endif
@@ -827,7 +828,7 @@ Spine* Engine::yield_() {
             continue;
         }
         if (hasGoals(C)) {
-            spines.push_back(*C);
+            spines.push_back(C);
             continue;
         }
         return C; // answer
@@ -945,6 +946,7 @@ void Engine::pushCells(cell b, int from, int to, int base) {
 #endif
     assert (tagOf(b) == V_);
     assert (V_ == 0);
+
     ensureSize(to - from);
     for (int i = from; i < to; i++) {
         cell c = heap.get(base + i);

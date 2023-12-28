@@ -73,7 +73,7 @@ protected:
     CellStack trail;
     CellStack unify_stack;
 
-    vector<Spine> spines;
+    vector<Spine*> spines;
 
     static void pp(string s);
 
