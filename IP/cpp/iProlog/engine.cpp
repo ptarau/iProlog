@@ -911,7 +911,7 @@ void Engine::relocateToTopOfHeap(int b, const vector<cell>& src, size_t from, si
         << " upto=" << upto << " index=" << index << endl;
     cout << "|||||||| " << showCS("heap", heap);
 #endif
-    bool unroll = false;
+    bool unroll = true;
     if (unroll) {
         const cell* pcs = src.data() + index;
         cell* phtop = (cell *) (heap.data() + heap.getTop());

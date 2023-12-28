@@ -26,6 +26,10 @@ namespace iProlog {
   
         CellList(cell h) : head_(h), tail_(nullptr) { }
 
+        ~CellList() {
+            ;
+        }
+
         inline static bool isEmpty(shared_ptr<CellList> Xs) { return nullptr == Xs; }
 
         static cell head(shared_ptr<CellList> Xs) {
