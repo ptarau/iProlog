@@ -56,8 +56,11 @@ public:
 
     Engine(string asm_nl_source);
     virtual ~Engine();
+
     int n_matches;
     string stats() const;
+    int reloc_calls = 0;
+    int total_relocs = 0;
 
 protected:
 
@@ -158,7 +161,7 @@ protected:
 
     bool unify(int base);
     bool unify_args(int w1, int w2);
-    void relocateToTopOfHeap(int b, const vector<cell>& src, size_t from, size_t upto, size_t index);
+    void relocateToTopOfHeap(cell b, vector<cell>& src, size_t from, size_t upto, size_t index);
 
     cell pushHeadtoHeap(cell b, const Clause& C);
 

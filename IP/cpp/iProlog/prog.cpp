@@ -55,6 +55,10 @@ namespace iProlog {
         }
         pp(cstr("TOTAL ANSWERS=") + ctr);
         pp(cstr("n_matches=") + Engine::n_matches);
+        pp(cstr("n_alloced=") + CellList::alloced());
+        pp(cstr("total_relocs=") + total_relocs);
+        pp(cstr("reloc_calls=") + reloc_calls);
+        pp(cstr("avg reloc call=") + total_relocs/reloc_calls);
     }
 
     void Prog::ppCode() {

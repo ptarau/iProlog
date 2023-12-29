@@ -19,16 +19,19 @@ namespace iProlog {
     private:
         cell head_;
         shared_ptr<CellList> tail_;
+       
+    public:
+        static int n_alloced;
 
         // Singleton list
-    public:
-        CellList() { head_ = 0; tail_ = nullptr; }
+        CellList() { head_ = 0; tail_ = nullptr; ++n_alloced; }
   
-        CellList(cell h) : head_(h), tail_(nullptr) { }
+        CellList(cell h) : head_(h), tail_(nullptr) { ++n_alloced; }
 
-        ~CellList() {
-            ;
-        }
+        ~CellList() { --n_alloced; }
+
+        static void init();
+        static int alloced();
 
         inline static bool isEmpty(shared_ptr<CellList> Xs) { return nullptr == Xs; }
 

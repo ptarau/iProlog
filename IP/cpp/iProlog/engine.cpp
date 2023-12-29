@@ -57,6 +57,7 @@ Engine::~Engine() { }
  */
 Engine::Engine(string asm_nl_source) {
     n_matches = 0;
+    CellList::init();
 #if 0
     /// tests
     int offset = 10;
@@ -903,16 +904,20 @@ string Engine::showCell(cell w) {
     return s;
 }
 
-void Engine::relocateToTopOfHeap(int b, const vector<cell>& src, size_t from, size_t upto, size_t index) {
+void Engine::relocateToTopOfHeap(cell b, vector<cell>& src, size_t from, size_t upto, size_t index) {
 
     int count = int(upto - from);
     ensureSize(count);
+#if 0
+    total_relocs += count; ++reloc_calls;
+#endif
+
 #if 0
     cout << "|||||||| relocateToTopOfHeap(" << b << ", src[size=" << src.size() << "], from=" << from
         << " upto=" << upto << " index=" << index << endl;
     cout << "|||||||| " << showCS("heap", heap);
 #endif
-    bool unroll = true;
+    bool unroll = false; // fails because vector top not updated
     if (unroll) {
         const cell* pcs = src.data() + index;
         cell* phtop = (cell *) (heap.data() + heap.getTop());
@@ -926,8 +931,10 @@ void Engine::relocateToTopOfHeap(int b, const vector<cell>& src, size_t from, si
 #       undef STEP
     }
     else
-        for (size_t i = from; i < upto; i++)
-            heap.push(cell::relocate(b, src[index++]));
+        for (size_t i = from; i < upto; i++) {
+            // heap.push(cell::relocate(b, src[index++]));
+            heap.push(cell::relocate(b, heap.get(index + i)));
+        }
 #if 0
     cout << "|||||||| relocateToTopOfHeap after push:" << endl;
     cout << "|||||||| " << showCS("heap", heap) << endl;
@@ -948,15 +955,17 @@ void Engine::pushCells(cell b, int from, int to, int base) {
     assert (V_ == 0);
 
     ensureSize(to - from);
+
+    total_relocs += to - from;
+    ++reloc_calls;
+#if 1
     for (int i = from; i < to; i++) {
-        cell c = heap.get(base + i);
-        cell cr = cell::relocate(b, c);
-#if 0
-        cout << "???    heap.get(" << base + i << ")=" << showCell(c)
-            << " relocated by " << showCell(b) << " =" << showCell(cr) << endl;
-#endif
-        heap.push(cr);
+        heap.push(cell::relocate(b, heap.get(base + i)));;
     }
+#else
+    // broken now? No vector returned by heap.data().
+    relocateToTopOfHeap(b, heap.data(), from, to, base);
+#endif
 }
 
 /**
@@ -968,6 +977,10 @@ void Engine::pushCells(cell b, int from, int to, vector<cell> cells) {
     assert (cell::tagOf(b) == cell::V_);
     assert (cell::V_ == 0);
     ensureSize(to - from);
+
+    total_relocs += to - from;
+    ++reloc_calls;
+
     for (int i = from; i < to; i++) {
         heap.push(cell::relocate(b, cells[i]));
     }

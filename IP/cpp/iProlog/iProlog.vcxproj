@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CellList.cpp" />
     <ClCompile Include="clause.cpp" />
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="IntMap.cpp" />
