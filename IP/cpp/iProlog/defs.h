@@ -17,7 +17,7 @@ namespace iProlog {
     inline cstr operator+(cstr s, int i) { return s + to_string(i); }
     inline cstr operator+(cstr s, size_t i) { return s + to_string(i); }
 
-    const int MINSIZE = 1 << 15;
+    const int MINSIZE = 1 << 10;
     const int MAXIND = 3;       // "number of index args" [Engine.java]
     const int START_INDEX = 1; // "if # of clauses < START_INDEX, turn off indexing" [Engine.java]
 

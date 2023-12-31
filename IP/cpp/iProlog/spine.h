@@ -35,7 +35,7 @@ namespace iProlog {
         int trail_top;  // "top of the trail when this was created" Spine.java]
                         // "as it was when this clause got unified" [HHG doc]
 
-        int kount;              // "index of the last clause [that]
+        int last_clause_tried;  // "index of the last clause [that]
                                 //  the top goal of [this] Spine
                                 //  has tried to match so far" [HHG doc]
 
@@ -57,9 +57,9 @@ namespace iProlog {
                         // "base of the heap where the clause starts" [HHG doc]
             trail_top = 0;  // "top of the trail when this Spine was created"
                             // "as it was when this clause got unified" [HHG doc]
-            kount = -1; // "index of the last clause [that]
-                        //  the top goal of [this] Spine
-                        //  has tried to match so far" [HHG doc]
+            last_clause_tried = -1; // "index of the last clause [that]
+                                    //  the top goal of [this] Spine
+                                    //  has tried to match so far" [HHG doc]
             index_vector = { -1,-1,-1 }; // index elements ("based on regs" [HHG] but no regs)
                                         // "int[] regs: dereferenced goal registers" [HHG doc]
                                         // Comments in Engine.java suggest that xs is regs

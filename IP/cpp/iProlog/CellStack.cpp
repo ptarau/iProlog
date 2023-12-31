@@ -7,6 +7,8 @@
  * Copyright (c) 2017 Paul Tarau
  */
 
+#define RAW
+
 namespace iProlog {
 
     using namespace std;
@@ -16,7 +18,7 @@ namespace iProlog {
          */
         void CellStack::expand() {
             // size_t l = stack.size();
-            size_t l;
+            int l;
             if (top < 0) l = 4;
             else l = top + 1;
 #ifdef RAW
@@ -33,7 +35,7 @@ namespace iProlog {
         * Might be good to inline the first comparison, leave the rest in .cpp
         */
         void CellStack::shrink() {
-            size_t l = size();
+            int l = size();
             if (l <= MINSIZE || (top << 2) >= l)
                 return;
             l = 1 + (top << 1); // "still means shrink to at 1/2 or less of the heap"
@@ -56,6 +58,7 @@ namespace iProlog {
                 // memcpy if it ever matters
                 for (int i = 0; i < size(); ++i)
                     array[i] = stack[i];
+            if (cap == 0 || cap == 32768) abort();
 #else
                 copy(stack.begin(), stack.end(), array.begin());
 #endif

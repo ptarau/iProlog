@@ -22,31 +22,37 @@ namespace iProlog {
 
     class CellStack {
     protected:
-        int top = -1;;
+        int top = -1;
         void shrink();
     public:
 #ifdef RAW
         cell* stack;
-        size_t cap;
+        int cap;
 #else
         vector<cell> stack;
 #endif
         void expand();
-        const int MINSIZE = 1 << 15; // power of 2
+        const int MINSIZE = 1 << 10; // power of 2
 
         const int SIZE = 16; // power of 2
 
     public:
-        inline CellStack() : CellStack(SIZE) {
-            cout << "Got to CellStack()" << endl;
+        inline CellStack()  {
+            int size = MINSIZE;
+            stack = (cell*)std::malloc(sizeof(cell) * size);
+            if (stack == nullptr) abort();
+            cap = size;
+            top = -1;
         }
 
         inline CellStack(int size) {
+            if (size == 0) size = MINSIZE;
 
 #ifdef RAW
             stack = (cell*)std::malloc(sizeof(cell) * size);
+            if (stack == nullptr) abort();
             cap = size;
-            cout << "Got to CellStack(" << size << ")" << endl;
+            top = -1;
 #else
             stack = vector<cell>(size);
 #endif
@@ -119,7 +125,7 @@ namespace iProlog {
 #endif
         }
 #ifdef RAW
-        inline void realloc_(size_t l) {
+        inline void realloc_(int l) {
             cell* tcp = (cell*)std::realloc((void*)stack, l*sizeof(cell));
             if (tcp == nullptr) abort();
             stack = tcp;
@@ -127,7 +133,8 @@ namespace iProlog {
         }
 #endif
 
-        inline void resize(size_t l) {
+        inline void resize(int l) {
+
 #ifdef RAW
             realloc_(l);
 #else

@@ -59,8 +59,6 @@ public:
 
     int n_matches;
     string stats() const;
-    int reloc_calls = 0;
-    int total_relocs = 0;
 
 protected:
 
@@ -85,13 +83,13 @@ protected:
     static bool hasGoals(const Spine* S) { if (S->goals == nullptr) return false;
                                             return S->goals->size() > 0; }
 
-    void makeHeap(size_t size = MINSIZE) {
-        heap.resize(size_t(size));
+    void makeHeap(int size = MINSIZE) {
+        heap.resize(size);
         clear();
     }
 
-    void pushCells(cell b, int from, int to, int base);
-    void pushCells(cell b, int from, int to, vector<cell> cells);
+    void pushCells(cell b, int from, int upto, int base);
+    void pushCells(cell b, int from, int upto, vector<cell> cells);
     vector<cell> pushBody(cell b, cell head, Clause& C);
     
     void clear();
@@ -101,8 +99,9 @@ protected:
     }
     inline void ensureSize(int more) {
         assert(more > 0);
-        if (size_t(1 + heap.getTop() + more) >= heap.capacity())
+        if (size_t(1 + heap.getTop() + more) >= heap.capacity()) {
             heap.expand();
+        }
     }
 
     static vector<int>&
@@ -161,7 +160,6 @@ protected:
 
     bool unify(int base);
     bool unify_args(int w1, int w2);
-    void relocateToTopOfHeap(cell b, vector<cell>& src, size_t from, size_t upto, size_t index);
 
     cell pushHeadtoHeap(cell b, const Clause& C);
 
@@ -212,9 +210,6 @@ protected:
             if (x != y)
                 return false;
         }
-#if 0
-        cout << "*** possible match found" << endl;
-#endif
         ++n_matches;
         return true;
     }
