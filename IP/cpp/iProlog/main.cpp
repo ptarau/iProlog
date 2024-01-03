@@ -163,9 +163,6 @@ namespace iProlog {
 
             cout << "==============================================================" << endl;
 
-            // assume SWI-Prolog already takes care of .pl => .pl.nl
-
-
 #if 1
             auto p = new iProlog::Prog(file2string(pl_nl));
 #else
@@ -191,14 +188,6 @@ namespace iProlog {
             }
 
             cout << p->stats() << endl;
-
-            cout << "sizeof(char *)=" << sizeof(char*) << endl;
-            // cout << "sizeof(short)=" << sizeof(short) << endl;
-            // cout << "1 << 31 = " << ((int)1 << 31) << endl;
-            // cout << "sizeof(moo_pointer<int>)=" << sizeof(hhprolog::moo_pointer<int>) << endl;
-            // moo_bench();
-
-            cout << "sizeof(vector<int>)=" << sizeof(vector<int>) << endl;
 
             delete p;
         }

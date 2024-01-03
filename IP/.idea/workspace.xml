@@ -5,21 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/f008893ed5500665/CELLSTACK.ipch" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/f008893ed5500665/CELLSTACK.ipch" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/CellStack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/CellStack.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/CellStack.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/CellStack.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/Engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/Engine.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/cell.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/cell.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/defs.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/defs.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/engine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/engine.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cpp/iProlog/iProlog.vcxproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/iProlog.vcxproj.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/prog.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/prog.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.iobj" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.iobj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.ipdb" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.ipdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.tlog/CL.command.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.tlog/CL.command.1.tlog" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.tlog/CL.read.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.tlog/CL.read.1.tlog" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.tlog/CL.write.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/x64/Release/iProlog.tlog/CL.write.1.tlog" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

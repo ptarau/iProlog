@@ -89,11 +89,6 @@ namespace iProlog {
             return is;
         }
 
-        // CellList len (note O(n) running time)
-        static size_t len(shared_ptr<CellList> Xs) {
-            return toCells(Xs).size();
-        }
-
         string toString() {
             string s = "[";
             string sep = "";

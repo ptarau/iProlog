@@ -688,7 +688,11 @@ vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
 }
 
 void Engine::makeIndexArgs(Spine *G, cell goal) {
-    if (G->index_vector[0] != -1 || G->goals->size() == 0)
+#if 0
+    if (G->index_vector[0] != -1 || G->goals->size_() == 0)
+#else
+    if (G->index_vector[0] != -1 || !hasGoals(G))
+#endif
         return;
     size_t p = 1L + size_t(cell::detag(goal));
     size_t n = min(MAXIND, cell::detag(getRef(goal)));

@@ -80,8 +80,14 @@ protected:
 
     static cstr heapCell(int w);
 
-    static bool hasGoals(const Spine* S) { if (S->goals == nullptr) return false;
-                                            return S->goals->size() > 0; }
+    static inline bool hasGoals(const Spine* S) {
+#if 0
+                                         if (S->goals == nullptr) return false;
+                                            return S->goals->size_() > 0;
+#else
+                                         return S->goals != nullptr;
+#endif
+                                         }
 
     void makeHeap(int size = MINSIZE) {
         heap.resize(size);
