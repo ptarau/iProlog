@@ -58,15 +58,14 @@ public:
     virtual ~Engine();
 
     int n_matches;
-    string stats() const;
 
 protected:
 
     Integer *addSym(string sym);
     string getSym(int w);
 
-    inline cell   cell_at(size_t i)         { return heap.get(int(i));              }
-    inline void   set_cell(size_t i, cell v){ heap.set(int(i),v);                   }
+    inline cell   cell_at(int i)            { return heap.get(i);              }
+    inline void   set_cell(int i, cell v)   { heap.set(i,v);                   }
     inline cell   getRef(cell x)            { return cell_at(cell::detag(x));  }
     inline void   setRef(cell w, cell r)    { set_cell(cell::detag(w), r);     }
     inline bool   isVarLoc(cell r, cell x)  { return x.as_int() == r.as_int(); }
@@ -80,14 +79,7 @@ protected:
 
     static cstr heapCell(int w);
 
-    static inline bool hasGoals(const Spine* S) {
-#if 0
-                                         if (S->goals == nullptr) return false;
-                                            return S->goals->size_() > 0;
-#else
-                                         return S->goals != nullptr;
-#endif
-                                         }
+    static inline bool hasGoals(const Spine* S) { return S->goals != nullptr; }
 
     void makeHeap(int size = MINSIZE) {
         heap.resize(size);
@@ -157,7 +149,7 @@ public:
     string showCell(cell w);
     static vector<IntMap> vcreate(size_t l);
 protected:
-    string showCells2(size_t base, size_t len);
+    string showCells2(int base, int len);
     string showCells1(vector<cell> cs);
 
     void ppc(const Clause&);

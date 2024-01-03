@@ -266,7 +266,7 @@ cstr Engine::heapCell(int w) {
 }
 
 /**
- * Places an identifier in the symbol table.
+ * "Places an identifier in the symbol table."
  */
 Integer *Engine::addSym(string sym) {
     try { return syms.at(sym); }
@@ -274,7 +274,6 @@ Integer *Engine::addSym(string sym) {
         Integer* I = new Integer(syms.size());
         syms.insert(pair<string, Integer*>(sym, I));
         slist.push_back(sym);
-        assert(slist.size() == I->i);
         return I;
     }
 }
@@ -515,7 +514,6 @@ Object Engine::ask() {
 void Engine::unwindTrail(int savedTop) {
     while (savedTop < trail.getTop()) {
         cell href = trail.pop();
-        assert(tagOf(href) == V_ || tagOf(href) == U_);
         int x = cell::detag(href);
         setRef(href, href);
     }
@@ -585,11 +583,11 @@ Object Engine::exportTerm(cell x) {
                     if (!cell::isArgOffset(a)) {
                         throw logic_error(cstr("*** should be A, found=") + showCell(a));
                     }
-                    size_t n = cell::detag(a);
+                    int n = cell::detag(a);
                     vector<Object> args;
-                    size_t k = size_t(w) + 1;
-                    for (size_t i = 0; i < n; i++) {
-                        size_t j = k + i;
+                    int k = w + 1;
+                    for (int i = 0; i < n; i++) {
+                        int j = k + i;
                         cell c = cell_at(j);
                         Object o = exportTerm(c);
                         args.push_back(o);
@@ -623,11 +621,9 @@ string Engine::showCell(cell w) {
 
 /**
  * "Pushes slice[from,to] at given base onto the heap."
- * b has cell structure, i.e, index, shifted left 3 bits, with tag 0 (==V)
+ * b has cell structure, i.e, index, shifted left 3 bits, with tag V_
  */
 void Engine::pushCells(cell b, int from, int upto, int base) {
-
-    assert (tagOf(b) == V_);
 
     int count = upto - from;
     ensureSize(count);
@@ -658,10 +654,7 @@ void Engine::pushCells(cell b, int from, int upto, int base) {
  * 
  */
 void Engine::pushCells(cell b, int from, int to, vector<cell> cells) {
-    assert (cell::tagOf(b) == cell::V_);
-    assert (cell::V_ == 0);
     ensureSize(to - from);
-
     for (int i = from; i < to; i++) {
         heap.push(cell::relocate(b, cells[i]));
     }
@@ -673,8 +666,6 @@ void Engine::pushCells(cell b, int from, int to, vector<cell> cells) {
  * when returned, contains references to the toplevel spine of the clause."
  */
 vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
-    assert (tagOf(b) == V_);
-    assert (V_ == 0);
     pushCells(b, C.neck, C.len, C.base);
     size_t l = C.goal_refs.size();
     vector<cell> goals(l);
@@ -686,28 +677,22 @@ vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
 }
 
 void Engine::makeIndexArgs(Spine *G, cell goal) {
-#if 0
-    if (G->index_vector[0] != -1 || G->goals->size_() == 0)
-#else
     if (G->index_vector[0] != -1 || !hasGoals(G))
-#endif
         return;
-    size_t p = 1L + size_t(cell::detag(goal));
-    size_t n = min(MAXIND, cell::detag(getRef(goal)));
+    int p = 1 + cell::detag(goal);
+    int n = min(MAXIND, cell::detag(getRef(goal)));
     for (int i = 0; i < n; i++) {
-        G->index_vector[size_t(i)] = cell2index(deref(cell_at(p + i))).as_int();
+        G->index_vector[i] = cell2index(deref(cell_at(p + i))).as_int();
     }
-
-    //if (imaps) throw "IMap TBD";
 }
 
 t_index_vector Engine::getIndexables(cell ref) {
-    size_t p = 1L + size_t(cell::detag(ref));
-    size_t n = cell::detag(getRef(ref));
+    int p = 1 + cell::detag(ref);
+    int n = cell::detag(getRef(ref));
     t_index_vector index_vector = { -1,-1,-1 };
-    for (size_t i = 0; i < MAXIND && i < n; i++) {
+    for (int i = 0; i < MAXIND && i < n; i++) {
         cell c = deref(cell_at(p + i));
-        index_vector[size_t(i)] = cell2index(c).as_int();
+        index_vector[i] = cell2index(c).as_int();
     }
     return index_vector;
 }
@@ -767,11 +752,11 @@ vector<IMap> Engine::index(vector<Clause> clauses) {
     return imaps;
 }
 
-string Engine::showCells2(size_t base, size_t len) {
+string Engine::showCells2(int base, int len) {
     string buf;
-    for (size_t k = 0; k < len; k++) {
+    for (int k = 0; k < len; k++) {
         cell instr = cell_at(base + k);
-        buf += cstr("[") + (int)(base + k) + "]" + showCell(instr) + " ";
+        buf += cstr("[") + base + k + "]" + showCell(instr) + " ";
     }
     return buf;
 }
