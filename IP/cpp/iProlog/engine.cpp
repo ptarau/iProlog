@@ -103,12 +103,12 @@ vector<IntMap> Engine::vcreate(size_t l) {
  * clause at the top of the new list of goals, in reverse order"
  */
 Spine* Engine::unfold(Spine *G) {
+    if (CellList::isEmpty(G->goals))
+        return nullptr;
+
     int saved_trail_top = trail.getTop();
     int saved_heap_top = heap.getTop();
     int base = size_t(saved_heap_top) + 1;
-
-    if (CellList::isEmpty(G->goals))
-        return nullptr;
 
     cell goal = CellList::head(G->goals);
 
@@ -117,14 +117,12 @@ Spine* Engine::unfold(Spine *G) {
     size_t last = G->unifiables.size();
 
     for (int k = G->last_clause_tried; k < last; k++) {
-        assert(k == G->unifiables[k]);
         Clause* C0 = &clauses[G->unifiables[k]];
 
         if (!possible_match(G->index_vector, *C0))
             continue;
 
         int base0 = base - C0->base;
-        assert(cell::V_ == 0);
         cell b = cell::tag(cell::V_, base0);  // TODO - I really need a "heap index(offset)" type
         cell head = pushHeadtoHeap(b, *C0);
         unify_stack.clear();  // "set up unification stack" [Engine.java]
@@ -670,9 +668,9 @@ void Engine::pushCells(cell b, int from, int to, vector<cell> cells) {
 }
 
 /**
- * Copies and relocates body of clause at offset from heap to heap
+ * "Copies and relocates body of clause at offset from heap to heap
  * while also placing head as the first element of array 'goals' that,
- * when returned, contains references to the toplevel spine of the clause.
+ * when returned, contains references to the toplevel spine of the clause."
  */
 vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
     assert (tagOf(b) == V_);

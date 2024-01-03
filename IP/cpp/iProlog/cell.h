@@ -104,8 +104,6 @@ namespace iProlog {
     // inline cell operator() (int i) { return (cell) i; }
 
     static inline cell relocate(cell b, const cell c) {
-        // if (V_ != 0) abort();
-        if (tagOf(b) != V_) abort();
         if (isReloc(c)) {
             if (use_sign_bit)   return c.as_int() + (b.as_int() & ref_mask);
             else                return c.as_int() + b.as_int();
