@@ -7,7 +7,7 @@
 #include "defs.h"
 #include "cell.h"
 #include "clause.h"
-#include "Prog.h"
+#include "prog.h"
 
 namespace iProlog {
 

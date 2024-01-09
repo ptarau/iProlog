@@ -59,9 +59,9 @@ namespace iProlog {
         cout << "n_ref_bits=" << cell::n_ref_bits << endl;
 
         show("unshifted_tag_mask=", cell::unshifted_tag_mask);
-        assert(V_ < C_ && V_ < N_ && V_ < A_);
-        assert(U_ < C_ && U_ < N_ && U_ < A_);
-        assert(R_ < C_ && R_ < N_ && R_ < A_);
+        assert(cell::V_ < cell::C_ && cell::V_ < cell::N_ && cell::V_ < cell::A_);
+        assert(cell::U_ < cell::C_ && cell::U_ < cell::N_ && cell::U_ < cell::A_);
+        assert(cell::R_ < cell::C_ && cell::R_ < cell::N_ && cell::R_ < cell::A_);
 
         cout << "ref_mask=" << cell::ref_mask << " (oct)" << std::oct << cell::ref_mask << endl;
         cout << "tag_mask=" << cell::tag_mask << " (oct)" << std::oct << cell::tag_mask << endl;
@@ -73,23 +73,23 @@ namespace iProlog {
         cout << "detag(r)=" << dtr << " (oct)" << std::oct << dtr << endl;
         cout << "tagOf(r)=" << tor << " (oct)" << std::oct << tor << endl;
 
-        assert(!isVAR(r));
-        assert(!isConst(r));
-        assert(isReloc(r));
+        assert(!cell::isVAR(r));
+        assert(!cell::isConst(r));
+        assert(cell::isReloc(r));
 
         cell rx = cell::tag(cell::R_, 0);
         cell ry = cell::tag(cell::R_, 1);
         // Int rz = tag(R_,-1);
-        assert(ry > rx);
-        assert(hi_order_tag ? rx < 0 : rx > 0);
+        assert(ry.as_int() > rx.as_int());
+        // assert(cell::hi_order_tag ? rx.as_int() < 0 : rx.as_int() > 0);
         // assert (use_sign_bit ? ry < rz : ry > rz);
 
         int max_unsigned_ref = (1 << cell::n_ref_bits) - 1;
 
         cout << "max_unsigned_ref=" << max_unsigned_ref << endl;
 
-        assert(C_ > R_);
-        assert(C_ < A_ && C_ < N_);
+        assert(cell::C_ > cell::R_);
+        assert(cell::C_ < cell::A_ && cell::C_ < cell::N_);
 
         cell rmax = cell::tag(cell::R_, max_unsigned_ref);
         cout << "rmax=" << rmax.as_int() << " (oct)" << std::oct << rmax.as_int() << endl;
@@ -111,14 +111,14 @@ namespace iProlog {
         assert(w == val);
         cout << std::dec << endl;
         cell bad = cell::tag(cell::BAD, val);
-        assert(!isRef(bad));
-        assert(!isVAR(bad));
-        assert(!isConst(bad));
-        assert(!isReloc(bad));
+        assert(!cell::isRef(bad));
+        assert(!cell::isVAR(bad));
+        assert(!cell::isConst(bad));
+        assert(!cell::isReloc(bad));
 
         cell a = cell::tag(cell::A_, 0);
-        assert(!isVAR(a));
-        assert(isArgOffset(a));
+        assert(!cell::isVAR(a));
+        assert(cell::isArgOffset(a));
     }
 
     void testSharedCellList() {

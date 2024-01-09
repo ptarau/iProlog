@@ -169,8 +169,10 @@ Tss Toks::mapExpand(Tss Wss) {
     return Rss;
 }
 
+#if 0
 Tss Toks::vcreate(size_t l) {
     // return Toks::Tss(l);
 }
+#endif
 
 } // end namespace

@@ -196,7 +196,7 @@ bool Engine::unify(int base) {
 }
 
 bool Engine::unify_args(int w1, int w2) { // w1 & w1 already detagged in unify()
-    assert(isArgOffset(cell_at(w1)) && isArgOffset(cell_at(w2)));
+    assert(cell::isArgOffset(cell_at(w1)) && cell::isArgOffset(cell_at(w2)));
 
     cell v1 = cell_at(w1);
     cell v2 = cell_at(w2);
@@ -532,7 +532,7 @@ void Engine::popSpine() {
     int savedTop = G->trail_top;
     spines.pop_back();
     delete G;
-    assert(spines_top >= 0);
+    
     unwindTrail(savedTop);
     heap.setTop(new_base);
 }
