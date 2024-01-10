@@ -238,11 +238,12 @@ Clause Engine::putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
     int len = int(cells.size());
     pushCells(b, 0, len, cells);
 
-    for (size_t i = 0; i < hgs.size(); i++) {
-        cell c = hgs[i];
-        cell cr = cell::relocate(b, c);
-        hgs[i] = cr;
-    }
+    bool unroll = true;
+    if (unroll)
+        cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
+    else
+        for (size_t i = 0; i < hgs.size(); i++)
+            hgs[i] = cell::relocate(b, hgs[i]);
 
     t_index_vector index_vector = getIndexables(hgs[0]);
 
@@ -614,16 +615,6 @@ string Engine::showCell(cell w) {
     return s;
 }
 
-inline void cp_cells(cell b, const cell *srcp, cell *dstp, int count) {
-
-#       define STEP *++dstp = cell::relocate(b, *srcp++) 
-            while (count >= 4) { STEP; STEP; STEP; STEP; count -= 4; }
-            switch (count) {
-                case 3: STEP; case 2: STEP; case 1: STEP; case 0: ;
-                }
-#       undef STEP
-}
-
 /**
  * "Pushes slice[from,to] at given base onto the heap."
  * b has cell structure, i.e, index, shifted left 3 bits, with tag V_
@@ -636,8 +627,8 @@ void Engine::pushCells(cell b, int from, int upto, int base) {
     bool unroll = true; // Fails without RAW CellStack -- vector top-of-stack not updated
                          // No obvious way to do that, either, without push_back().
     if (unroll) {
-        const cell* srcp = heap.data() + base + from;
-        cell* dstp = (cell*)(heap.data() + heap.getTop());
+        cell* srcp = heap.data() + base + from;
+        cell* dstp = (cell*)(heap.data() + heap.getTop()) + 1;
         heap.setTop(heap.getTop() + count);
 	cp_cells(b,srcp,dstp,count);
     }
@@ -654,14 +645,18 @@ void Engine::pushCells(cell b, int from, int upto, int base) {
  * 
  */
 void Engine::pushCells(cell b, int from, int to, vector<cell> cells) {
-    ensureSize(to - from);
-    bool unroll = false;
+    int count = to - from;
+    ensureSize(count);
+
+    bool unroll = true;
     if (unroll) {
+        cell* heap_dst = (cell*)(heap.data() + heap.getTop()) + 1;
+        heap.setTop(heap.getTop() + count);
+	cp_cells(b,cells.data(),heap_dst,count);
     }
     else
-	for (int i = from; i < to; i++) {
+	for (int i = from; i < to; i++)
 	    heap.push(cell::relocate(b, cells[i]));
-        }
 }
 
 /**
@@ -671,12 +666,15 @@ void Engine::pushCells(cell b, int from, int to, vector<cell> cells) {
  */
 vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
     pushCells(b, C.neck, C.len, C.base);
-    size_t l = C.goal_refs.size();
+    int l = C.goal_refs.size();
     vector<cell> goals(l);
     goals[0] = head;
-    for (size_t k = 1; k < l; k++) {
-        goals[k] = cell::relocate(b, C.goal_refs[k]);
-    }
+    bool unroll = true;
+    if (unroll)
+	cp_cells (b, C.goal_refs.data()+1, goals.data()+1, l-1);
+    else
+        for (int k = 1; k < l; k++)
+            goals[k] = cell::relocate(b, C.goal_refs[k]);
     return goals;
 }
 

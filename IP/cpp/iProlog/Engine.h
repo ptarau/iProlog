@@ -212,6 +212,16 @@ protected:
         ++n_matches;
         return true;
     }
-};
+
+    inline void cp_cells(cell b, cell *srcp, cell *dstp, int count) {
+#       define STEP *dstp++ = cell::relocate(b, *srcp++) 
+            while (count >= 4) { STEP; STEP; STEP; STEP; count -= 4; }
+            switch (count) {
+                case 3: STEP; case 2: STEP; case 1: STEP; case 0: ;
+                }
+#       undef STEP
+    }
+
+}; // end Engine
 
 } // end namespace
