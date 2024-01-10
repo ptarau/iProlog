@@ -614,6 +614,16 @@ string Engine::showCell(cell w) {
     return s;
 }
 
+inline void cp_cells(cell b, const cell *srcp, cell *dstp, int count) {
+
+#       define STEP *++dstp = cell::relocate(b, *srcp++) 
+            while (count >= 4) { STEP; STEP; STEP; STEP; count -= 4; }
+            switch (count) {
+                case 3: STEP; case 2: STEP; case 1: STEP; case 0: ;
+                }
+#       undef STEP
+}
+
 /**
  * "Pushes slice[from,to] at given base onto the heap."
  * b has cell structure, i.e, index, shifted left 3 bits, with tag V_
@@ -626,15 +636,10 @@ void Engine::pushCells(cell b, int from, int upto, int base) {
     bool unroll = true; // Fails without RAW CellStack -- vector top-of-stack not updated
                          // No obvious way to do that, either, without push_back().
     if (unroll) {
-        const cell* pcs = heap.data() + base + from;
-        cell* phtop = (cell*)(heap.data() + heap.getTop());
-#       define STEP *++phtop = cell::relocate(b, *pcs++) 
-            heap.setTop(heap.getTop() + count);
-            while (count >= 4) { STEP; STEP; STEP; STEP; count -= 4; }
-            switch (count) {
-                case 3: STEP; case 2: STEP; case 1: STEP; case 0: break;
-            }
-#       undef STEP
+        const cell* srcp = heap.data() + base + from;
+        cell* dstp = (cell*)(heap.data() + heap.getTop());
+        heap.setTop(heap.getTop() + count);
+	cp_cells(b,srcp,dstp,count);
     }
     else {
         for (int i = from; i < upto; i++) {
@@ -650,9 +655,13 @@ void Engine::pushCells(cell b, int from, int upto, int base) {
  */
 void Engine::pushCells(cell b, int from, int to, vector<cell> cells) {
     ensureSize(to - from);
-    for (int i = from; i < to; i++) {
-        heap.push(cell::relocate(b, cells[i]));
+    bool unroll = false;
+    if (unroll) {
     }
+    else
+	for (int i = from; i < to; i++) {
+	    heap.push(cell::relocate(b, cells[i]));
+        }
 }
 
 /**

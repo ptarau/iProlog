@@ -15,7 +15,12 @@ O= \
 OPT=-Ofast
 #DBG=-g
 DBG=
-CPPFLAGS= $(DBG) $(OPT) --std=c++17
+#PRF=-pg
+PRF=
+CPPFLAGS= $(DBG) $(OPT) $(PRF) --std=c++17
+
+a.out: $O
+	g++ $(CPPFLAGS) $O
 
 $O: makefile \
 	cell.h \
@@ -33,6 +38,7 @@ $O: makefile \
 	spine.h \
 	toks.h
 
-a.out: $O
-	g++ $O
 
+
+clean:
+	rm $O a.out errs gmon.out
