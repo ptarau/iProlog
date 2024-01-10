@@ -21,6 +21,7 @@ namespace iProlog {
 		string showTerm(Object O);
 
 		void ppGoals(shared_ptr<CellList> bs);
+		void pp(string s);
 
 	private:
 		static string maybeNull(const Object& O);

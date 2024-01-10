@@ -7,9 +7,7 @@
 #include <iostream>
 #include <chrono>
 #include <string>
-#ifdef CPP17
-// #include <filesystem>
-#endif
+#include <filesystem>
 
 #include <string>
 #include <fstream>
@@ -33,13 +31,16 @@ using namespace chrono;
 
 std::string current_working_directory()
 {
-#ifdef CPP17
+   std::filesystem::__cxx11::path p = std::filesystem::current_path();
+   cout << "p = " << p << endl;
+
+// #ifdef CPP17
     std::filesystem::path cwd = std::filesystem::current_path();
     return cwd.string();
-#else
-     // return "C:/Users/Michael Turner/projects/helloworld";
-    return "C:/Users/Michael Turner/Documents/Github/iProlog/IP/";
-#endif
+// #else
+      // return "C:/Users/Michael Turner/projects/helloworld";
+//    return "C:/Users/Michael Turner/Documents/Github/iProlog/IP/";
+// #endif
 }
 
 namespace iProlog {
@@ -144,7 +145,7 @@ namespace iProlog {
         // iProlog::moo_bench();
 
         string where_i_am = current_working_directory();
-        string test_directory = where_i_am + "progs/";
+        string test_directory = where_i_am + "/../../progs/";
         cout << "... in " << where_i_am << endl;
 
         if (argc == 1) {

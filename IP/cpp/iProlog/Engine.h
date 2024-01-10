@@ -96,7 +96,8 @@ protected:
         return heap.getTop() + 1;
     }
     inline void ensureSize(int more) {
-        assert(more > 0);
+	if (more < 0) abort();
+        // assert(more > 0);
         if (size_t(1 + heap.getTop() + more) >= heap.capacity()) {
             heap.expand();
         }

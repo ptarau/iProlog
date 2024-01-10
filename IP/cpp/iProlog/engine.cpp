@@ -6,9 +6,7 @@
 
 
 #include <map>
-#include <sstream>
-#include <numeric>
-#include <iostream>
+// #include <numeric>
 #include <algorithm>
 
 #include "Engine.h"
@@ -253,9 +251,6 @@ Clause Engine::putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
     return rc;
 }
 
-void Engine::pp(string s) {
-    std::cout << s << endl;
-}
 
 void Engine::clear() {
     heap.setTop(-1);
@@ -743,12 +738,6 @@ vector<IMap> Engine::index(vector<Clause> clauses) {
         put(c.index_vector, int(i + 1)); // $$$ UGLY INC
         // because possible_match() is using 0 as "ignore"
     }
-    /*
-    pp("INDEX");
-    pp(T(imaps));
-    pp(T(vmaps));
-    pp("");
-    */
     return imaps;
 }
 

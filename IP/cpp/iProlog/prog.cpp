@@ -16,6 +16,11 @@ using namespace std;
 
 namespace iProlog {
 
+
+	void Prog::pp(string s) {
+	    std::cout << s << endl;
+	}
+
         void Prog::ppGoals(shared_ptr<CellList> bs) {
 #if 0
             cout << "ppGoals(IntList) <stub>" << endl;

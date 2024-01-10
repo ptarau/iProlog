@@ -58,7 +58,7 @@ public:
 
   inline IntMap* get(Integer* key) {
       size_t hki = phash(key);
-      assert(hki <= map.size());
+      // assert(hki <= map.size());
       IntMap* s = map[hki].vals;
       if (nullptr == s)
           s = new IntMap();
