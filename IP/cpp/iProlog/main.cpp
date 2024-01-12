@@ -50,6 +50,199 @@ namespace iProlog {
         cout << h << i << " (oct)" << std::oct << i << endl;
     }
 
+#if 0
+CellStack heap;
+unordered_map<string, Integer*> syms;
+vector<string> slist;
+
+
+t_index_vector getIndexables(cell ref) {
+    int p = 1 + cell::detag(ref);
+    int n = cell::detag(CellStack::getRef(heap, ref));
+    t_index_vector index_vector = { -1,-1,-1 };
+    for (int i = 0; i < MAXIND && i < n; i++) {
+        cell c = CellStack::deref(heap, CellStack::cell_at(heap, p + i));
+        index_vector[i] = CellStack::cell2index(heap,c).as_int();
+    }
+    return index_vector;
+}
+
+/**
+ * "Places an identifier in the symbol table."
+ */
+Integer *addSym(string sym) {
+    try { return syms.at(sym); }
+    catch (const std::exception& e) {
+        Integer* I = new Integer(syms.size());
+        syms.insert(pair<string, Integer*>(sym, I));
+        slist.push_back(sym);
+        return I;
+    }
+}
+
+/*static*/ vector<int> &
+put_ref(string arg,
+                unordered_map<string, vector<int>> &refs,
+                int clause_pos) {
+    vector<int>& Is = refs[arg];
+    if (Is.empty()) {
+        Is = vector<int>();
+        refs[arg] = Is;
+    }
+    Is.push_back(clause_pos);
+    return Is;
+}
+
+/*
+ * Encodes string constants into symbols while leaving
+ * other data types untouched.
+ */
+cell encode(int t, string s) {
+    size_t w;
+    try {
+        w = stoi(s);
+    }
+    catch (const std::invalid_argument& e) {
+        if (t == cell::C_)
+            w = int(addSym(s)->i);
+        else {
+            cstr err = string("bad number form in encode=") + t + ":" + s + ", [" + e.what() + "]";
+            throw logic_error(err);
+        }
+    }
+    return cell::tag(t, w);
+}
+
+/**
+  * Places a clause built by the Toks reader on the heap.
+  */
+Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
+
+    int base = heap.getTop()+1;
+
+    cell b = cell::tag(cell::V_, base);
+    // ... because b is used later in '+' ops that would otherwise mangle tags.
+    int len = int(cells.size());
+    CellStack::pushCells(heap, b, 0, len, cells);
+
+    bool unroll = true;
+    if (unroll)
+        cell::cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
+    else
+        for (size_t i = 0; i < hgs.size(); i++)
+            hgs[i] = cell::relocate(b, hgs[i]);
+
+    t_index_vector index_vector = getIndexables(hgs[0]);
+
+    Clause rc = Clause(len, hgs, base, neck, index_vector);
+
+    return rc;
+}
+
+
+    void linker(unordered_map<string,vector<int>> refs,
+                        vector<cell> &cells,
+                        vector<cell> &goals,
+                        vector<Clause> &compiled_clauses) {
+
+        // final Iterator<IntStack> K = refs.values().iterator();
+        // while (K.hasNext())
+        
+        for (auto kIs = refs.begin(); kIs != refs.end(); ++kIs) {
+            vector<int> Is = kIs->second;
+            if (Is.size() == 0)
+                continue;
+            assert(goals.size() > 0);
+
+            // "finding the A among refs" [Engine.java]
+            bool found = false;
+            size_t leader = -1;
+            for (size_t j = 0; j < Is.size(); ++j)
+                if (/*cell::isArgOffset(cells[j])*/
+                    cell::tagOf(cells[Is[j]]) == cell::A_) {
+                    leader = Is[j];
+                    found = true;
+                    break;
+                }
+
+            if (!found) {
+                // "for vars, first V others U" [Engine.java]
+                leader = Is[0];
+                for (size_t i = 0; i < Is.size(); ++i)
+                    if (Is[i] == leader)
+                        cells[Is[i]] = cell::tag(cell::V_, Is[i]);
+                    else
+                        cells[Is[i]] = cell::tag(cell::U_, leader);
+            }
+            else {
+                for (size_t i = 0; i < Is.size(); ++i) {
+                    if (Is[i] == leader)
+                        continue;
+                    cells[Is[i]] = cell::tag(cell::R_, leader);
+                }
+            }
+        }
+        int neck;
+        if (1 == goals.size())
+            neck = int(cells.size());
+        else
+            neck = cell::detag(goals[1L]);
+
+        Clause C = putClause(cells, goals, neck); // safe to pass all?
+
+        int len = int(cells.size());
+
+        compiled_clauses.push_back(C);
+        }
+
+
+vector<Clause> dload(cstr s) {
+    vector<vector<vector<string>>> clause_asm_list = Toks::toSentences(s);
+    vector<Clause> compiled_clauses;
+
+    for (vector<vector<string>> unexpanded_clause : clause_asm_list) {
+        // map<string, IntStack> refs;
+        unordered_map<string, vector<int>> refs = unordered_map<string,vector<int>>();
+        vector<cell> cells;
+        vector<cell> goals;
+        int k = 0;
+        for (vector<string> clause_asm : Toks::mapExpand(unexpanded_clause)) {
+
+            size_t line_len = clause_asm.size();
+
+            goals.push_back(cell::reference(k++));
+            cells.push_back(cell::argOffset(line_len));
+            for (string cell_asm_code : clause_asm) {
+                if (1 == cell_asm_code.length())
+                    cell_asm_code = "c:" + cell_asm_code;
+                string arg = cell_asm_code.substr(2);
+
+                switch (cell_asm_code[0]) {
+                case 'c':   cells.push_back(encode(cell::C_, arg));     k++; break;
+                case 'n':   cells.push_back(encode(cell::N_, arg));     k++; break;
+                case 'v':   put_ref(arg, refs, k);
+                            cells.push_back(cell::tag(cell::BAD, k));   k++; break;
+                case 'h':   refs[arg].push_back(k-1);
+                            assert(k > 0);
+                            cells[size_t(k-1)] = cell::argOffset(line_len-1);
+                            goals.pop_back();                               break;
+                default:    throw logic_error(cstr("FORGOTTEN=") + cell_asm_code);
+                }
+            }
+        }
+        linker(refs, cells, goals, compiled_clauses);
+    }
+
+    size_t clause_count = compiled_clauses.size();
+    vector<Clause> all_clauses = vector<Clause>(clause_count);
+
+    for (int i = 0; i < clause_count; i++) {
+        all_clauses[i] = compiled_clauses[i];
+    }
+
+    return all_clauses;
+ }
+#endif
     void test_tagging() {
         int n = -1;
         assert(n >> 1 == -1);

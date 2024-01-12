@@ -64,11 +64,16 @@ protected:
     Integer *addSym(string sym);
     string getSym(int w);
 
+// should try heap-as-class (maybe subclassed from CellStack)
+// to see whether there's a performance penalty
+
     inline cell   cell_at(int i)            { return heap.get(i);              }
+
     inline void   set_cell(int i, cell v)   { heap.set(i,v);                   }
+
     inline cell   getRef(cell x)            { return cell_at(cell::detag(x));  }
+
     inline void   setRef(cell w, cell r)    { set_cell(cell::detag(w), r);     }
-    inline bool   isVarLoc(cell r, cell x)  { return x.as_int() == r.as_int(); }
 
     CellStack unify_stack;
 
@@ -83,8 +88,10 @@ protected:
         clear();
     }
 
-    void pushCells(cell b, int from, int upto, int base);
-    void pushCells(cell b, int from, int upto, vector<cell> cells);
+#if 1
+    void pushCells(CellStack &h, cell b, int from, int upto, int base);
+    void pushCells(CellStack &h, cell b, int from, int upto, vector<cell> cells);
+#endif
     vector<cell> pushBody(cell b, cell head, Clause& C);
     
     void clear();
@@ -92,14 +99,15 @@ protected:
     inline int heap_size() {
         return heap.getTop() + 1;
     }
-    inline void ensureSize(int more) {
+#if 1
+    inline void ensureSize(CellStack &heap, int more) {
 	if (more < 0) abort();
         // assert(more > 0);
         if (size_t(1 + heap.getTop() + more) >= heap.capacity()) {
             heap.expand();
         }
     }
-
+#endif
     static vector<int>&
         put_ref(string arg,
                 unordered_map<string, vector<int>>& refs,
@@ -109,10 +117,11 @@ protected:
 
     void unwindTrail(int savedTop);
 
+// maybe redefine Engine.h version to use CellStack version?
     inline cell deref(cell x) {
         while (cell::isVAR(x)) {
             cell r = getRef(x);
-            if (isVarLoc(r,x))
+            if (cell::isVarLoc(r,x))
                 break;
             x = r;
         }
@@ -157,7 +166,28 @@ protected:
 
     void makeIndexArgs(Spine* G, cell goal);
     t_index_vector getIndexables(cell ref);
-    cell cell2index(cell c);
+    // cell cell2index(cell c);
+#if 0
+inline cell cell2index(CellStack h, cell c) {
+    cell x = 0;
+    int t = cell::tagOf(c);
+    switch (t) {
+    case cell::R_:
+        x = getRef(heap, c);
+        break;
+    case cell::C_:
+    case cell::N_:
+        x = c;
+        break;
+    }
+    return x;
+}
+#endif
+
+inline cell cell2index(cell c) {
+	return CellStack::cell2index(heap, c);
+}
+
     Spine* unfold(Spine *G);
 
     vector<size_t> toNums(vector<Clause> clauses);
@@ -202,15 +232,6 @@ protected:
         }
         ++n_matches;
         return true;
-    }
-
-    inline void cp_cells(cell b, cell *srcp, cell *dstp, int count) {
-#       define STEP *dstp++ = cell::relocate(b, *srcp++) 
-            while (count >= 4) { STEP; STEP; STEP; STEP; count -= 4; }
-            switch (count) {
-                case 3: STEP; case 2: STEP; case 1: STEP; case 0: ;
-                }
-#       undef STEP
     }
 
 }; // end Engine

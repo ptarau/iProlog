@@ -151,5 +151,91 @@ namespace iProlog {
             return stack.data();
 #endif
         }
+
+
+// maybe redefine the corresponding memb fns in Engine.h to use these?
+// check for performance penalty
+    static inline cell   cell_at(CellStack h, int i)            { return h.get(i);              }
+    static inline void   set_cell(CellStack h, int i, cell v)   { h.set(i,v);                   }
+    static inline cell   getRef(CellStack h, cell x)            { return cell_at(h, cell::detag(x));  }
+    static inline void   setRef(CellStack h, cell w, cell r)    { set_cell(h, cell::detag(w), r);     }
+
+    static inline cell deref(CellStack h, cell x) {
+        while (cell::isVAR(x)) {
+            cell r = getRef(h,x);
+            if (cell::isVarLoc(r,x))
+                break;
+            x = r;
+        }
+        return x;
+    }
+
+        static inline cell cell2index(CellStack &heap, cell c) {
+            cell x = 0;
+            int t = cell::tagOf(c);
+            switch (t) {
+                case cell::R_:
+                    x = getRef(heap, c);
+                    break;
+                case cell::C_:
+                case cell::N_:
+                    x = c;
+                    break;
+            }
+            return x;
+        }
+#if 0
+        static inline void ensureSize(CellStack heap, int more) {
+	    if (more < 0) abort();
+            // assert(more > 0);
+            if (size_t(1 + heap.getTop() + more) >= heap.capacity()) {
+                heap.expand();
+            }
+        }
+
+	/**
+	 * "Pushes slice[from,to] at given base onto the heap."
+	 * b has cell structure, i.e, index, shifted left 3 bits, with tag V_
+	 */
+	static inline void pushCells(CellStack heap, cell b, int from, int upto, int base) {
+
+	    int count = upto - from;
+	    ensureSize(heap, count);
+
+	    bool unroll = true; // Fails without RAW CellStack -- vector top-of-stack not updated
+				 // No obvious way to do that, either, without push_back().
+	    if (unroll) {
+		cell* srcp = heap.data() + base + from;
+		cell* dstp = (cell*)(heap.data() + heap.getTop()) + 1;
+		heap.setTop(heap.getTop() + count);
+		cell::cp_cells(b,srcp,dstp,count);
+	    }
+	    else {
+		for (int i = from; i < upto; i++) {
+		    heap.push(cell::relocate(b, heap.get(base + i)));;
+		}
+	    }
+	}
+
+	/**
+	 * "Pushes slice[from,to] at given base onto the heap."
+	 *  TODO: Identical to pushToTopOfHeap()?
+	 * 
+	 */
+	static inline void pushCells(CellStack heap, cell b, int from, int to, vector<cell> cells) {
+	    int count = to - from;
+	    ensureSize(heap, count);
+
+	    bool unroll = true;
+	    if (unroll) {
+		cell* heap_dst = (cell*)(heap.data() + heap.getTop()) + 1;
+		heap.setTop(heap.getTop() + count);
+		cell::cp_cells(b,cells.data(),heap_dst,count);
+	    }
+	    else
+		for (int i = from; i < to; i++)
+		    heap.push(cell::relocate(b, cells[i]));
+	}
+#endif
     };
 } // end namespace

@@ -99,6 +99,7 @@ namespace iProlog {
     static inline bool isConst(cell x)      { return tagOf(x) == C_;    }
     static inline bool isConstTag(int t)    { return t == C_;           }
     static inline bool isArgOffset(cell x)  { return tagOf(x) == A_;    }
+    static inline bool isVarLoc(cell r, cell x)  { return x.as_int() == r.as_int(); }
     inline bool operator ==(cell x)         { return v == x.v;          }
 
     // inline cell operator() (int i) { return (cell) i; }
@@ -123,6 +124,17 @@ namespace iProlog {
 
     static inline cell argOffset(size_t o) { return tag(A_, o);  }
     static inline cell reference(size_t r) { return tag(R_, r);  }
+
+    static inline void cp_cells(cell b, cell *srcp, cell *dstp, int count) {
+#       define STEP *dstp++ = cell::relocate(b, *srcp++) 
+            while (count >= 4) { STEP; STEP; STEP; STEP; count -= 4; }
+            switch (count) {
+                case 3: STEP; case 2: STEP; case 1: STEP; case 0: ;
+                }
+#       undef STEP
+    }
+
+
   };
 
 } /* end namespace*/

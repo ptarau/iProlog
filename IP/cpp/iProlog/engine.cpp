@@ -234,11 +234,11 @@ Clause Engine::putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
     cell b = cell::tag(cell::V_, base);
     // ... because b is used later in '+' ops that would otherwise mangle tags.
     int len = int(cells.size());
-    pushCells(b, 0, len, cells);
+    pushCells(heap, b, 0, len, cells);
 
     bool unroll = true;
     if (unroll)
-        cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
+        cell::cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
     else
         for (size_t i = 0; i < hgs.size(); i++)
             hgs[i] = cell::relocate(b, hgs[i]);
@@ -373,7 +373,6 @@ vector<Clause> Engine::dload(cstr s) {
         // while (K.hasNext())
         
         for (auto kIs = refs.begin(); kIs != refs.end(); ++kIs) {
-            //for (pair<string,vector<int>> kIs : refs) {
             vector<int> Is = kIs->second;
             if (Is.size() == 0)
                 continue;
@@ -611,15 +610,15 @@ string Engine::showCell(cell w) {
     }
     return s;
 }
-
+#if 1
 /**
  * "Pushes slice[from,to] at given base onto the heap."
  * b has cell structure, i.e, index, shifted left 3 bits, with tag V_
  */
-void Engine::pushCells(cell b, int from, int upto, int base) {
+void Engine::pushCells(CellStack &heap, cell b, int from, int upto, int base) {
 
     int count = upto - from;
-    ensureSize(count);
+    ensureSize(heap,count);
 
     bool unroll = true; // Fails without RAW CellStack -- vector top-of-stack not updated
                          // No obvious way to do that, either, without push_back().
@@ -627,7 +626,7 @@ void Engine::pushCells(cell b, int from, int upto, int base) {
         cell* srcp = heap.data() + base + from;
         cell* dstp = (cell*)(heap.data() + heap.getTop()) + 1;
         heap.setTop(heap.getTop() + count);
-	cp_cells(b,srcp,dstp,count);
+	cell::cp_cells(b,srcp,dstp,count);
     }
     else {
         for (int i = from; i < upto; i++) {
@@ -641,20 +640,21 @@ void Engine::pushCells(cell b, int from, int upto, int base) {
  *  TODO: Identical to pushToTopOfHeap()?
  * 
  */
-void Engine::pushCells(cell b, int from, int to, vector<cell> cells) {
+void Engine::pushCells(CellStack &heap, cell b, int from, int to, vector<cell> cells) {
     int count = to - from;
-    ensureSize(count);
+    ensureSize(heap,count);
 
     bool unroll = true;
     if (unroll) {
         cell* heap_dst = (cell*)(heap.data() + heap.getTop()) + 1;
         heap.setTop(heap.getTop() + count);
-	cp_cells(b,cells.data(),heap_dst,count);
+	cell::cp_cells(b,cells.data(),heap_dst,count);
     }
     else
 	for (int i = from; i < to; i++)
 	    heap.push(cell::relocate(b, cells[i]));
 }
+#endif
 
 /**
  * "Copies and relocates body of clause at offset from heap to heap
@@ -662,13 +662,13 @@ void Engine::pushCells(cell b, int from, int to, vector<cell> cells) {
  * when returned, contains references to the toplevel spine of the clause."
  */
 vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
-    pushCells(b, C.neck, C.len, C.base);
+    pushCells(heap, b, C.neck, C.len, C.base);
     int l = C.goal_refs.size();
     vector<cell> goals(l);
     goals[0] = head;
     bool unroll = true;
     if (unroll)
-	cp_cells (b, C.goal_refs.data()+1, goals.data()+1, l-1);
+	cell::cp_cells (b, C.goal_refs.data()+1, goals.data()+1, l-1);
     else
         for (int k = 1; k < l; k++)
             goals[k] = cell::relocate(b, C.goal_refs[k]);
@@ -695,7 +695,7 @@ t_index_vector Engine::getIndexables(cell ref) {
     }
     return index_vector;
 }
-
+#if 0
 cell Engine::cell2index(cell c) {
     cell x = 0;
     int t = cell::tagOf(c);
@@ -710,12 +710,13 @@ cell Engine::cell2index(cell c) {
     }
     return x;
 }
+#endif
 
 /**
  * Copies and relocates the head of clause C from heap to heap.
  */
 cell Engine::pushHeadtoHeap(cell b, const Clause& C) {
-    pushCells(b, 0, C.neck, C.base);
+    pushCells(heap, b, 0, C.neck, C.base);
     cell head = C.goal_refs[0];
     cell reloc_head = cell::relocate(b, head);
     return reloc_head;
