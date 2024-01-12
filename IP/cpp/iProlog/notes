@@ -2,6 +2,11 @@ Roadmap to iProlog with 4K of RAM, 32K of flash
 
 Goal: "Soft-realtime Natural Language Logic Programming on a Picosatellite"
 
+Bugs: indexing isn't working the same as in the Java code, slowing it
+
+Speedups: got back to spine stack rather than ptr array to Spines because
+	  "new" is eating up cycles
+
 Get relative addressing working
    - besides speedup, may make binary code more compressible
    - LZ4 (about 2x) approaches RAM memcpy speed
@@ -10,19 +15,36 @@ Put dload et al. in separate C++ class or prog.h/cpp
    - don't need its buffers
    - download ASCII opcodes to MSP/CC430
 
-Try to make unfold, unify[_args] "stackless"
-   - stacks needed, to be threaded into heap
+Try to make unfold & unify[_args] "stackless"
+   - stacks needed to be threaded into heap:
 	- C++ code stack
 	- ustack
 	- spine stack
 
 Dispense with indexing, at least at first
+   - implement as callbacks, for full orthogonality
    - custom indexer?
    - how to "heapify" it?
 
 Try compression
    - probably need new "opcode" to trigger inflate
    - larger (32K) code space enables dictionary compression
+   - but split of flash/RAM adddress space a problem
+
+Try 16-bit cells
+
+Binary output from compiler
+   - endianess perhaps indicated in a header
+   - LZ4 compression
+
+Find out whether CC430 can write to its own flash
+   - if so, and the address space issue issue can be solved
+     look at how initial logic-programming code can be put in flash
+     to free up RAM -- split heap, a little hairy
+
+"Garbage collect" initialization code for logic programs?
+   - need some control flow analysis to be sure of
+     what to dump and how soon to dump it
 
 ------------------------------------------------------------
 

@@ -47,7 +47,7 @@ namespace iProlog {
 
         vector<size_t> unifiables; // "array of clauses known to be unifiable
         //  with top goal in goal stack" (for "cs" in Spine.java)
-              // [This is not listed in the HHG description of Spine.)
+              // [This is not listed in the HHG description of Spine.]
               // Initialized from unifiables, in Engine. If indexing
               // is not activated, unifiables[i] == i.]
 
