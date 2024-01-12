@@ -50,7 +50,7 @@ namespace iProlog {
         cout << h << i << " (oct)" << std::oct << i << endl;
     }
 
-#if 0
+#if 1
 CellStack heap;
 unordered_map<string, Integer*> syms;
 vector<string> slist;

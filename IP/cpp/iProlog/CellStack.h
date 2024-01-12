@@ -184,8 +184,8 @@ namespace iProlog {
             }
             return x;
         }
-#if 0
-        static inline void ensureSize(CellStack heap, int more) {
+
+        static inline void ensureSize(CellStack &heap, int more) {
 	    if (more < 0) abort();
             // assert(more > 0);
             if (size_t(1 + heap.getTop() + more) >= heap.capacity()) {
@@ -197,23 +197,20 @@ namespace iProlog {
 	 * "Pushes slice[from,to] at given base onto the heap."
 	 * b has cell structure, i.e, index, shifted left 3 bits, with tag V_
 	 */
-	static inline void pushCells(CellStack heap, cell b, int from, int upto, int base) {
+	static inline void pushCells(CellStack &heap, cell b, int from, int upto, int base) {
 
 	    int count = upto - from;
 	    ensureSize(heap, count);
 
-	    bool unroll = true; // Fails without RAW CellStack -- vector top-of-stack not updated
-				 // No obvious way to do that, either, without push_back().
-	    if (unroll) {
+	    if (RAW) {
 		cell* srcp = heap.data() + base + from;
 		cell* dstp = (cell*)(heap.data() + heap.getTop()) + 1;
 		heap.setTop(heap.getTop() + count);
 		cell::cp_cells(b,srcp,dstp,count);
 	    }
-	    else {
+	    else
 		for (int i = from; i < upto; i++) {
 		    heap.push(cell::relocate(b, heap.get(base + i)));;
-		}
 	    }
 	}
 
@@ -222,12 +219,11 @@ namespace iProlog {
 	 *  TODO: Identical to pushToTopOfHeap()?
 	 * 
 	 */
-	static inline void pushCells(CellStack heap, cell b, int from, int to, vector<cell> cells) {
+	static inline void pushCells(CellStack &heap, cell b, int from, int to, vector<cell> cells) {
 	    int count = to - from;
 	    ensureSize(heap, count);
 
-	    bool unroll = true;
-	    if (unroll) {
+	    if (RAW) {
 		cell* heap_dst = (cell*)(heap.data() + heap.getTop()) + 1;
 		heap.setTop(heap.getTop() + count);
 		cell::cp_cells(b,cells.data(),heap_dst,count);
@@ -236,6 +232,5 @@ namespace iProlog {
 		for (int i = from; i < to; i++)
 		    heap.push(cell::relocate(b, cells[i]));
 	}
-#endif
     };
 } // end namespace

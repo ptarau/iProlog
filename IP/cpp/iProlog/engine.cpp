@@ -229,7 +229,7 @@ Clause Engine::putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
     cell b = cell::tag(cell::V_, base);
     // ... because b is used later in '+' ops that would otherwise mangle tags.
     int len = int(cells.size());
-    pushCells(heap, b, 0, len, cells);
+    CellStack::pushCells(heap, b, 0, len, cells);
 
     if (RAW)
         cell::cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
@@ -606,50 +606,12 @@ string Engine::showCell(cell w) {
 }
 
 /**
- * "Pushes slice[from,to] at given base onto the heap."
- * b has cell structure, i.e, index, shifted left 3 bits, with tag V_
- */
-void Engine::pushCells(CellStack &heap, cell b, int from, int upto, int base) {
-
-    int count = upto - from;
-    ensureSize(heap,count);
-
-    if (RAW) {
-        cell* srcp = heap.data() + base + from;
-        cell* dstp = (cell*)(heap.data() + heap.getTop()) + 1;
-        heap.setTop(heap.getTop() + count);
-	cell::cp_cells(b,srcp,dstp,count);
-    }
-    else
-        for (int i = from; i < upto; i++)
-            heap.push(cell::relocate(b, heap.get(base + i)));
-}
-
-/**
- * "Pushes slice[from,to] at given base onto the heap."
- *  TODO: Identical to pushToTopOfHeap()?
- * 
- */
-void Engine::pushCells(CellStack &heap, cell b, int from, int to, vector<cell> cells) {
-    int count = to - from;
-    ensureSize(heap,count);
-    if (RAW) {
-        cell* heap_dst = (cell*)(heap.data() + heap.getTop()) + 1;
-        heap.setTop(heap.getTop() + count);
-	cell::cp_cells(b,cells.data(),heap_dst,count);
-    }
-    else
-	for (int i = from; i < to; i++)
-	    heap.push(cell::relocate(b, cells[i]));
-}
-
-/**
  * "Copies and relocates body of clause at offset from heap to heap
  * while also placing head as the first element of array 'goals' that,
  * when returned, contains references to the toplevel spine of the clause."
  */
 vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
-    pushCells(heap, b, C.neck, C.len, C.base);
+    CellStack::pushCells(heap, b, C.neck, C.len, C.base);
     int l = C.goal_refs.size();
     vector<cell> goals(l);
     goals[0] = head;
@@ -702,7 +664,7 @@ cell Engine::cell2index(cell c) {
  * Copies and relocates the head of clause C from heap to heap.
  */
 cell Engine::pushHeadtoHeap(cell b, const Clause& C) {
-    pushCells(heap, b, 0, C.neck, C.base);
+    CellStack::pushCells(heap, b, 0, C.neck, C.base);
     cell head = C.goal_refs[0];
     cell reloc_head = cell::relocate(b, head);
     return reloc_head;
