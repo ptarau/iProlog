@@ -48,34 +48,6 @@ namespace iProlog {
 
 Engine::~Engine() { }
 
-/**
- * Builds a new engine from a natural-language-style assembler.nl file
- */
-Engine::Engine(string asm_nl_source) {
-    n_matches = 0;
-    CellList::init();
-
-    n_matches = 0;
-
-    trail.clear();
-    makeHeap();
-
-    clauses = dload(asm_nl_source); // load "natural language" source
-
-    if (clauses.size() == 0) {
-        throw logic_error(cstr("clauses: none"));
-    }
-
-    clause_list = toNums(clauses); // initially an array  [0..clauses.length-1]
-
-    query = init(); /* initial spine built from query from which execution starts */
-
-    size_t base = heap_size();          // should be just after any code on heap
-
-    var_maps = vcreate(MAXIND);  // vector of IntMaps
-    imaps = index(clauses);
-}
-
 // Indexing extensions - ony active if START_INDEX clauses or more.
 
 vector<IntMap> Engine::vcreate(size_t l) {
@@ -219,51 +191,12 @@ bool Engine::unify_args(int w1, int w2) { // w1 & w1 already detagged in unify()
     return true;
 }
 
-/**
-  * Places a clause built by the Toks reader on the heap.
-  */
-Clause Engine::putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
-
-    int base = heap_size();
-
-    cell b = cell::tag(cell::V_, base);
-    // ... because b is used later in '+' ops that would otherwise mangle tags.
-    int len = int(cells.size());
-    CellStack::pushCells(heap, b, 0, len, cells);
-
-    if (RAW)
-        cell::cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
-    else
-        for (size_t i = 0; i < hgs.size(); i++)
-            hgs[i] = cell::relocate(b, hgs[i]);
-
-    t_index_vector index_vector = getIndexables(hgs[0]);
-
-    Clause rc = Clause(len, hgs, base, neck, index_vector);
-
-    return rc;
-}
-
-
 void Engine::clear() {
     heap.setTop(-1);
 }
 
 cstr Engine::heapCell(int w) {
     return cell::tagSym(cell::tagOf(w)) + ":" + cell::detag(w) + "[" + w + "]";
-}
-
-/**
- * "Places an identifier in the symbol table."
- */
-Integer *Engine::addSym(string sym) {
-    try { return syms.at(sym); }
-    catch (const std::exception& e) {
-        Integer* I = new Integer(syms.size());
-        syms.insert(pair<string, Integer*>(sym, I));
-        slist.push_back(sym);
-        return I;
-    }
 }
 
 /**
@@ -277,141 +210,6 @@ string Engine::getSym(int w) {
     }
     return slist[w];
 }
-
-/*
- * Encodes string constants into symbols while leaving
- * other data types untouched.
- */
-cell Engine::encode(int t, string s) {
-    size_t w;
-    try {
-        w = stoi(s);
-    }
-    catch (const std::invalid_argument& e) {
-        if (t == cell::C_)
-            w = int(addSym(s)->i);
-        else {
-            cstr err = string("bad number form in encode=") + t + ":" + s + ", [" + e.what() + "]";
-            throw logic_error(err);
-        }
-    }
-    return cell::tag(t, w);
-}
-
-/*static*/ vector<int> &
-Engine::put_ref(string arg,
-                unordered_map<string, vector<int>> &refs,
-                int clause_pos) {
-    vector<int>& Is = refs[arg];
-    if (Is.empty()) {
-        Is = vector<int>();
-        refs[arg] = Is;
-    }
-    Is.push_back(clause_pos);
-    return Is;
-}
-
-vector<Clause> Engine::dload(cstr s) {
-    vector<vector<vector<string>>> clause_asm_list = Toks::toSentences(s);
-    vector<Clause> compiled_clauses;
-
-    for (vector<vector<string>> unexpanded_clause : clause_asm_list) {
-        // map<string, IntStack> refs;
-        unordered_map<string, vector<int>> refs = unordered_map<string,vector<int>>();
-        vector<cell> cells;
-        vector<cell> goals;
-        int k = 0;
-        for (vector<string> clause_asm : Toks::mapExpand(unexpanded_clause)) {
-
-            size_t line_len = clause_asm.size();
-
-            goals.push_back(cell::reference(k++));
-            cells.push_back(cell::argOffset(line_len));
-            for (string cell_asm_code : clause_asm) {
-                if (1 == cell_asm_code.length())
-                    cell_asm_code = "c:" + cell_asm_code;
-                string arg = cell_asm_code.substr(2);
-
-                switch (cell_asm_code[0]) {
-                case 'c':   cells.push_back(encode(cell::C_, arg));     k++; break;
-                case 'n':   cells.push_back(encode(cell::N_, arg));     k++; break;
-                case 'v':   put_ref(arg, refs, k);
-                            cells.push_back(cell::tag(cell::BAD, k));   k++; break;
-                case 'h':   refs[arg].push_back(k-1);
-                            assert(k > 0);
-                            cells[size_t(k-1)] = cell::argOffset(line_len-1);
-                            goals.pop_back();                               break;
-                default:    throw logic_error(cstr("FORGOTTEN=") + cell_asm_code);
-                }
-            }
-        }
-        linker(refs, cells, goals, compiled_clauses);
-    }
-
-    size_t clause_count = compiled_clauses.size();
-    vector<Clause> all_clauses = vector<Clause>(clause_count);
-
-    for (int i = 0; i < clause_count; i++) {
-        all_clauses[i] = compiled_clauses[i];
-    }
-
-    return all_clauses;
- }
-
-    void Engine::linker(unordered_map<string,vector<int>> refs,
-                        vector<cell> &cells,
-                        vector<cell> &goals,
-                        vector<Clause> &compiled_clauses) {
-
-        // final Iterator<IntStack> K = refs.values().iterator();
-        // while (K.hasNext())
-        
-        for (auto kIs = refs.begin(); kIs != refs.end(); ++kIs) {
-            vector<int> Is = kIs->second;
-            if (Is.size() == 0)
-                continue;
-            assert(goals.size() > 0);
-
-            // "finding the A among refs" [Engine.java]
-            bool found = false;
-            size_t leader = -1;
-            for (size_t j = 0; j < Is.size(); ++j)
-                if (cell::isArgOffset(cells[Is[j]])) {
-                    leader = Is[j];
-                    found = true;
-                    break;
-                }
-
-            if (!found) {
-                // "for vars, first V others U" [Engine.java]
-                leader = Is[0];
-                for (size_t i = 0; i < Is.size(); ++i)
-                    if (Is[i] == leader)
-                        cells[Is[i]] = cell::tag(cell::V_, Is[i]);
-                    else
-                        cells[Is[i]] = cell::tag(cell::U_, leader);
-            }
-            else {
-                for (size_t i = 0; i < Is.size(); ++i) {
-                    if (Is[i] == leader)
-                        continue;
-                    cells[Is[i]] = cell::tag(cell::R_, leader);
-                }
-            }
-        }
-
-        int neck;
-        if (1 == goals.size())
-            neck = int(cells.size());
-        else
-            neck = cell::detag(goals[1L]);
-
-        Clause C = putClause(cells, goals, neck); // safe to pass all?
-
-        int len = int(cells.size());
-
-        compiled_clauses.push_back(C);
-    }
 
     //    was iota(clause_list.begin(), clause_list.end(), 0);
     vector<size_t> Engine::toNums(vector<Clause> clauses) {

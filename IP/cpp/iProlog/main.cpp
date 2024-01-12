@@ -46,15 +46,13 @@ std::string current_working_directory()
 namespace iProlog {
 
 
-    void show(cstr h, int i) {
-        cout << h << i << " (oct)" << std::oct << i << endl;
-    }
+void show(cstr h, int i) {
+    cout << h << i << " (oct)" << std::oct << i << endl;
+}
 
-#if 1
 CellStack heap;
 unordered_map<string, Integer*> syms;
 vector<string> slist;
-
 
 t_index_vector getIndexables(cell ref) {
     int p = 1 + cell::detag(ref);
@@ -242,7 +240,7 @@ vector<Clause> dload(cstr s) {
 
     return all_clauses;
  }
-#endif
+
     void test_tagging() {
         int n = -1;
         assert(n >> 1 == -1);
@@ -351,16 +349,9 @@ vector<Clause> dload(cstr s) {
 
             cout << "==============================================================" << endl;
 
-	    const bool standalone = false;
-
 	    string source = file2string(pl_nl);
-	    Prog *p;
-	    if (!standalone)
-		    p = new Prog(source);
-	    else {
-		vector<Clause> clauses = dload(source);
-		p = new Prog(source);  // temporary, just to compile
-	    }
+	    vector<Clause> clauses = dload(source);
+	    Prog *p = new Prog(heap,clauses,syms,slist);
 
             p->ppCode();
 

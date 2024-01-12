@@ -12,11 +12,15 @@ O= \
 	toks.o
 
 
-OPT=-Ofast
-#DBG=-g
+#OPT=-Ofast
+OPT=
+
+DBG=-g
 DBG=
+
 #PRF=-pg
 PRF=
+
 CPPFLAGS= $(DBG) $(OPT) $(PRF) --std=c++17
 
 a.out: $O

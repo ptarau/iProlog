@@ -54,7 +54,30 @@ public:
     vector<IMap> imaps;
     vector<IntMap> var_maps;
 
-    Engine(string asm_nl_source);
+/**
+ * "Builds a new engine from a natural-language-style assembler.nl file"
+ *  -- for standalone engine, file reading, parsing & code gen is
+ *     done in main.cpp for now
+ */
+    Engine(CellStack &heap_0,
+           vector<Clause> &clauses_0,
+	   unordered_map<string, Integer*> &syms_0,
+	   vector<string> &slist_0)
+		: heap(heap_0), clauses(clauses_0), syms(syms_0), slist(slist_0) {
+
+	    if (clauses.size() == 0) {
+		throw logic_error(cstr("clauses: none"));
+	    }
+	    n_matches = 0;
+	    CellList::init();
+	    trail.clear();
+	    clause_list = toNums(clauses); // initially an array  [0..clauses.length-1]
+	    query = init(); /* initial spine built from query from which execution starts */
+	    size_t base = heap_size();          // should be just after any code on heap
+	    var_maps = vcreate(MAXIND);  // vector of IntMaps
+	    imaps = index(clauses);
+
+	};
     virtual ~Engine();
 
     int n_matches;
@@ -88,10 +111,9 @@ protected:
         clear();
     }
 
-#if 1
     void pushCells(CellStack &h, cell b, int from, int upto, int base);
     void pushCells(CellStack &h, cell b, int from, int upto, vector<cell> cells);
-#endif
+
     vector<cell> pushBody(cell b, cell head, Clause& C);
     
     void clear();

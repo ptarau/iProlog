@@ -111,6 +111,7 @@ namespace iProlog {
             for (int i = 0; i < c.size(); ++i)
                 stack[i] = c.stack[i];
             top = c.top;
+	    return *this;
         }
 
         inline int size() {

@@ -14,7 +14,6 @@ namespace iProlog {
 	public:
 		void run(bool print_ans);
 		string stats() const;
-		Prog(string s) : Engine(s) {};
 		void ppCode();
 		void ppc(Spine &S);
 		string showClause(const Clause& s);
@@ -24,6 +23,11 @@ namespace iProlog {
 		void pp(string s);
 	        void pp(unordered_map<string, Integer*> syms);
 		void ppTrail();
+		Prog(CellStack &heap,
+		     vector<Clause> &clauses,
+		     unordered_map<string, Integer*> &syms,
+		     vector<string> &slist)
+		         : Engine(heap,clauses,syms,slist) { };
 
 	private:
 		static string maybeNull(const Object& O);
