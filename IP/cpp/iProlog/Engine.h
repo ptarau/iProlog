@@ -70,12 +70,9 @@ protected:
     inline void   setRef(cell w, cell r)    { set_cell(cell::detag(w), r);     }
     inline bool   isVarLoc(cell r, cell x)  { return x.as_int() == r.as_int(); }
 
-    CellStack trail;
     CellStack unify_stack;
 
     vector<Spine*> spines;
-
-    static void pp(string s);
 
     static cstr heapCell(int w);
 
@@ -108,8 +105,6 @@ protected:
                 unordered_map<string, vector<int>>& refs,
                 int clause_pos);
 
-    vector<Clause> dload(cstr s);
-
     cell encode(int t, cstr s);
 
     void unwindTrail(int savedTop);
@@ -138,15 +133,11 @@ protected:
       return O.toString();
     }
 
-    void ppTrail() {
-        assert(cell::V_ == 0);
-        for (int i = 0; i <= trail.getTop(); i++) {
-            cell t = trail.get(size_t(i));
-            pp(cstr("trail_[") + i + "]=" + showCell(t) + ":" + showTerm(t));
-        }
-    }
     Object exportTerm(cell x);
 public:
+    vector<Clause> dload(cstr s);
+
+    CellStack trail;
     string showCell(cell w);
     static vector<IntMap> vcreate(size_t l);
 protected:

@@ -1,3 +1,31 @@
+Roadmap to iProlog with 4K of RAM, 32K of flash
+
+Goal: "Soft-realtime Natural Language Logic Programming on a Picosatellite"
+
+Get relative addressing working
+   - besides speedup, may make binary code more compressible
+   - LZ4 (about 2x) approaches RAM memcpy speed
+
+Put dload et al. in separate C++ class or prog.h/cpp
+   - don't need its buffers
+   - download ASCII opcodes to MSP/CC430
+
+Try to make unfold, unify[_args] "stackless"
+   - stacks needed, to be threaded into heap
+	- C++ code stack
+	- ustack
+	- spine stack
+
+Dispense with indexing, at least at first
+   - custom indexer?
+   - how to "heapify" it?
+
+Try compression
+   - probably need new "opcode" to trigger inflate
+   - larger (32K) code space enables dictionary compression
+
+------------------------------------------------------------
+
 vmaps - vector of IntMaps
    v = "variable" or "value"?
 

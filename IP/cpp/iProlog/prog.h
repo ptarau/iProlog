@@ -22,6 +22,8 @@ namespace iProlog {
 
 		void ppGoals(shared_ptr<CellList> bs);
 		void pp(string s);
+	        void pp(unordered_map<string, Integer*> syms);
+		void ppTrail();
 
 	private:
 		static string maybeNull(const Object& O);

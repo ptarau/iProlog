@@ -16,9 +16,25 @@ using namespace std;
 
 namespace iProlog {
 
+    void Prog::ppTrail() {
+        assert(cell::V_ == 0);
+        for (int i = 0; i <= trail.getTop(); i++) {
+            cell t = trail.get(size_t(i));
+            // pp(cstr("trail_[") + i + "]=" + showCell(t) + ":" + showTerm(t));
+            pp(cstr("trail_[") + i + "]=" + showCell(t) + ":"
+					  + "*[showTerm(cell) stub]*");
+        }
+    }
 
 	void Prog::pp(string s) {
 	    std::cout << s << endl;
+	}
+
+	void Prog::pp(unordered_map<string, Integer*> syms) {
+		pp("pp(syms):");
+		cout << "syms.size()=" << syms.size() << endl;
+		for (auto &kv : syms)
+			cout << "   " << kv.first << "," << kv.second->i << endl;
 	}
 
         void Prog::ppGoals(shared_ptr<CellList> bs) {
@@ -72,6 +88,8 @@ namespace iProlog {
         }
 
         pp("\nSYMS:\n{" + t + "}");
+
+	pp(syms);
 
         pp("\nCLAUSES:\n");
 
