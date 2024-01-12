@@ -14,7 +14,7 @@
  *    save a little space. The fast-copy cell heap-to-heap relocation may
  *    end up in this class eventually.
  */
-#define RAW
+#define RAW true
 
 namespace iProlog {
 

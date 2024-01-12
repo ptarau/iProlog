@@ -7,8 +7,6 @@
  * Copyright (c) 2017 Paul Tarau
  */
 
-#define RAW
-
 namespace iProlog {
 
     using namespace std;
