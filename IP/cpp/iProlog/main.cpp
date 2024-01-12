@@ -322,20 +322,15 @@ vector<Clause> dload(cstr s) {
         shared_ptr<CellList> q;
         q = make_shared<CellList>(h);
     }
-} // end nameSpace
 
-    int main(int argc, char* argv[])
+    int do_with(int argc, char* argv[])
     {
         cout << "...starting execution of " << argv[0] << endl;
         // Tag tests:
 #if 0
-        iProlog::test_tagging();
+        test_tagging();
 #endif
-        iProlog::testSharedCellList();
-
-
-        // Indexing benchmarks:
-        // iProlog::moo_bench();
+        testSharedCellList();
 
         string where_i_am = current_working_directory();
         string test_directory = where_i_am + "/../../progs/";
@@ -352,22 +347,21 @@ vector<Clause> dload(cstr s) {
             fname = argv[1];
             print_ans = argc == 3 ? string(argv[2]) == "true" : false;
 
-            // just add ".nl" on the command line
             string pl_nl = test_directory + fname + ".nl";
 
             cout << "==============================================================" << endl;
 
-#if 1
-            auto p = new iProlog::Prog(file2string(pl_nl));
-#else
-            string s = "";
-            s += "f 0 .\n";
-            s += "\n";
-            s += "goal X\n";
-            s += "if\n";
-            s += " f X .\n";
-            auto p = new iProlog::Prog(s);
-#endif
+	    const bool standalone = false;
+
+	    string source = file2string(pl_nl);
+	    Prog *p;
+	    if (!standalone)
+		    p = new Prog(source);
+	    else {
+		vector<Clause> clauses = dload(source);
+		p = new Prog(source);  // temporary, just to compile
+	    }
+
             p->ppCode();
 
             { using namespace chrono;
@@ -391,4 +385,9 @@ vector<Clause> dload(cstr s) {
         return 0;
     }
 
+} // end iProlog
+
+int main(int argc, char* argv[]) {
+	return iProlog::do_with(argc, argv);
+}
 
