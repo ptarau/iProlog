@@ -4,7 +4,7 @@ Goal: "Soft-realtime Natural Language Logic Programming on a Picosatellite"
 
 Bugs: indexing isn't working the same as in the Java code, slowing it
 
-Speedups: got back to spine stack rather than ptr array to Spines because
+Speedups: go back to spine stack rather than ptr array to Spines because
 	  "new" is eating up cycles
 
 Get relative addressing working

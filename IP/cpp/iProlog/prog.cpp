@@ -15,14 +15,80 @@
 using namespace std;
 
 namespace iProlog {
+    /**
+     * raw display of a term - to be overridden
+     */
+    /*virtual*/ string Prog::showTermCell(cell x) {
+      return showTerm(exportTerm(x));
+    }
+
+    /**
+     * raw display of an externalized term
+     */
+    string Prog::showTerm(Object O) {
+        if (O.type == Object::e_integer)
+            return O.toString();
+        if (O.type == Object::e_vector)
+            return st0(O.v);
+        return O.toString();
+    }
+
+Object Prog::exportTerm(cell x) {
+
+    if (x == cell::tag(cell::BAD,0))
+	return Object();
+
+    x = deref(x);
+    int t = cell::tagOf(x);
+    int w = cell::detag(x);
+
+    Object res;
+    switch (t) {
+        case cell::C_: res = getSym(w);     break;
+        case cell::N_: res = Integer(w);            break;
+        case cell::V_: res = cstr("V") + w;         break;
+            /*case U_:*/ 
+
+        case cell::R_: {
+                    cell a = cell_at(w);
+                    if (!cell::isArgOffset(a)) {
+                        throw logic_error(cstr("*** should be A, found=") + showCell(a));
+                    }
+                    int n = cell::detag(a);
+                    vector<Object> args;
+                    int k = w + 1;
+                    for (int i = 0; i < n; i++) {
+                        int j = k + i;
+                        cell c = cell_at(j);
+                        Object o = exportTerm(c);
+                        args.push_back(o);
+                    }
+                    res = args;
+                }
+                break;
+        default:
+                    throw logic_error(cstr("*BAD TERM*") + showCell(x));
+    }
+    return res;
+}
+
+
+    string Prog::showCells(int base, int len) {
+	string buf;
+	for (int k = 0; k < len; k++) {
+	    cell instr = cell_at(base + k);
+	    buf += cstr("[") + base + k + "]" + showCell(instr) + " ";
+	}
+	return buf;
+    }
 
     void Prog::ppTrail() {
         assert(cell::V_ == 0);
         for (int i = 0; i <= trail.getTop(); i++) {
             cell t = trail.get(size_t(i));
-            // pp(cstr("trail_[") + i + "]=" + showCell(t) + ":" + showTerm(t));
+            // pp(cstr("trail_[") + i + "]=" + showCell(t) + ":" + showTermCell(t));
             pp(cstr("trail_[") + i + "]=" + showCell(t) + ":"
-					  + "*[showTerm(cell) stub]*");
+					  + "*[showTermCell(cell) stub]*");
         }
     }
 
@@ -64,11 +130,16 @@ namespace iProlog {
         return s.str();
     }
 
+/**
+ * run - execute the logig program. "It also unpacks the actual answer term
+ * (by calling the method exportTerm) to a tree representation of a term,
+ * consisting of recursively embedded arrays hosting as leaves,
+ * an external representation of symbols, numbers and variables." [HHG doc]
+ */
     void Prog::run(bool print_ans) {
         int ctr = 0;
         for (;; ctr++) {
-            // cout << "About to call ask..." << endl;
-            auto A = ask();
+            auto A = exportTerm(ask());
             if (A.type == Object::e_nullptr)
                 break;
             if (print_ans)
@@ -103,14 +174,6 @@ namespace iProlog {
         pp("");
     }
 
-    string Prog::showTerm(Object O) {
-        if (O.type == Object::e_integer)
-            return Engine::showTerm(O);
-        if (O.type == Object::e_vector)
-            return st0(O.v);
-        return O.toString();
-    }
-
     string Prog::showClause(const Clause &s) {
         string buf;
 
@@ -134,7 +197,7 @@ namespace iProlog {
         }
 
         buf += cstr("---base:[") + s.base + "] neck: " + s.neck + "-----\n";
-        buf += Engine::showCells2(s.base, s.len); // TODO
+        buf += showCells(s.base, s.len); // TODO
         buf += "\n";
         buf += showCell(s.goal_refs[0]);
 #if 0

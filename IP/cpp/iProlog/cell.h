@@ -57,6 +57,7 @@ namespace iProlog {
     static const int A_ = (2 + nonref_base) << tag_shift;
 
     static const int BAD = (3 + nonref_base) << tag_shift;
+    // tag(BAD,0) used as "null pointer value" in prog.cpp
 
     // For x64, and maybe 32-bit CPU case:
     // By making BAD == 0, and always making sure there's a zero cell at the

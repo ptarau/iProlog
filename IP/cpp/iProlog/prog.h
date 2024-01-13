@@ -17,7 +17,6 @@ namespace iProlog {
 		void ppCode();
 		void ppc(Spine &S);
 		string showClause(const Clause& s);
-		string showTerm(Object O);
 
 		void ppGoals(shared_ptr<CellList> bs);
 		void pp(string s);
@@ -29,10 +28,15 @@ namespace iProlog {
 		     vector<string> &slist)
 		         : Engine(heap,clauses,syms,slist) { };
 
+    /*virtual*/ string showTermCell(cell x);
+    /*virtual*/ string showTerm(Object O);
+    Object exportTerm(cell c);
+
 	private:
 		static string maybeNull(const Object& O);
 		static inline bool isListCons(cstr name);
 		static inline bool isOp(cstr name);
 		static string st0(const vector<Object>& args);
+		string showCells(int base, int len);
 	};
 };

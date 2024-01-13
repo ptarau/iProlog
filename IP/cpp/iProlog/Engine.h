@@ -149,7 +149,7 @@ protected:
         }
         return x;
     }
-
+#if 0
     /**
      * raw display of a term - to be overridden
      */
@@ -165,16 +165,15 @@ protected:
     }
 
     Object exportTerm(cell x);
+#endif
 public:
     vector<Clause> dload(cstr s);
 
     CellStack trail;
     string showCell(cell w);
     static vector<IntMap> vcreate(size_t l);
-protected:
-    string showCells2(int base, int len);
-    string showCells1(vector<cell> cs);
 
+protected:
     void ppc(const Clause&);
     // void ppGoals(IntList *bs);
     void ppSpines() {}
@@ -219,8 +218,10 @@ inline cell cell2index(cell c) {
     Spine* answer(int trail_top);
     void popSpine();
 
-    Spine* yield_();
-    Object ask();
+    Spine* yield();
+    // Object
+    cell
+	ask();
 
     void put(t_index_vector& keys, int val);
     vector<IMap> index(vector<Clause> clauses);

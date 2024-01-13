@@ -269,27 +269,28 @@ bool Engine::hasClauses(Spine* S) {
  * A variable 'query' of type Spine, contains the top of the trail
  * as it was before evaluation of the last goal,
  * up to where bindings of the variables will have to be undone,
- * before resuming execution. It also unpacks the actual answer term
+ * before resuming execution." [HHG doc]
+ * 
+ * Moving to prog.cpp: "It also unpacks the actual answer term
  * (by calling the method exportTerm) to a tree representation of a term,
  * consisting of recursively embedded arrays hosting as leaves,
  * an external representation of symbols, numbers and variables." [HHG doc]
  */
-Object Engine::ask() {
-    query = yield_();
+cell Engine::ask() {
+    query = yield();
     if (nullptr == query)
-        return Object();
+	return cell::tag(cell::BAD,0);
 
     auto ans = answer(query->trail_top);
 
-    auto res = ans->head;
-    auto R = exportTerm(res);
+    cell res = ans->head;
     unwindTrail(query->trail_top);
     delete ans;
 
     // delete query;   // leaky to delete this?
     query = nullptr;
 
-    return R;
+    return res;
 }
 /**
  * unwindTrail - "Removes binding for variable cells
@@ -322,12 +323,12 @@ void Engine::popSpine() {
 }
 
 /**
- * yield_ "Main interpreter loop: starts from a spine and works
+ * yield "Main interpreter loop: starts from a spine and works
  * though a stream of answers, returned to the caller one
  * at a time, until the spines stack is empty - when it
  * returns null." [Engine.java]
  */
-Spine* Engine::yield_() {
+Spine* Engine::yield() {
     while (!spines.empty()) {
         Spine* G = spines.back(); // was "peek()" in Java
 
@@ -348,8 +349,11 @@ Spine* Engine::yield_() {
     }
     return nullptr;
 }
-
+#if 0
 Object Engine::exportTerm(cell x) {
+
+    if (x == cell::tag(cell::BAD,0))
+	return Object();
 
     x = deref(x);
     int t = cell::tagOf(x);
@@ -384,7 +388,7 @@ Object Engine::exportTerm(cell x) {
     }
     return res;
 }
-
+#endif
 string Engine::showCell(cell w) {
     int t = cell::tagOf(w);
     int val = cell::detag(w);
@@ -492,19 +496,5 @@ vector<IMap> Engine::index(vector<Clause> clauses) {
     return imaps;
 }
 
-string Engine::showCells2(int base, int len) {
-    string buf;
-    for (int k = 0; k < len; k++) {
-        cell instr = cell_at(base + k);
-        buf += cstr("[") + base + k + "]" + showCell(instr) + " ";
-    }
-    return buf;
-}
-string Engine::showCells1(vector<cell> cs) {
-    string buf;
-    for (size_t k = 0; k < cs.size(); k++)
-        buf += cstr("[") + k + "]" + showCell(cs[k]) + " ";
-    return buf;
-}
 
-}
+} // namespace

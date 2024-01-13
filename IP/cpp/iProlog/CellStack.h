@@ -142,8 +142,8 @@ namespace iProlog {
             stack.resize(l);
 #endif
         }
+
         vector<cell> toArray();
-        // void reverse();
 
         cell *data() {
 #ifdef RAW

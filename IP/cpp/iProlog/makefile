@@ -12,10 +12,10 @@ O= \
 	toks.o
 
 
-#OPT=-Ofast
-OPT=
+OPT=-Ofast
+#OPT=
 
-DBG=-g
+#DBG=-g
 DBG=
 
 #PRF=-pg
