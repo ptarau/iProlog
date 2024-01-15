@@ -6,6 +6,8 @@
  */
 
 #include "defs.h"
+#include "cell.h"
+#include "index.h"
 
 namespace iProlog {
     /**

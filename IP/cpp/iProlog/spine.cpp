@@ -4,8 +4,6 @@
  * Copyright (c) 2017 Paul Tarau
  */
 
-#include "defs.h"
-#include "cell.h"
 #include "spine.h"
 
 namespace iProlog {

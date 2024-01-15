@@ -8,11 +8,11 @@
 #include <chrono>
 #include <string>
 #include <filesystem>
-
-#include <string>
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
+
+#include "prog.h"
+#include "toks.h"
 
 std::string file2string(std::string path) {
     std::ifstream f(path);
@@ -23,8 +23,6 @@ std::string file2string(std::string path) {
     return s.str();
 }
 
-#include "Engine.h"
-#include "prog.h"
 
 using namespace std;
 using namespace chrono;
@@ -376,7 +374,13 @@ vector<Clause> dload(cstr s) {
 
 	    string source = file2string(pl_nl);
 	    vector<Clause> clauses = dload(source);
-	    Prog *p = new Prog(heap,clauses,syms,slist);
+	    index *Ip = new index(heap, clauses);
+
+	    Prog *p = new Prog(heap,clauses,syms,slist,Ip);
+
+	    cout << "INDEX" << endl;
+	    cout << p->showIMaps() << endl;
+	    // Main.pp(Arrays.toString(vmaps)); // unadapted, Java version
 
             p->ppCode();
 

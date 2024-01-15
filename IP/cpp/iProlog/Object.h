@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "defs.h"
+#include "Integer.h"
 
 namespace iProlog {
 

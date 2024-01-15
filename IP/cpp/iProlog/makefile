@@ -8,7 +8,6 @@ O= \
 	Object.o \
 	prog.o \
 	spine.o \
-	test.o \
 	toks.o \
 	IMap.o \
 	index.o

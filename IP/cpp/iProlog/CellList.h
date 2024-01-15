@@ -66,15 +66,9 @@ namespace iProlog {
             shared_ptr<CellList> Zs = Ys;
             if (xs.size() < 1) abort();
             for (int i = int(xs.size()) - 1; i >= 0; i--) {
-#if 0
-                cout << "concat: i=" << i << endl;
-#endif
                 cell c = xs[size_t(i)];
                 Zs = cons(c, Zs);
             }
-#if 0
-            cout << "    *** concat: returning with Zs->size()=" << Zs->size() << endl;
-#endif
             return Zs;
         }
 

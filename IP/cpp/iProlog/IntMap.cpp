@@ -9,16 +9,7 @@
  * "for use as IntSet" [IntMap.java]
  */
 
-#include <cstddef>
-#include <assert.h>
-#include <stdexcept>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <system_error>
 // #include <cmath>   // some architecture-specific namespace issue here
-
-#include "defs.h"
 
 #include "IntMap.h"
 

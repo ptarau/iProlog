@@ -3,15 +3,7 @@
 * License: Apache 2.0
 * Copyright(c) 2017 Paul Tarau
 */
-#include <unordered_map>
-#include <set>
-#include <list>
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <functional>
-#include "IntMap.h"
-#include "Integer.h"
+
 #include "IMap.h"
 
 namespace iProlog {

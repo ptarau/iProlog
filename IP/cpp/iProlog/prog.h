@@ -6,6 +6,7 @@
  */
 
 #include "Engine.h"
+#include "Object.h"
 
 using namespace std;
 
@@ -25,12 +26,14 @@ namespace iProlog {
 		Prog(CellStack &heap,
 		     vector<Clause> &clauses,
 		     unordered_map<string, Integer*> &syms,
-		     vector<string> &slist)
-		         : Engine(heap,clauses,syms,slist) { };
+		     vector<string> &slist,
+		     index *Ip)
+		         : Engine(heap,clauses,syms,slist,Ip) { };
 
-    /*virtual*/ string showTermCell(cell x);
-    /*virtual*/ string showTerm(Object O);
-    Object exportTerm(cell c);
+        /*virtual*/ string showTermCell(cell x);
+        /*virtual*/ string showTerm(Object O);
+        string showIMaps();
+        Object exportTerm(cell c);
 
 	private:
 		static string maybeNull(const Object& O);

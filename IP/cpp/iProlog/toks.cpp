@@ -8,13 +8,11 @@
  */
 
 #include <regex>
-#include <array>
 #include <cstring>
-#include <vector>
 #ifdef DUMP_TOKS
 #include <iostream>
 #endif
-#include "defs.h"
+
 #include "cell.h" // just to get n_tag_bits?
 #include "toks.h"
 
@@ -114,7 +112,7 @@ Tsss Toks::toSentences(string s) {
             continue;
         }
         if (t.t == NUM) {
-            Ws.push_back((t.n < (1 << (bitwidth- cell::n_tag_bits)) ? "n:" : "c:") + t.s);
+            Ws.push_back((t.n < (1 << (bitwidth - cell::n_tag_bits)) ? "n:" : "c:") + t.s);
             continue;
         }
         if (t.t == ATOM) { // || t.t == NIL) {
@@ -168,11 +166,5 @@ Tss Toks::mapExpand(Tss Wss) {
     }
     return Rss;
 }
-
-#if 0
-Tss Toks::vcreate(size_t l) {
-    // return Toks::Tss(l);
-}
-#endif
 
 } // end namespace

@@ -29,6 +29,4 @@ namespace iProlog {
 		static vector<Toks> makeToks(string s);
 		static Tss vcreate(size_t l);
 	};
-
-
 }

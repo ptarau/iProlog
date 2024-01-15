@@ -6,11 +6,8 @@
 
 #include <iostream>
 #include <sstream>
-#include <string>
 #include "Engine.h"
-#include "CellList.h"
 #include "prog.h"
-
 
 using namespace std;
 
@@ -31,6 +28,10 @@ namespace iProlog {
         if (O.type == Object::e_vector)
             return st0(O.v);
         return O.toString();
+    }
+
+    string Prog::showIMaps() {
+       return IMap::show(Ip->imaps);
     }
 
 Object Prog::exportTerm(cell x) {

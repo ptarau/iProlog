@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <system_error>
 #include "defs.h"
-#include "CellStack.h"
 
 namespace iProlog {
 

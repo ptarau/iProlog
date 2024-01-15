@@ -18,3 +18,4 @@ namespace iProlog {
         return n_alloced;
     }
 }
+

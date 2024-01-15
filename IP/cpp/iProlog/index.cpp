@@ -26,10 +26,6 @@ namespace iProlog {
 	for (int i = 0; i < clauses.size(); i++) {
 	    put(heap, clauses[i].index_vector, i + 1); // "$$$ UGLY INC"
 		// ...because possible_match() is using 0 as "ignore"
-
-	cout << "INDEX" << endl;
-	cout << IMap::show(imaps) << endl;
-	// Main.pp(Arrays.toString(vmaps));
         }
     }
 

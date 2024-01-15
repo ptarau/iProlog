@@ -5,9 +5,6 @@
  */
 
 
-#include <map>
-#include <algorithm>
-
 #include "Engine.h"
 
 namespace iProlog {
@@ -47,18 +44,6 @@ namespace iProlog {
   */
 
 Engine::~Engine() { }
-
-#if 0
-// "Indexing extensions - ony active if START_INDEX clauses or more."
-
-vector<IntMap> Engine::vcreate(size_t l) {
-    vector<IntMap> vss = vector<IntMap>(l);
-    for (int i = 0; i < l; i++) {
-        vss[i] = IntMap();
-    }
-    return vss;
-}
-#endif
 
 /**
  * unfold - "transforms a spine [G] containing references to choice point and

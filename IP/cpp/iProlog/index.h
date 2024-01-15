@@ -5,17 +5,20 @@
  * Copyright (c) 2017 Paul Tarau
  */
 
+#include "defs.h"
 #include "IMap.h"
-#include "spine.h"
 #include "clause.h"
+#include "spine.h"
+#include "CellStack.h"
 
 namespace iProlog {
 
+
 class index {
+public:
     vector<IMap> imaps;
     vector<IntMap> var_maps;
 
-public:
     long n_matches = 0;
     index() { n_matches = 0; };
     index(CellStack &heap, vector<Clause> &cls);

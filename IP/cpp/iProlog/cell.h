@@ -7,7 +7,6 @@
 
 #include "defs.h"
 #include <limits.h>
-#include <iostream>
 
 // C++ 20 will have machine instructions generated for rotr and rotl
 // which may permit faster tag extract (thus smaller-footprint tag compare)

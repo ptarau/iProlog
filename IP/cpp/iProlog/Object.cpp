@@ -1,5 +1,4 @@
-#include <stdexcept>
-#include "defs.h"
+
 #include "Object.h"
 
 namespace iProlog {
