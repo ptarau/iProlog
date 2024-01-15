@@ -1,13 +1,8 @@
-#pragma once
 /*
 * iProlog / C++  [derived from Java version]
 * License: Apache 2.0
 * Copyright(c) 2017 Paul Tarau
 */
-
-// for hashing implementation with a template, see:
-//  https://marknelson.us/posts/2011/09/03/hash-functions-for-c-unordered-containers.html
-
 #include <unordered_map>
 #include <set>
 #include <list>
@@ -17,59 +12,22 @@
 #include <functional>
 #include "IntMap.h"
 #include "Integer.h"
+#include "IMap.h"
 
 namespace iProlog {
 
-    using namespace std;
 
-class IMap {
-public:
-        static const int NBUCKETS = 16;
-
-         static size_t phash(Integer *s) {
-             size_t x = (size_t) s;
-             return (size_t) (0xF & ((x >> 10) ^ (x >> 2)));
-         }
-
-         struct bucket {
-             Integer* key;
-             IntMap* vals;
-             bucket() { key = nullptr; vals = nullptr; }
-             bucket(Integer* Ip, IntMap* vs) : key(Ip), vals(vs) {}
-         };
-     
-         vector<bucket> map;
-
-  IMap() {
-    map = vector<bucket>(NBUCKETS);
-    map.clear();
-  }
-
-  inline void clear() { map.clear(); }
-
-  Integer *put(Integer* key, int v);
-  IntMap* get(Integer* key);
-  size_t size();
-  set<Integer *> keySet();
-  string toString();
-  static vector<IMap*> create(int l);
-  static Integer * put_(vector<IMap> &imaps, int pos, int key, int val);
-  static vector<int> get(vector<IMap> &iMaps,
-			 vector<IntMap*> &vmaps,
-			 vector<int> keys);
-  static string show(vector<IMap> &imaps);
-  static string show(vector<Integer *> is);
-#if 0
-  inline bool put(Integer* key, int v) {
+  Integer* IMap::put(Integer* key, int v) {
       IntMap* vals = get(key);
       if (nullptr == vals) {
           vals = new IntMap();
-          map[phash(key)] = bucket(key, vals);;
+          map[phash(key)] = bucket(key, vals);
       }
-      return vals->add(v);
+      bool r = vals->add(v);
+      return key;
   }
 
-  inline IntMap* get(Integer* key) {
+  IntMap* IMap::get(Integer* key) {
       size_t hki = phash(key);
       // assert(hki <= map.size());
       IntMap* s = map[hki].vals;
@@ -79,7 +37,7 @@ public:
   }
 
   // N.B.: O(n)
-  size_t size() {
+  size_t IMap::size() {
     size_t s = 0;
     for (bucket b : map) {
         s += b.vals->size();
@@ -87,7 +45,7 @@ public:
     return s;
   }
 
-  inline set<Integer *> keySet() {
+  set<Integer *> IMap::keySet() {
       set <Integer*> s;
       for (bucket b : map)
           if (b.key != nullptr)
@@ -95,13 +53,13 @@ public:
     return s;
   }
 
-  inline string toString() {
+  string IMap::toString() {
       return "map.toString() <stub>";
   }
 
   // "specialization for array of int maps"
 
-  inline static vector<IMap*> create(int l) {
+  vector<IMap*> IMap::create(int l) {
       IMap *first = new IMap();
       vector<IMap*> imaps = vector<IMap*>(l);
       imaps[0] = first;
@@ -110,11 +68,14 @@ public:
       return imaps;
   }
 
-  static bool put_(vector<IMap> &imaps, int pos, int key, int val) {
-      return imaps[pos].put(new Integer(key), val);
+  Integer* IMap::put_(vector<IMap> &imaps, int pos, int key, int val) {
+
+      Integer *ip = new Integer(key);
+      bool r = imaps[pos].put(ip, val);
+      return ip;
   }
 
-  inline static vector<int> get(vector<IMap> iMaps, vector<IntMap*> vmaps, vector<int> keys) {
+  static vector<int> get(vector<IMap> &iMaps, vector<IntMap*> &vmaps, vector<int> keys) {
     size_t l = iMaps.size();
     assert(keys.size() <= l);
     vector<IntMap*> ms = vector<IntMap*>();
@@ -156,18 +117,18 @@ public:
     return is;
   }
 
-  inline static string show(vector<IMap> imaps) {
+  string IMap::show(vector<IMap> &imaps) {
     // return Arrays.toString(imaps);
     for (int i = 0; i < imaps.size(); ++i) {
-	IMap &im = imaps[i];
-	for (int j = 0; j < im.size(); ++j) {
-	    bucket &b = im.map[j];
+	int im_size = imaps[i].size();
+	for (int j = 0; j < im_size; ++j) {
+	    bucket &b = imaps[i].map[j];
 	}
     }
     return "<IMap: show() stub>";
   }
 
-  inline static string show(vector<Integer *> is) {
+  string IMap::show(vector<Integer *> is) {
     return "<stub: IMap show>";
     // return Arrays.toString(is);
   }
@@ -213,6 +174,4 @@ public:
     Main.pp("get=" + show(get(m, ks)));
 
   }*/
-#endif
-};
-} // end namespace
+}

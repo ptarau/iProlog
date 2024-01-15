@@ -16,6 +16,7 @@ namespace iProlog {
     typedef const string cstr;
     inline cstr operator+(cstr s, int i) { return s + to_string(i); }
     inline cstr operator+(cstr s, size_t i) { return s + to_string(i); }
+    inline cstr operator+(cstr s, long i) { return s + to_string(i); }
 
     const int MINSIZE = 1 << 10;
     const int MAXIND = 3;       // "number of index args" [Engine.java]

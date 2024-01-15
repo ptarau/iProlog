@@ -77,7 +77,7 @@ Object Prog::exportTerm(cell x) {
 	string buf;
 	for (int k = 0; k < len; k++) {
 	    cell instr = cell_at(base + k);
-	    buf += cstr("[") + base + k + "]" + showCell(instr) + " ";
+	    buf += cstr("[") + (base + k) + "]" + showCell(instr) + " ";
 	}
 	return buf;
     }
@@ -104,9 +104,6 @@ Object Prog::exportTerm(cell x) {
 	}
 
         void Prog::ppGoals(shared_ptr<CellList> bs) {
-#if 0
-            cout << "ppGoals(IntList) <stub>" << endl;
-#endif
             for (shared_ptr<CellList> bp = bs; bs != nullptr; bs = CellList::tail(bs)) {
                 pp(showTerm(exportTerm(CellList::head(bp))));
             }
@@ -146,7 +143,7 @@ Object Prog::exportTerm(cell x) {
                 pp(cstr("[") + ctr + "] " + "*** ANSWER=" + showTerm(A));
         }
         pp(cstr("TOTAL ANSWERS=") + ctr);
-        pp(cstr("n_matches=") + Engine::n_matches);
+        pp(cstr("n_matches=") + Engine::Ip->n_matches);
         pp(cstr("n_alloced=") + CellList::alloced());
     }
 
@@ -165,10 +162,6 @@ Object Prog::exportTerm(cell x) {
         pp("\nCLAUSES:\n");
 
         for (size_t i = 0; i < clauses.size(); i++) {
-#if 0
-            cout << "     CLAUSES show loop, i = " << i << endl;
-            cout << "clauses[0].base = " << clauses[0].base << endl;
-#endif
             pp(cstr("[") + i + "]:" + showClause(clauses[i]));
         }
         pp("");
@@ -200,9 +193,6 @@ Object Prog::exportTerm(cell x) {
         buf += showCells(s.base, s.len); // TODO
         buf += "\n";
         buf += showCell(s.goal_refs[0]);
-#if 0
-        cout << "showClause: buf now = " << buf << endl;
-#endif
         buf += " :- [";
         for (size_t i = 1; i < l; i++) {
             cell e = s.goal_refs[i];

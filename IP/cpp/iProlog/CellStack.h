@@ -156,12 +156,16 @@ namespace iProlog {
 
 // maybe redefine the corresponding memb fns in Engine.h to use these?
 // check for performance penalty
-    static inline cell   cell_at(CellStack h, int i)            { return h.get(i);              }
-    static inline void   set_cell(CellStack h, int i, cell v)   { h.set(i,v);                   }
-    static inline cell   getRef(CellStack h, cell x)            { return cell_at(h, cell::detag(x));  }
-    static inline void   setRef(CellStack h, cell w, cell r)    { set_cell(h, cell::detag(w), r);     }
+    static inline cell   cell_at(CellStack &h, int i)
+        { return h.get(i);              			}
+    static inline void   set_cell(CellStack &h, int i, cell v)
+	{ h.set(i,v);                   			}
+    static inline cell   getRef(CellStack &h, cell x)
+        { return cell_at(h, cell::detag(x));  			}
+    static inline void   setRef(CellStack &h, cell w, cell r)
+        { set_cell(h, cell::detag(w), r);     			}
 
-    static inline cell deref(CellStack h, cell x) {
+    static inline cell deref(CellStack &h, cell x) {
         while (cell::isVAR(x)) {
             cell r = getRef(h,x);
             if (cell::isVarLoc(r,x))
@@ -172,7 +176,7 @@ namespace iProlog {
     }
 
         static inline cell cell2index(CellStack &heap, cell c) {
-            cell x = 0;
+            cell x = 0; // wildcard
             int t = cell::tagOf(c);
             switch (t) {
                 case cell::R_:

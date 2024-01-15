@@ -22,6 +22,7 @@
 #include "IntMap.h"
 #include "IMap.h"
 #include "clause.h"
+#include "index.h"
 
 namespace iProlog {
 
@@ -48,11 +49,13 @@ public:
     //  heap - "contains code for 'and' clauses and their
     //  copies created during execution" [Engine.java]
 
-    // vector<cell> heap_;
     CellStack heap;
-
+#if 0
     vector<IMap> imaps;
     vector<IntMap> var_maps;
+#else
+    index *Ip;
+#endif
 
 /**
  * "Builds a new engine from a natural-language-style assembler.nl file"
@@ -68,19 +71,20 @@ public:
 	    if (clauses.size() == 0) {
 		throw logic_error(cstr("clauses: none"));
 	    }
-	    n_matches = 0;
+
 	    CellList::init();
 	    trail.clear();
 	    clause_list = toNums(clauses); // initially an array  [0..clauses.length-1]
 	    query = init(); /* initial spine built from query from which execution starts */
 	    size_t base = heap_size();          // should be just after any code on heap
+#if 0
 	    var_maps = vcreate(MAXIND);  // vector of IntMaps
-	    imaps = index(clauses);
-
+	    imaps = index(clauses,var_maps);
+#endif
+	    Ip = new index(heap, clauses);
 	};
-    virtual ~Engine();
 
-    int n_matches;
+    virtual ~Engine();
 
 protected:
 
@@ -103,8 +107,6 @@ protected:
     vector<Spine*> spines;
 
     static cstr heapCell(int w);
-
-    static inline bool hasGoals(const Spine* S) { return S->goals != nullptr; }
 
     void makeHeap(int size = MINSIZE) {
         heap.resize(size);
@@ -171,7 +173,9 @@ public:
 
     CellStack trail;
     string showCell(cell w);
+#if 0
     static vector<IntMap> vcreate(size_t l);
+#endif
 
 protected:
     void ppc(const Clause&);
@@ -185,29 +189,13 @@ protected:
 
     bool hasClauses(Spine* S);
 
-    void makeIndexArgs(Spine* G, cell goal);
-    t_index_vector getIndexables(cell ref);
-    // cell cell2index(cell c);
 #if 0
-inline cell cell2index(CellStack h, cell c) {
-    cell x = 0;
-    int t = cell::tagOf(c);
-    switch (t) {
-    case cell::R_:
-        x = getRef(heap, c);
-        break;
-    case cell::C_:
-    case cell::N_:
-        x = c;
-        break;
-    }
-    return x;
-}
-#endif
+    void makeIndexArgs(Spine* G, cell goal);
 
-inline cell cell2index(cell c) {
-	return CellStack::cell2index(heap, c);
-}
+    inline cell cell2index(cell c) {
+	    return CellStack::cell2index(heap, c);
+    }
+#endif
 
     Spine* unfold(Spine *G);
 
@@ -219,17 +207,20 @@ inline cell cell2index(cell c) {
     void popSpine();
 
     Spine* yield();
-    // Object
-    cell
-	ask();
+    cell ask();
+#if 0
+    void put(vector<IMap> &imaps,
+	     vector<IntMap> &var_maps,
+	     t_index_vector& keys,
+	     int val);
 
-    void put(t_index_vector& keys, int val);
-    vector<IMap> index(vector<Clause> clauses);
+    vector<IMap> index(vector<Clause> &clauses, vector<IntMap> &var_maps);
+#endif
 
-    void linker(unordered_map<string, vector<int>> refs,
-        vector<cell>& cells,
-        vector<cell>& goals,
-        vector<Clause>& compiled_clauses);
+    void linker(unordered_map<string,vector<int>> refs,
+		vector<cell>& cells,
+		vector<cell>& goals,
+		vector<Clause>& compiled_clauses);
 
     Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck);
 
@@ -243,7 +234,7 @@ inline cell cell2index(cell c) {
 
         return s;
     }
-
+#if 0
     inline bool possible_match(const t_index_vector& an_index_vector, Clause &C) {
         for (size_t i = 0; i < MAXIND; i++) {
             int x = an_index_vector[i];
@@ -256,7 +247,7 @@ inline cell cell2index(cell c) {
         ++n_matches;
         return true;
     }
-
+#endif
 }; // end Engine
 
 } // end namespace

@@ -81,5 +81,7 @@ namespace iProlog {
          * "Creates a specialized spine returning an answer (with no goals left to solve)." [Spine.java]
          */
         Spine(cell head, int trail_top);
+
+	inline bool hasGoals() { return goals != nullptr; }
     };
 } // end namespace

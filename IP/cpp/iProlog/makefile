@@ -9,7 +9,9 @@ O= \
 	prog.o \
 	spine.o \
 	test.o \
-	toks.o
+	toks.o \
+	IMap.o \
+	index.o
 
 
 OPT=-Ofast
@@ -40,7 +42,8 @@ $O: makefile \
 	Object.h \
 	prog.h \
 	spine.h \
-	toks.h
+	toks.h \
+	index.h
 
 
 

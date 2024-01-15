@@ -48,7 +48,8 @@ namespace iProlog {
 
 Engine::~Engine() { }
 
-// Indexing extensions - ony active if START_INDEX clauses or more.
+#if 0
+// "Indexing extensions - ony active if START_INDEX clauses or more."
 
 vector<IntMap> Engine::vcreate(size_t l) {
     vector<IntMap> vss = vector<IntMap>(l);
@@ -57,6 +58,7 @@ vector<IntMap> Engine::vcreate(size_t l) {
     }
     return vss;
 }
+#endif
 
 /**
  * unfold - "transforms a spine [G] containing references to choice point and
@@ -66,8 +68,9 @@ vector<IntMap> Engine::vcreate(size_t l) {
  * clause at the top of the new list of goals, in reverse order"
  */
 Spine* Engine::unfold(Spine *G) {
-    if (CellList::isEmpty(G->goals))
+    if (CellList::isEmpty(G->goals)) {
         return nullptr;
+    }
 
     int saved_trail_top = trail.getTop();
     int saved_heap_top = heap.getTop();
@@ -75,14 +78,14 @@ Spine* Engine::unfold(Spine *G) {
 
     cell goal = CellList::head(G->goals);
 
-    makeIndexArgs(G, goal);
+    Ip->makeIndexArgs(heap, G, goal);
 
     size_t last = G->unifiables.size();
 
     for (int k = G->last_clause_tried; k < last; k++) {
         Clause* C0 = &clauses[G->unifiables[k]];
 
-        if (!possible_match(G->index_vector, *C0))
+        if (!Ip->possible_match(G->index_vector, C0->index_vector))
             continue;
 
         int base0 = base - C0->base;
@@ -279,7 +282,7 @@ bool Engine::hasClauses(Spine* S) {
 cell Engine::ask() {
     query = yield();
     if (nullptr == query)
-	return cell::tag(cell::BAD,0);
+	return cell::null();
 
     auto ans = answer(query->trail_top);
 
@@ -341,7 +344,7 @@ Spine* Engine::yield() {
             popSpine(); // no matches
             continue;
         }
-        if (hasGoals(C)) {
+        if (C->hasGoals()) {
             spines.push_back(C);
             continue;
         }
@@ -349,46 +352,7 @@ Spine* Engine::yield() {
     }
     return nullptr;
 }
-#if 0
-Object Engine::exportTerm(cell x) {
 
-    if (x == cell::tag(cell::BAD,0))
-	return Object();
-
-    x = deref(x);
-    int t = cell::tagOf(x);
-    int w = cell::detag(x);
-
-    Object res;
-    switch (t) {
-        case cell::C_: res = getSym(w);     break;
-        case cell::N_: res = Integer(w);            break;
-        case cell::V_: res = cstr("V") + w;         break;
-            /*case U_:*/ 
-
-        case cell::R_: {
-                    cell a = cell_at(w);
-                    if (!cell::isArgOffset(a)) {
-                        throw logic_error(cstr("*** should be A, found=") + showCell(a));
-                    }
-                    int n = cell::detag(a);
-                    vector<Object> args;
-                    int k = w + 1;
-                    for (int i = 0; i < n; i++) {
-                        int j = k + i;
-                        cell c = cell_at(j);
-                        Object o = exportTerm(c);
-                        args.push_back(o);
-                    }
-                    res = args;
-                }
-                break;
-        default:
-                    throw logic_error(cstr("*BAD TERM*") + showCell(x));
-    }
-    return res;
-}
-#endif
 string Engine::showCell(cell w) {
     int t = cell::tagOf(w);
     int val = cell::detag(w);
@@ -425,42 +389,6 @@ vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
     return goals;
 }
 
-void Engine::makeIndexArgs(Spine *G, cell goal) {
-    if (G->index_vector[0] != -1 || !hasGoals(G))
-        return;
-    int p = 1 + cell::detag(goal);
-    int n = min(MAXIND, cell::detag(getRef(goal)));
-    for (int i = 0; i < n; i++) {
-        G->index_vector[i] = cell2index(deref(cell_at(p + i))).as_int();
-    }
-}
-
-t_index_vector Engine::getIndexables(cell ref) {
-    int p = 1 + cell::detag(ref);
-    int n = cell::detag(getRef(ref));
-    t_index_vector index_vector = { -1,-1,-1 };
-    for (int i = 0; i < MAXIND && i < n; i++) {
-        cell c = deref(cell_at(p + i));
-        index_vector[i] = cell2index(c).as_int();
-    }
-    return index_vector;
-}
-#if 0
-cell Engine::cell2index(cell c) {
-    cell x = 0;
-    int t = cell::tagOf(c);
-    switch (t) {
-    case cell::R_:
-        x = getRef(c);
-        break;
-    case cell::C_:
-    case cell::N_:
-        x = c;
-        break;
-    }
-    return x;
-}
-#endif
 
 /**
  * Copies and relocates the head of clause C from heap to heap.
@@ -471,30 +399,5 @@ cell Engine::pushHeadtoHeap(cell b, const Clause& C) {
     cell reloc_head = cell::relocate(b, head);
     return reloc_head;
 }
-
-void Engine::put(t_index_vector& keys, int val) {
-    for (int i = 0; i < imaps.size(); i++) {
-        int key = keys[i];
-        if (key != 0) {
-            IMap::put_(imaps, i, key, val);
-        }
-        else {
-            var_maps[size_t(i)][val] = val;
-        }
-    }
-}
-
-vector<IMap> Engine::index(vector<Clause> clauses) {
-    if (clauses.size() < START_INDEX)
-        return vector<IMap>();  // something minimal, IFFY
-    imaps = vector<IMap>(var_maps.size());
-    for (size_t i = 0; i < clauses.size(); i++) {
-        Clause c = clauses[i];
-        put(c.index_vector, int(i + 1)); // $$$ UGLY INC
-        // because possible_match() is using 0 as "ignore"
-    }
-    return imaps;
-}
-
 
 } // namespace

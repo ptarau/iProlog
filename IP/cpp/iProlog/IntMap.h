@@ -42,7 +42,9 @@ namespace iProlog {
 		size_t m_mask;
 		size_t m_mask2;
 	public:
-		inline int& operator[](int i) { return m_data[i]; }
+		inline int& operator[](int i) {
+			return m_data[i];
+		}
 		IntMap();
 		IntMap(int size);
 		IntMap(int size, float fillFactor);

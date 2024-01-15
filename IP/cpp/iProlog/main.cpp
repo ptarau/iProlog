@@ -54,6 +54,24 @@ CellStack heap;
 unordered_map<string, Integer*> syms;
 vector<string> slist;
 
+string showCell(cell w) {
+    int t = cell::tagOf(w);
+    int val = cell::detag(w);
+    string s = "";
+    string sym = "";
+
+    switch (t) {
+        case cell::V_:    s = cstr("v:") + val;        break;
+        case cell::U_:    s = cstr("u:") + val;        break;
+        case cell::N_:    s = cstr("n:") + val;        break;
+        case cell::C_:    s = cstr("c:") + val;break;//had getSym
+        case cell::R_:    s = cstr("r:") + val;        break;
+        case cell::A_:    s = cstr("a:") + val;        break;
+        default:    s = cstr("*BAD*=") + w.as_int();
+    }
+    return s;
+}
+
 t_index_vector getIndexables(cell ref) {
     int p = 1 + cell::detag(ref);
     int n = cell::detag(CellStack::getRef(heap, ref));
@@ -123,14 +141,21 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
     int len = int(cells.size());
     CellStack::pushCells(heap, b, 0, len, cells);
 
-    bool unroll = true;
-    if (unroll)
+    if (RAW)
         cell::cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
     else
         for (size_t i = 0; i < hgs.size(); i++)
             hgs[i] = cell::relocate(b, hgs[i]);
 
     t_index_vector index_vector = getIndexables(hgs[0]);
+
+    cout << endl << "In PutClause(...): index_vector=";
+    string sep = "<";
+    for (int i = 0; i < MAXIND; ++i) {
+	cout << sep << index_vector[i];
+	sep = ",";
+    }
+    cout << ">" << endl;
 
     Clause rc = Clause(len, hgs, base, neck, index_vector);
 
