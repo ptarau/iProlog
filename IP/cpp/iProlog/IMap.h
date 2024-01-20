@@ -20,7 +20,7 @@
 
 namespace iProlog {
 
-    using namespace std;
+    using namespace std; 
 
 class IMap {
 public:
@@ -33,9 +33,9 @@ public:
 
          struct bucket {
              Integer* key;
-             IntMap* vals;
+             IntMap<int>* vals;
              bucket() { key = nullptr; vals = nullptr; }
-             bucket(Integer* Ip, IntMap* vs) : key(Ip), vals(vs) {}
+             bucket(Integer* Ip, IntMap<int>* vs) : key(Ip), vals(vs) {}
          };
      
          vector<bucket> map;
@@ -48,16 +48,18 @@ public:
   inline void clear() { map.clear(); }
 
   Integer *put(Integer* key, int v);
-  IntMap* get(Integer* key);
+  IntMap<int>* get(Integer* key);
   size_t size();
   set<Integer *> keySet();
   string toString();
   static vector<IMap*> create(int l);
-  static Integer * put_(vector<IMap> &imaps, int pos, int key, int val);
-  static vector<int> get(vector<IMap> &iMaps,
-			 vector<IntMap*> &vmaps,
-			 vector<int> keys);
-  static string show(vector<IMap> &imaps);
+  static Integer * put_(vector<IMap*> &imaps, int pos, int key, int val);
+  static vector<int> getn(vector<IMap*> &iMaps,
+		          vector<IntMap<int>*> &vmaps,
+		          vector<int> &keys);
+  string show();
+  static string show(vector<IMap*> &imaps);
+  static string show(bucket &b);
   static string show(vector<Integer *> is);
 };
 } // end namespace

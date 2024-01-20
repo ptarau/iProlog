@@ -59,20 +59,24 @@ Spine* Engine::unfold(Spine *G) {
 
     int saved_trail_top = trail.getTop();
     int saved_heap_top = heap.getTop();
-    int base = size_t(saved_heap_top) + 1;
+    int base = saved_heap_top + 1;
 
     cell goal = CellList::head(G->goals);
-
+if(indexing) {
+    cout<<"... about to call makeIndexArgs()"<<endl;
+}
     Ip->makeIndexArgs(heap, G, goal);
+    cout<<"... about to call getn()"<<endl;
+    G->unifiables = IMap::getn(Ip->imaps, Ip->var_maps, G->unifiables);
 
     size_t last = G->unifiables.size();
 
     for (int k = G->last_clause_tried; k < last; k++) {
         Clause* C0 = &clauses[G->unifiables[k]];
-
+if(indexing) {
         if (!Ip->possible_match(G->index_vector, C0->index_vector))
             continue;
-
+}
         int base0 = base - C0->base;
         cell b = cell::tag(cell::V_, base0);  // TODO - I really need a "heap index(offset)" type
         cell head = pushHeadtoHeap(b, *C0);
@@ -200,9 +204,9 @@ string Engine::getSym(int w) {
 }
 
     //    was iota(clause_list.begin(), clause_list.end(), 0);
-    vector<size_t> Engine::toNums(vector<Clause> clauses) {
+    vector<int> Engine::toNums(vector<Clause> clauses) {
         size_t l = clauses.size();
-        vector<size_t> cls = vector<size_t>(l);
+        vector<int> cls = vector<int>(l);
         for (size_t i = 0; i < l; i++) {
             cls[i] = i;
         }
@@ -221,7 +225,7 @@ Clause Engine::getQuery() {
  * Returns the initial spine built from the query from which execution starts.
  */
 Spine *Engine::init() {
-    size_t base = heap_size();
+    int base = heap_size();
     Clause G = getQuery();
     Spine *Q = new Spine(G.goal_refs, base, nullptr, trail.getTop(), 0, clause_list);
 
@@ -366,7 +370,7 @@ vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
     int l = C.goal_refs.size();
     vector<cell> goals(l);
     goals[0] = head;
-    if (RAW)
+    if (is_raw)
 	cell::cp_cells (b, C.goal_refs.data()+1, goals.data()+1, l-1);
     else
         for (int k = 1; k < l; k++)

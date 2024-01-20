@@ -25,11 +25,12 @@ class Engine {
 public:
 
     Spine* query = nullptr;
+    int base;
 
     vector<Clause> clauses;     // "Trimmed-down clauses ready to be quickly relocated
                                 //  to the heap" [Engine.java]
                                 // [Not clear what "trimmed-down" means.]
-    vector<size_t> clause_list; // if no indexing, contains [0..clauses.length-1]
+    vector<int> clause_list; // if no indexing, contains [0..clauses.length-1]
 
     // "Symbol table - made of map (syms) + reverse map from
     //  ints to syms (slist)" [Engine.java]
@@ -63,7 +64,7 @@ public:
 	    trail.clear();
 	    clause_list = toNums(clauses); // initially an array  [0..clauses.length-1]
 	    query = init(); /* initial spine built from query from which execution starts */
-	    size_t base = heap_size();          // should be just after any code on heap
+	    base = heap_size();          // should be just after any code on heap
 	};
 
     virtual ~Engine();
@@ -135,8 +136,9 @@ protected:
     }
 public:
     index *Ip;
+#if 0
     vector<Clause> dload(cstr s);
-
+#endif
     CellStack trail;
     string showCell(cell w);
 
@@ -154,7 +156,7 @@ protected:
 
     Spine* unfold(Spine *G);
 
-    vector<size_t> toNums(vector<Clause> clauses);
+    vector<int> toNums(vector<Clause> clauses);
 
     Clause getQuery();
     Spine* init();
@@ -163,14 +165,14 @@ protected:
 
     Spine* yield();
     cell ask();
-
+#if 0
     void linker(unordered_map<string,vector<int>> refs,
 		vector<cell>& cells,
 		vector<cell>& goals,
 		vector<Clause>& compiled_clauses);
 
     Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck);
-
+#endif
 
     inline string showCS(string name, CellStack cs) {
         string s = name + ":";

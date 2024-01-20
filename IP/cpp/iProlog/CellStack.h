@@ -9,13 +9,6 @@
 #include <assert.h>
 #include "cell.h"
 
-/* RAW, when  defined, says to go with a less-safe, faster implementation
- *    than STL vectors, with no bounds check, and less header info to
- *    save a little space. The fast-copy cell heap-to-heap relocation may
- *    end up in this class eventually.
- */
-#define RAW true
-
 namespace iProlog {
 
     using namespace std;
@@ -25,36 +18,38 @@ namespace iProlog {
         int top = -1;
         void shrink();
     public:
+
 #ifdef RAW
         cell* stack;
-        int cap;
 #else
         vector<cell> stack;
 #endif
+        int cap; // actually unused if RAW not defined
+
         void expand();
         const int MINSIZE = 1 << 10; // power of 2
-
         const int SIZE = 16; // power of 2
 
     public:
         inline CellStack()  {
             int size = MINSIZE;
+#ifdef RAW
             stack = (cell*)std::malloc(sizeof(cell) * size);
             if (stack == nullptr) abort();
             cap = size;
+#endif
             top = -1;
         }
 
         inline CellStack(int size) {
             if (size == 0) size = MINSIZE;
-
 #ifdef RAW
-            stack = (cell*)std::malloc(sizeof(cell) * size);
-            if (stack == nullptr) abort();
-            cap = size;
-            top = -1;
+	    stack = (cell*)std::malloc(sizeof(cell) * size);
+	    if (stack == nullptr) abort();
+	    cap = size;
+	    top = -1;
 #else
-            stack = vector<cell>(size);
+	    stack = vector<cell>(size);
 #endif
             clear();
         }
@@ -82,10 +77,11 @@ namespace iProlog {
          */
         inline void push(cell i) {
 #ifdef RAW
-            if (++top >= cap) {
+	    int limit = cap;
 #else
-            if (++top >= stack.size()) {
+	    int limit = stack.capacity();
 #endif
+            if (++top >= limit) {
                 expand();
             }
             stack[top] = i;
@@ -120,39 +116,38 @@ namespace iProlog {
 
         inline size_t capacity() {
 #ifdef RAW
-            return cap;
+		return cap;
 #else
-            return stack.capacity();
+		return stack.size();
 #endif
         }
-#ifdef RAW
+
         inline void realloc_(int l) {
+#ifdef RAW
             cell* tcp = (cell*)std::realloc((void*)stack, l*sizeof(cell));
             if (tcp == nullptr) abort();
-            stack = tcp;
             cap = l;
-        }
+            stack = tcp;
 #endif
+        }
 
         inline void resize(int l) {
-
 #ifdef RAW
-            realloc_(l);
+		realloc_(l);
 #else
-            stack.resize(l);
+		stack.resize(l);
 #endif
         }
 
         vector<cell> toArray();
 
-        cell *data() {
+        inline cell *data() {
 #ifdef RAW
-            return stack;
+	    return stack;
 #else
-            return stack.data();
+	    return stack.data();
 #endif
         }
-
 
 // maybe redefine the corresponding memb fns in Engine.h to use these?
 // check for performance penalty
@@ -207,7 +202,7 @@ namespace iProlog {
 	    int count = upto - from;
 	    ensureSize(heap, count);
 
-	    if (RAW) {
+	    if (is_raw) {
 		cell* srcp = heap.data() + base + from;
 		cell* dstp = (cell*)(heap.data() + heap.getTop()) + 1;
 		heap.setTop(heap.getTop() + count);
@@ -228,7 +223,7 @@ namespace iProlog {
 	    int count = to - from;
 	    ensureSize(heap, count);
 
-	    if (RAW) {
+	    if (is_raw) {
 		cell* heap_dst = (cell*)(heap.data() + heap.getTop()) + 1;
 		heap.setTop(heap.getTop() + count);
 		cell::cp_cells(b,cells.data(),heap_dst,count);

@@ -132,6 +132,7 @@ cell encode(int t, string s) {
   */
 Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
 
+const bool tracing = false;
     int base = heap.getTop()+1;
 
     cell b = cell::tag(cell::V_, base);
@@ -139,22 +140,23 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
     int len = int(cells.size());
     CellStack::pushCells(heap, b, 0, len, cells);
 
-    if (RAW)
+    if (is_raw) {
         cell::cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
-    else
+    } else {
         for (size_t i = 0; i < hgs.size(); i++)
             hgs[i] = cell::relocate(b, hgs[i]);
+    }
 
     t_index_vector index_vector = getIndexables(hgs[0]);
-
-    cout << endl << "In PutClause(...): index_vector=";
+if(tracing) {
+    cout << endl << "In putClause(...): index_vector=";
     string sep = "<";
     for (int i = 0; i < MAXIND; ++i) {
 	cout << sep << index_vector[i];
 	sep = ",";
     }
     cout << ">" << endl;
-
+}
     Clause rc = Clause(len, hgs, base, neck, index_vector);
 
     return rc;
@@ -170,6 +172,7 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
         // while (K.hasNext())
         
         for (auto kIs = refs.begin(); kIs != refs.end(); ++kIs) {
+// cout << "in for (auto kIS loop...." << endl;
             vector<int> Is = kIs->second;
             if (Is.size() == 0)
                 continue;
@@ -203,18 +206,21 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
                 }
             }
         }
+// cout << "left for (auto kIs loop" << endl;
         int neck;
         if (1 == goals.size())
             neck = int(cells.size());
         else
             neck = cell::detag(goals[1L]);
 
+// cout << "before putClause call" << endl;
         Clause C = putClause(cells, goals, neck); // safe to pass all?
 
         int len = int(cells.size());
 
+// cout << "about to push C to compiled_clauses" << endl;
         compiled_clauses.push_back(C);
-        }
+    }
 
 
 vector<Clause> dload(cstr s) {
@@ -374,13 +380,15 @@ vector<Clause> dload(cstr s) {
 
 	    string source = file2string(pl_nl);
 	    vector<Clause> clauses = dload(source);
-	    index *Ip = new index(heap, clauses);
+	    index *Ip = nullptr;
+
+	    if (indexing)
+		Ip = new index(clauses);
 
 	    Prog *p = new Prog(heap,clauses,syms,slist,Ip);
 
-	    cout << "INDEX" << endl;
+if(indexing)
 	    cout << p->showIMaps() << endl;
-	    // Main.pp(Arrays.toString(vmaps)); // unadapted, Java version
 
             p->ppCode();
 
@@ -396,6 +404,8 @@ vector<Clause> dload(cstr s) {
             }
 
             cout << p->stats() << endl;
+
+cout << "---------------------------------------" << endl;
 
             delete p;
         }

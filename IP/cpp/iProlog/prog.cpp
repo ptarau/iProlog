@@ -31,6 +31,7 @@ namespace iProlog {
     }
 
     string Prog::showIMaps() {
+       cout << "INDEX" << endl;
        return IMap::show(Ip->imaps);
     }
 
@@ -144,6 +145,7 @@ Object Prog::exportTerm(cell x) {
                 pp(cstr("[") + ctr + "] " + "*** ANSWER=" + showTerm(A));
         }
         pp(cstr("TOTAL ANSWERS=") + ctr);
+if(indexing)
         pp(cstr("n_matches=") + Engine::Ip->n_matches);
         pp(cstr("n_alloced=") + CellList::alloced());
     }

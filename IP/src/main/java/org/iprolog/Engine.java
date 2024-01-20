@@ -385,7 +385,7 @@ s += "]";
 
         final int l = ws.length;
 
-            Prog.println("%%%% l = ws.length = " + l + " for...");
+            // Prog.println("%%%% l = ws.length = " + l + " for...");
 
         goals.push(tag(R, k++));
         assert goals.size() > 0;
@@ -393,7 +393,7 @@ s += "]";
 
         for (String w : ws) { // gen code for 'element' (= head/body subterm)
 
-          Prog.println ("   ..." + w);
+          // Prog.println ("   ..." + w);
 
         // Main.println ("at w = " + w);
 
@@ -409,9 +409,9 @@ s += "]";
             case 'n': cells.push(encode(N, arg));              k++; break;
             // Variable
             case 'v': put_ref (arg, refs, k);
-                      // "just in case we miss this:" ??
-                      //  P. Tarau comment
-                      Prog.println("    &&&& v case, k = " + k);
+                      //   "just in case we miss this:" ??
+                      //    P. Tarau comment
+                      // Prog.println("    &&&& v case, k = " + k);
                       cells.push(tag(BAD, k));                 k++; break;
             // 'Holds' ('=')
             case 'h': put_ref (arg, refs, k - 1);
@@ -1021,8 +1021,10 @@ s += "]";
     final int p = 1 + detag(ref);
     final int n = detag(getRef(ref));
     final int[] xs = new int[MAXIND];
+    Main.pp ("getIndexables: n=" + n);
     for (int i = 0; i < MAXIND && i < n; i++) {
       final int cell = deref(heap[p + i]);
+      Main.pp("getIndexables: c=" + showCell(cell) + " cell2index=" + showCell(cell2index(cell)));
       xs[i] = cell2index(cell);
     }
     return xs;
@@ -1323,8 +1325,10 @@ s += "]";
     for (int i = 0; i < imaps.length; i++) {
       final int key = keys[i];
       if (key != 0) {
+	Main.pp("put: keys[" + i + "] -- IMap.put(imaps," + i + "," + key + "," + val + ")");
         IMap.put(imaps, i, key, val);
       } else {
+	Main.pp("put: keys[" + i + "] -- vss[" + i + "].add(" + val + ")");
         vss[i].add(val);
       }
     }

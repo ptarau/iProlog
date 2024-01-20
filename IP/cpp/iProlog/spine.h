@@ -25,7 +25,7 @@ namespace iProlog {
     class Spine {
     public:
         cell head;      // "head of the clause to which this corresponds" [Spine.java]
-        size_t base;      // "base of the heap where the clause starts" [HHG doc]
+        int base;      // "base of the heap where the clause starts" [HHG doc]
 
         shared_ptr<CellList> goals; // goals - "with the top one ready to unfold" [Spine.java]
                             // "immutable list of the locations
@@ -45,7 +45,7 @@ namespace iProlog {
         // A note in Engine.java on makeIndexArgs(), which is called
         // only in unfold(), says "xs contains dereferenced cells"
 
-        vector<size_t> unifiables; // "array of clauses known to be unifiable
+        vector<int> unifiables; // "array of clauses known to be unifiable
         //  with top goal in goal stack" (for "cs" in Spine.java)
               // [This is not listed in the HHG description of Spine.]
               // Initialized from unifiables, in Engine. If indexing
@@ -63,7 +63,7 @@ namespace iProlog {
             index_vector = { -1,-1,-1 }; // index elements ("based on regs" [HHG] but no regs)
                                         // "int[] regs: dereferenced goal registers" [HHG doc]
                                         // Comments in Engine.java suggest that xs is regs
-            unifiables = vector<size_t>(0);
+            unifiables = vector<int>(0);
         }
 
         /**
@@ -71,11 +71,11 @@ namespace iProlog {
          */
         Spine(
             vector<cell> goal_refs_0,       // was gs0/goal_stack_0 [Java]
-            size_t base_0,               // base
+            int base_0,               // base
             shared_ptr<CellList> goals_0,        // was gs/goal_stack [Java]
             int trail_top_0,
             int k_0,
-            vector<size_t> unifiables_0); // was cs??
+            vector<int> unifiables_0); // was cs??
 
         /**
          * "Creates a specialized spine returning an answer (with no goals left to solve)." [Spine.java]

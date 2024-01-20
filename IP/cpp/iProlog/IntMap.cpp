@@ -11,6 +11,7 @@
 
 // #include <cmath>   // some architecture-specific namespace issue here
 
+#include <iostream>
 #include "IntMap.h"
 
 namespace iProlog {
@@ -18,16 +19,25 @@ namespace iProlog {
     using namespace std;
 
 
-  IntMap::IntMap() : IntMap(1 << 2) { }
+  template<class Value>
+  IntMap<Value>::IntMap() : IntMap<Value>::IntMap(1 << 2) { }
 
-  IntMap::IntMap(int size) : IntMap(size, 0.75f) { };
+  template<class Value>
+  IntMap<Value>::IntMap(int size) : IntMap<Value>::IntMap(size, 0.75f) {
 
-  IntMap::IntMap(int size, float fillFactor) {
+// cout<<"@@@@@@@@@@ IntMap(int "<<size<<") constr, size="<<size
+//     << " m_size=" << m_size << endl;
+
+  };
+
+  template<class Value>
+  IntMap<Value>::IntMap(int size, float fillFactor) {
+
+// cout<< "        IntMap(int size, float fillFactor), size="<<size<<endl;
+
     if (fillFactor <= 0 || fillFactor >= 1)
-      // throw invalid_argument("FillFactor must be in (0, 1)");
             throw std::invalid_argument("FillFactor must be in (0, 1)");
     if (size <= 0)
-      // throw invalid_argument("Size must be positive!");
             throw std::invalid_argument("Size must be positive!");
     size_t capacity = arraySize(size, fillFactor);
     m_mask = capacity - 1;
@@ -36,9 +46,14 @@ namespace iProlog {
 
     m_data = vector<int>(capacity * 2);
     m_threshold = (int) (capacity * fillFactor);
+    m_size = 0; // added
+    m_hasFreeKey = 0;
+
+// cout << "      at end of IntMap(size,fillFactor), m_size=" << m_size << endl;
   }
 
-  int IntMap::get(int key) {
+  template<class Value>
+  Value IntMap<Value>::get(int key) {
     int ptr = (phiMix(key) & m_mask) << 1;
 
     if (key == FREE_KEY)
@@ -61,36 +76,44 @@ namespace iProlog {
     }
   }
 
-  int IntMap::contains(int key) {
+  template<class Value>
+  bool IntMap<Value>::contains(int key) {
     return NO_VALUE != get(key);
   }
 
-  int IntMap::add(int key) {
+  template<class Value>
+  bool IntMap<Value>::add(int key) {
     return NO_VALUE != put(key, 666);
   }
 
-  int IntMap::delete_(int key) {
+  template<class Value>
+  bool IntMap<Value>::delete_(int key) {
     return NO_VALUE != remove(key);
   }
 
-  int IntMap::isEmpty() {
+  template<class Value>
+  int IntMap<Value>::isEmpty() {
     return 0 == m_size;
   }
 
-  void IntMap::intersect0(IntMap &m, vector<IntMap> &maps, vector<IntMap> &vmaps, vector<int> &r) {
+  template<class Value>
+  void IntMap<Value>::intersect0(IntMap<Value> &m,
+				 	vector<IntMap<Value>> &maps,
+				 	vector<IntMap<Value>> &vmaps,
+				 	vector<int> &r) {
     vector<int> data = m.m_data;
-    for (int k = 0; k < data.size(); k += 2) {
+    for (int k = 0; k < data.capacity(); k += 2) {
       int found = true;
       int key = data[k];
       if (FREE_KEY == key) {
         continue;
       }
-      for (int i = 1; i < maps.size(); i++) {
-        IntMap map = maps[i];
+      for (int i = 1; i < maps.capacity(); i++) {
+        IntMap<Value> map = maps[i];
         int val = map.get(key);
 
         if (NO_VALUE == val) {
-          IntMap vmap = vmaps[i];
+          IntMap<Value> vmap = vmaps[i];
           int vval = vmap.get(key);
           if (NO_VALUE == vval) {
             found = false;
@@ -104,17 +127,40 @@ namespace iProlog {
     }
   }
 
-  vector<int> IntMap::intersect(vector<IntMap> &maps, vector<IntMap> &vmaps) {
+  template<class Value>
+  vector<Value> IntMap<Value>::intersect(vector<IntMap<Value>> &maps,
+				         vector<IntMap<Value>> &vmaps) {
     vector<int> r = vector<int>();
+
+cout<<"------------intersect: maps"<<endl;
+    for (int i = 0; i < maps.size(); ++i) {
+cout<<"------------  maps["<<i<<"]:"<<endl;
+cout<<"------------  ";
+	for(int j = 0; j < maps[i].m_data.size(); ++j) {
+cout<<maps[i].m_data[j] <<" ";
+	}
+cout << endl;
+    }
+
+cout<<"------------intersect: maps"<<endl;
+    for (int i = 0; i < vmaps.size(); ++i) {
+cout<<"------------  vmaps["<<i<<"]:"<<endl;
+cout<<"------------  ";
+	for(int j = 0; j < vmaps[i].m_data.size(); ++j) {
+cout<<vmaps[i].m_data[j] <<" ";
+	}
+cout << endl;
+    }
 
     intersect0(maps[0], maps, vmaps, r);
     intersect0(vmaps[0], maps, vmaps, r);
     return r;
   }
 
-  // end changes
+  // "end changes" (where?)
 
-  int IntMap::put(int key, int value) {
+  template<class Value>
+  Value IntMap<Value>::put(int key, Value value) {
     if (key == FREE_KEY) {
       int ret = m_freeValue;
       if (!m_hasFreeKey) {
@@ -132,7 +178,7 @@ namespace iProlog {
       m_data[ptr] = key;
       m_data[ptr + 1] = value;
       if (m_size >= m_threshold) {
-        IntMap::rehash(size_t(m_data.size() * 2)); //size is set inside
+        IntMap<Value>::rehash(size_t(m_data.capacity() * 2)); //size is set inside
       } else {
         ++m_size;
       }
@@ -151,7 +197,7 @@ namespace iProlog {
         m_data[ptr] = key;
         m_data[ptr + 1] = value;
         if (m_size >= m_threshold) {
-            IntMap::rehash(size_t(m_data.size() * 2)); //size is set inside
+            IntMap<Value>::rehash(size_t(m_data.size() * 2)); //size is set inside
         } else {
           ++m_size;
         }
@@ -164,7 +210,8 @@ namespace iProlog {
     }
   }
 
-  int IntMap::remove(int key) {
+  template<class Value>
+  Value IntMap<Value>::remove(int key) {
     if (key == FREE_KEY) {
       if (!m_hasFreeKey)
         return NO_VALUE;
@@ -178,7 +225,7 @@ namespace iProlog {
     if (k == key) //we check FREE prior to this call
     {
       int res = m_data[ptr + 1];
-      IntMap::shiftKeys(ptr);
+      IntMap<Value>::shiftKeys(ptr);
       --m_size;
       return res;
     } else if (k == FREE_KEY)
@@ -188,7 +235,7 @@ namespace iProlog {
       k = m_data[ptr];
       if (k == key) {
         int res = m_data[ptr + 1];
-        IntMap::shiftKeys(ptr);
+        IntMap<Value>::shiftKeys(ptr);
         --m_size;
         return res;
       } else if (k == FREE_KEY)
@@ -196,7 +243,8 @@ namespace iProlog {
     }
   }
 
-  int IntMap::shiftKeys(int pos) {
+  template<class Value>
+  int IntMap<Value>::shiftKeys(int pos) {
     // Shift entries with the same hash.
     int last, slot;
     int k;
@@ -219,16 +267,18 @@ namespace iProlog {
     }
   }
 
-  size_t IntMap::size() {
+  template<class Value>
+  int IntMap<Value>::size() {
     return m_size;
   }
 
-  void IntMap::rehash(size_t newCapacity) {
+  template<class Value>
+  void IntMap<Value>::rehash(size_t newCapacity) {
     m_threshold = (newCapacity / 2 * m_fillFactor);
     m_mask = newCapacity / 2 - 1;
     m_mask2 = newCapacity - 1;
 
-    size_t oldCapacity = m_data.size();
+    size_t oldCapacity = m_data.capacity();
     vector<int> oldData = m_data;
 
     m_data = vector<int>(newCapacity);
@@ -252,7 +302,8 @@ namespace iProlog {
    * @return the least power of two greater than or equal to the specified value.
    */
 
-  size_t IntMap::nextPowerOfTwo(size_t x) {
+  template<class Value>
+  size_t IntMap<Value>::nextPowerOfTwo(size_t x) {
     if (x == 0)
       return 1;
     x--;
@@ -274,11 +325,12 @@ namespace iProlog {
    * @return the minimum possible size for a backing array.
    * @throws IllegalArgumentException if the necessary size is larger than 2<sup>30</sup>.
    */
-  size_t IntMap::arraySize(int expected, float f) {
-    // long s = max((long) 2, nextPowerOfTwo((long) ceil(expected / f)));
-    size_t s = max((size_t) 2, nextPowerOfTwo((size_t) ((expected / f)+1)));  // rm cmath dep
-    if (s > size_t(1) << 30) {
-      // throw std::invalid_argument("Too large (" + expected + " expected elements with load factor " + f + ")");
+  template<class Value>
+  int IntMap<Value>::arraySize(int expected, float f) {
+    long s = nextPowerOfTwo((long) ((expected / f)+1)); 
+    if (s < 2) s = 2;
+
+    if (s > 1L << 30) {
       throw invalid_argument("Too large (< + expected + > expected elements with load factor < + f + >)");
     }
     return s;
@@ -287,14 +339,16 @@ namespace iProlog {
   //taken from FastUtil
   static const int INT_PHI = 0x9E3779B9;
 
-  int IntMap::phiMix(int x) {
+  template<class Value>
+  int IntMap<Value>::phiMix(int x) {
     int h = x * INT_PHI;
     return h ^ h >> 16;
   }
 
   // @Override
   
-  string IntMap::toString() {
+  template<class Value>
+  string IntMap<Value>::toString() {
     //return java.util.Arrays.toString(m_data);
     string b = string("{");
     size_t l = m_data.size();
@@ -314,4 +368,15 @@ namespace iProlog {
     b.append("}");
     return b;
   }
+
+// (See https://stackoverflow.com/questions/8752837/undefined-reference-to-template-class-constructor)
+// to make sure of compiling:
+
+template class IntMap<int>; // mysterious....
+
+// ...but I can also just make the whole thing a header file
+// There will really be only two uses of IntMap(X):
+//   X for imaps -- dereferenced cells(???)
+//   X for var_maps -- clause #s(???)
 }
+

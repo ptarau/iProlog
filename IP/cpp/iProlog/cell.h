@@ -30,7 +30,7 @@ namespace iProlog {
     //      comparisons to constants that require more bits
     //      to express.
     //      Eventually try on 16-bit arch
-    static const int use_sign_bit = 1;
+    static const int use_sign_bit = 0;
 
     static const int bitwidth = (sizeof(int) * 8);
     static const int n_tag_bits = 3;

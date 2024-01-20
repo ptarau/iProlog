@@ -16,12 +16,12 @@ namespace iProlog {
 
 class index {
 public:
-    vector<IMap> imaps;
-    vector<IntMap> var_maps;
+    vector<IMap*> imaps;
+    vector<IntMap<int>*> var_maps;
 
     long n_matches = 0;
     index() { n_matches = 0; };
-    index(CellStack &heap, vector<Clause> &cls);
+    index(vector<Clause> &cls);
 
     inline bool possible_match( t_index_vector& iv0,
 				t_index_vector &iv1) {
@@ -40,7 +40,7 @@ public:
         return true;
     }
 
-    void put(CellStack &heap, t_index_vector& keys, int val);
+    void put(t_index_vector& keys, int val);
 
     void makeIndexArgs(CellStack &heap, Spine *G, cell goal);
 };

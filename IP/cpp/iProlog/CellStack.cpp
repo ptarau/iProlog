@@ -51,17 +51,16 @@ namespace iProlog {
 
         vector<cell> CellStack::toArray() {
             vector<cell> array = vector<cell>(size());
-            if (size() > 0)
+            if (size() > 0) {
 #ifdef RAW
-                // memcpy if it ever matters
-                for (int i = 0; i < size(); ++i)
-                    array[i] = stack[i];
-            if (cap == 0 || cap == 32768) abort();
+                    // memcpy if it ever matters
+                    for (int i = 0; i < size(); ++i)
+                        array[i] = stack[i];
 #else
-                copy(stack.begin(), stack.end(), array.begin());
+                    copy(stack.begin(), stack.end(), array.begin());
 #endif
+            }
             return array;
         }
-
 } // end namespace
 
