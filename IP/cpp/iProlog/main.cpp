@@ -73,7 +73,9 @@ string showCell(cell w) {
 t_index_vector getIndexables(cell ref) {
     int p = 1 + cell::detag(ref);
     int n = cell::detag(CellStack::getRef(heap, ref));
-    t_index_vector index_vector = { -1,-1,-1 };
+    t_index_vector index_vector;
+    for (int i = 0; i < MAXIND; ++i)
+	index_vector[i] = cell::tag(cell::BAD,0);
     for (int i = 0; i < MAXIND && i < n; i++) {
         cell c = CellStack::deref(heap, CellStack::cell_at(heap, p + i));
         index_vector[i] = CellStack::cell2index(heap,c).as_int();
@@ -152,7 +154,7 @@ if(tracing) {
     cout << endl << "In putClause(...): index_vector=";
     string sep = "<";
     for (int i = 0; i < MAXIND; ++i) {
-	cout << sep << index_vector[i];
+	cout << sep << index_vector[i].as_int();
 	sep = ",";
     }
     cout << ">" << endl;

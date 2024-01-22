@@ -112,7 +112,7 @@ Tsss Toks::toSentences(string s) {
             continue;
         }
         if (t.t == NUM) {
-            Ws.push_back((t.n < (1 << (bitwidth - cell::n_tag_bits)) ? "n:" : "c:") + t.s);
+            Ws.push_back((t.n < (1 << (cell::bitwidth - cell::n_tag_bits)) ? "n:" : "c:") + t.s);
             continue;
         }
         if (t.t == ATOM) { // || t.t == NIL) {

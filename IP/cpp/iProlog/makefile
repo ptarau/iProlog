@@ -28,23 +28,34 @@ CPPFLAGS= $(DBG) $(OPT) $(PRF) --std=c++17
 a.out: $O
 	g++ $(CPPFLAGS) $O
 
-$O: makefile \
-	cell.h \
-	CellList.h \
-	CellStack.h \
-	clause.h \
-	defs.h \
-	Engine.h \
-	file2string.h \
-	IMap.h \
-	Integer.h \
-	IntMap.h \
-	Object.h \
-	prog.h \
-	spine.h \
-	toks.h \
-	index.h
 
+$O: makefile defs.h
+
+index.o: cell.h
+
+CellList.o: cell.h CellList.h
+
+CellStack.o: cell.h CellStack.h
+
+clause.o: cell.h index.h clause.h
+
+Engine.o: Engine.h
+
+Imap.o: Imap.h
+
+index.o: index.h
+
+IntMap.o: IntMap.h
+
+main.o: toks.h prog.h
+
+Object.o: Object.h
+
+prog.o: Engine.h prog.h
+
+spine.o: spine.h
+
+toks.o: toks.h cell.h
 
 
 clean:

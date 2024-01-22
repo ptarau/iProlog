@@ -171,7 +171,7 @@ namespace iProlog {
     }
 
         static inline cell cell2index(CellStack &heap, cell c) {
-            cell x = 0; // wildcard
+            cell x = cell::tag(cell::V_,0);
             int t = cell::tagOf(c);
             switch (t) {
                 case cell::R_:

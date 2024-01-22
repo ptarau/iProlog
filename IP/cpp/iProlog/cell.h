@@ -16,10 +16,12 @@ namespace iProlog {
 
     using namespace std;
 
-    class cell {
 
+    class cell {
         int v;  // it make make sense to init at BAD-tagged cell
+
     public:
+	static const int bitwidth = CHAR_BIT * sizeof(int);
         cell() { v = 0; }
         cell(int i) { v = i; }
         static inline cell nonval() { return cell(int(-1)); };
@@ -32,7 +34,6 @@ namespace iProlog {
     //      Eventually try on 16-bit arch
     static const int use_sign_bit = 0;
 
-    static const int bitwidth = (sizeof(int) * 8);
     static const int n_tag_bits = 3;
     static const int n_ref_tags = 3;
     static const int n_ref_bits = bitwidth - n_tag_bits;

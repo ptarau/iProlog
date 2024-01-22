@@ -15,10 +15,13 @@ namespace iProlog {
       IntMap<int> *vals = map[phash(key)].vals;
       if (nullptr == vals) {
           vals = new IntMap<int>();
+      cout << "          Making new IntMap because vals ==null" << endl;
 // it's map.put(key,vals) for a HashMap<Integer, IntMap> map in Java
           map[phash(key)] = bucket(key, vals);
       }
+      cout << "                   vals->size() before add("<<v<<") = " << vals->size() << endl;
       bool r = vals->add(v);
+      cout << "                   vals->size() before add("<<v<<") = " << vals->size() << endl;
       return key;
   }
 
@@ -61,13 +64,14 @@ namespace iProlog {
       return imaps;
   }
 
-  Integer* IMap::put_(vector<IMap*> &imaps, int pos, int key, int val) {
+  Integer* IMap::put_(vector<IMap*> &imaps, int pos, cell key, int val) {
 
-      cout << "         entered put_(imaps,pos="<<pos <<",key="<<key<<",val="<<val
+      cout << "         entered put_(imaps,pos="<<pos <<", key="<<key.as_int()<<", val="<<val
 		<<") ............" << endl;
-      Integer *ip = new Integer(key);
+      Integer *ip = new Integer(key.as_int());
+      cout << "         before imaps["<<pos<<"].put(ip,val), size()=" << imaps[pos]->size() << endl;
       bool r = imaps[pos]->put(ip, val);
-      cout << "         exiting put_ ..................." << endl;
+      cout << "         exiting put_ with imaps["<<pos<<"]->size() = " << imaps[pos]->size() << endl;
       return ip;
   }
 
@@ -132,7 +136,7 @@ cout<<"   *** in getn, is-sorting"<<endl;
     std::sort(is.begin(),is.end());
 
 if(is.size()==0) cout << "     !!!!!! is=0 in IMap.getn() !!!!!!!!!"<<endl;
-else             cout << "     ?????? is="<<is.size()<<"in IMap.getn()"<<endl;
+else             cout << "     ?????? is="<<is.size()<<" in IMap.getn()"<<endl;
 
     return is;
   }

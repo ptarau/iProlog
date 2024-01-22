@@ -44,7 +44,7 @@ namespace iProlog {
     }
 
     inline cell cell2index(CellStack &heap, cell c) {
-	cell x = 0; // wildcard
+	cell x = cell::tag(cell::V_,0);
 	int t = cell::tagOf(c);
 	switch (t) {
 	    case cell::R_:
@@ -64,8 +64,8 @@ cout << "    index::put entered........" << endl;
 if(imaps.size()!=MAXIND) abort();
 
 	for (int i = 0; i < imaps.size(); i++) {
-	    int key = keys[i];
-	    if (key != 0) {
+	    cell key = keys[i];
+	    if (!cell::isVAR(key)) {
 //
 // INDEX PARTLY FAILS WITH SIGN BIT ON
 // Probably because 0 is tag(V_,0) with sign bit off
@@ -80,7 +80,9 @@ cout << "    index::put exiting........" << endl;
     }
 
     void index::makeIndexArgs(CellStack &heap, Spine *G, cell goal) {
-	if (G->index_vector[0] != -1 || !G->hasGoals())
+	if (cell::tagOf(G->index_vector[0]) != cell::BAD
+	// || !G->hasGoals()
+	)
 	    return;
 
 	int p = 1 + cell::detag(goal); // point to # of args of goal
@@ -89,7 +91,7 @@ cout << "    index::put exiting........" << endl;
 
 	for (int i = 0; i < n; i++) {
 	    cell arg_val = CellStack::deref(heap, CellStack::cell_at(heap, p + i));
-	    G->index_vector[i] = cell2index(heap, arg_val).as_int();
+	    G->index_vector[i] = cell2index(heap, arg_val);
 	}
 /* imaps and var_maps (=vmaps) are not available here,
  * so this code is put just after makeIndexArgs is called

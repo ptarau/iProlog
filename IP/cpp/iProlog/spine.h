@@ -8,6 +8,7 @@
 #include "defs.h"
 #include "cell.h"
 #include "CellList.h"
+#include "index.h"
 
 namespace iProlog {
     using namespace std;
@@ -60,9 +61,12 @@ namespace iProlog {
             last_clause_tried = -1; // "index of the last clause [that]
                                     //  the top goal of [this] Spine
                                     //  has tried to match so far" [HHG doc]
-            index_vector = { -1,-1,-1 }; // index elements ("based on regs" [HHG] but no regs)
-                                        // "int[] regs: dereferenced goal registers" [HHG doc]
-                                        // Comments in Engine.java suggest that xs is regs
+            index_vector = { cell::tag(cell::BAD,0),
+			     cell::tag(cell::BAD,0),
+			     cell::tag(cell::BAD,0) };
+					 // index elements ("based on regs" [HHG] but no regs)
+                                         // "int[] regs: dereferenced goal registers" [HHG doc]
+                                         // Comments in Engine.java suggest that xs is regs
             unifiables = vector<int>(0);
         }
 

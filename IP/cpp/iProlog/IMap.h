@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include "cell.h"
 #include "IntMap.h"
 #include "Integer.h"
 
@@ -53,7 +54,7 @@ public:
   set<Integer *> keySet();
   string toString();
   static vector<IMap*> create(int l);
-  static Integer * put_(vector<IMap*> &imaps, int pos, int key, int val);
+  static Integer * put_(vector<IMap*> &imaps, int pos, cell key, int val);
   static vector<int> getn(vector<IMap*> &iMaps,
 		          vector<IntMap<int>*> &vmaps,
 		          vector<int> &keys);

@@ -5,7 +5,23 @@
  * Copyright (c) 2017 Paul Tarau
  */
 
-#include "defs.h"
+using namespace std;
+
+#include <vector>
+#include <array>
+#include "cell.h"
+
+namespace iProlog {
+
+    const bool indexing = false;
+
+    const int MAXIND = 3;       // "number of index args" [Engine.java]
+    const int START_INDEX = 1;	// "if # of clauses < START_INDEX,
+				// turn off indexing" [Engine.java]
+
+    typedef array<cell, MAXIND> t_index_vector; // deref'd cells
+}
+
 #include "IMap.h"
 #include "clause.h"
 #include "spine.h"
@@ -13,6 +29,7 @@
 
 namespace iProlog {
 
+class Spine;
 
 class index {
 public:
@@ -27,12 +44,13 @@ public:
 				t_index_vector &iv1) {
 // cout<<"possible_match():" << endl;
         for (size_t i = 0; i < MAXIND; i++) {
-            int x = iv0[i];
-            int y = iv1[i];
+            cell x = iv0[i];
+            cell y = iv1[i];
 // cout<<"   try x=" << x << " y=" << y << endl;
-            if (0 == x || 0 == y)
+            if (cell::isVAR(x) || cell::isVAR(y))
+	    				// but possible to deref down to var? is 0 val special?
                 continue;
-            if (x != y)
+            if (x.as_int() != y.as_int()) // shd be comp op
                 return false;
         }
 // cout << "**** MATCH FOUND *****" << endl;

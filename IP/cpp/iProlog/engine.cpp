@@ -62,12 +62,13 @@ Spine* Engine::unfold(Spine *G) {
     int base = saved_heap_top + 1;
 
     cell goal = CellList::head(G->goals);
+
 if(indexing) {
     cout<<"... about to call makeIndexArgs()"<<endl;
-}
     Ip->makeIndexArgs(heap, G, goal);
     cout<<"... about to call getn()"<<endl;
     G->unifiables = IMap::getn(Ip->imaps, Ip->var_maps, G->unifiables);
+}
 
     size_t last = G->unifiables.size();
 

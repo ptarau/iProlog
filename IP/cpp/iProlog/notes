@@ -22,7 +22,7 @@ Try to make unfold & unify[_args] "stackless"
 	- spine stack
 
 Dispense with indexing, at least at first
-   - implement as callbacks, for full orthogonality
+   - implement as callbacks, for full orthogonality?
    - custom indexer?
    - how to "heapify" it?
 
@@ -40,7 +40,7 @@ Binary output from compiler
 Find out whether CC430 can write to its own flash
    - if so, and the address space issue issue can be solved
      look at how initial logic-programming code can be put in flash
-     to free up RAM -- split heap, a little hairy
+     to free up RAM -- which means a split heap, a little hairy
 
 "Garbage collect" initialization code for logic programs?
    - need some control flow analysis to be sure of
@@ -122,18 +122,19 @@ that can be specified by the programmer) ..."
 "...the set of clauses where the indexable element occurs in that argument
 position."
 
-     cell sub-type: indexable_elt
+     cell sub-type: indexable_elt?
 
 "For deep indexing, the argument position can be generalized to be the
 integer sequence defining the path leading to the indexable element in
 a compound term."
 
      hence "leader"? (Or does he even do this?)
+	not clear how the integer sequence would be derived
 
 "The clauses having variables in an indexed argument position are also
 collected in a separate set for each argument position."
 
-     vmaps
+     vmaps - maps var pos in clause head to ...?
 
 "Sets of clause numbers associated to each (tagged) indexable element are
 supported by an IntMap implemented as a fast int-to-int hash table (using
@@ -141,10 +142,12 @@ linear probing)."
 
      clause_no type?
      indexable_elt -> {clause_no*}
+     clause_no -> indexable_elt?
+     indexable_elt -> clause_no?
 
 "An IntMap is associated to each indexable element by a HashMap."
 
-     Is this where Integer comes in?
+     This is where Integer comes in. But what is it an integer of?
 
 "The HashMaps are placed into an array indexed by the argument position
 to which they apply."
@@ -160,7 +163,6 @@ the set C[x,i] of clauses associated to it."
 
 "If V[i] denotes the set of clauses having variables in position i,
 then any of them can also unify with our goal element."
-/usr/bin/bash: }fmt: command not found
 
 "Thus we would need to compute the union of the sets C[x,i] and V[i] for
 each position i,..."
@@ -175,6 +177,7 @@ clauses. We will not actually compute the unions, however. Instead,...
 in C[x,i] or in V[i] for each i > 0."
 
    the ms/vms in index()?
+   why i > 0? Because of functor of head?
 
 "We do the same for each element for the set V[0] of clauses having
 variables in predicate positions (if any)."
