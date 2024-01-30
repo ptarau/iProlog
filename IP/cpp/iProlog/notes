@@ -1,0 +1,191 @@
+Roadmap to iProlog with 4K of RAM, 32K of flash
+
+Goal: "Soft-realtime Natural Language Logic Programming on a Picosatellite"
+
+Bugs: indexing isn't working the same as in the Java code, slowing it
+
+Speedups: go back to spine stack rather than ptr array to Spines because
+	  "new" is eating up cycles
+
+Get relative addressing working
+   - besides speedup, may make binary code more compressible
+   - LZ4 (about 2x) approaches RAM memcpy speed
+
+Put dload et al. in separate C++ class or prog.h/cpp
+   - don't need its buffers
+   - download ASCII opcodes to MSP/CC430
+
+Try to make unfold & unify[_args] "stackless"
+   - stacks needed to be threaded into heap:
+	- C++ code stack
+	- ustack
+	- spine stack
+
+Dispense with indexing, at least at first
+   - implement as callbacks, for full orthogonality?
+   - custom indexer?
+   - how to "heapify" it?
+
+Try compression
+   - probably need new "opcode" to trigger inflate
+   - larger (32K) code space enables dictionary compression
+   - but split of flash/RAM adddress space a problem
+
+Try 16-bit cells
+
+Binary output from compiler
+   - endianess perhaps indicated in a header
+   - LZ4 compression
+
+Find out whether CC430 can write to its own flash
+   - if so, and the address space issue issue can be solved
+     look at how initial logic-programming code can be put in flash
+     to free up RAM -- which means a split heap, a little hairy
+
+"Garbage collect" initialization code for logic programs?
+   - need some control flow analysis to be sure of
+     what to dump and how soon to dump it
+
+------------------------------------------------------------
+
+vmaps - vector of IntMaps
+   v = "variable" or "value"?
+
+   index(clauses, vmaps):
+    for i 0.. < length of all clauses c
+      put(IMap[] imaps, IntMap[] vmaps, int keys[](=c.xs), int val=i+1)
+                                                          // $$$ UGLY INC
+	clause's xs (int array of deref'd cells--"index vector")
+	for i = 0 to < length of imaps
+	  if key[i] not 0 (0 is "marking variable positions")
+	     put key,val pair in imaps at pos = i
+	       (so i is the clause number=clause index+1?)
+	         IMap::put allocates a new Integer(key) for hash
+		 key is from deref'd cells in head
+		 clauses[val-1] is the clause that has that cell
+	  else ("variable position")
+	     add key,val pair to IntMap at i in vmaps
+	     so "vmaps" is var maps
+	--could all be done with index into clauses + val param
+	 so for each clause, it's
+	    mapping
+	      from 
+	        a unique Integer object
+	          created from the deref'd cell value
+	      to
+	        the clause /number/
+	 (starting at 1, i.e., not to its off-by-1 /index/ in clauses[])
+
+	 "keys":: "the index vector containing dereferenced constants,
+	  numbers or array sizes as extracted from the outermost
+	  term of the head of the clause, with zero values
+	  marking variable positions."
+  iprolog:
+     just passes clauses[i].index_elts and val Int(i+1)
+
+int[] IMap get(int[] keys -- deref'd cells)
+     for i = 0 to < length of imaps (== # of clauses?)
+                                    what if len > len of keys???
+				    maybe this can't happen--
+				    imaps length <= MAXIND?
+        if not a variable cell (key[i] != 0)
+          make an IntMap
+	    with new Integer
+	      based on key=deref'd cell
+	 (I guess this will always make a new IntMap)
+	add it to "ms"
+	add vmaps[i] to "vms"
+     make IntMap vectors ims of ms.size, vims of vms.size
+     initialize IntMaps of ims from ms.get(i)
+     initialize IntMaps of vims from vms.get(i)
+
+     make cs = IMap's intersection of ims and vims
+     from each in cs
+        subtract 1 where (presumably) the $$$ UGLY INC added
+     sort the result
+     return it
+
+cell2index does a getRef -- maybe bad news for the idea
+of relative addressing in heap cells
+	  
+pp.11-12 of paper:
+
+"For each argument position in the head of a clause (up to a maximum
+that can be specified by the programmer) ..."
+
+     MAXIND
+
+"...it associates to each indexable element (symbol, number or arity)...
+
+     C,N,A
+
+"...the set of clauses where the indexable element occurs in that argument
+position."
+
+     cell sub-type: indexable_elt?
+
+"For deep indexing, the argument position can be generalized to be the
+integer sequence defining the path leading to the indexable element in
+a compound term."
+
+     hence "leader"? (Or does he even do this?)
+	not clear how the integer sequence would be derived
+
+"The clauses having variables in an indexed argument position are also
+collected in a separate set for each argument position."
+
+     vmaps - maps var pos in clause head to ...?
+
+"Sets of clause numbers associated to each (tagged) indexable element are
+supported by an IntMap implemented as a fast int-to-int hash table (using
+linear probing)."
+
+     clause_no type?
+     indexable_elt -> {clause_no*}
+     clause_no -> indexable_elt?
+     indexable_elt -> clause_no?
+
+"An IntMap is associated to each indexable element by a HashMap."
+
+     This is where Integer comes in. But what is it an integer of?
+
+"The HashMaps are placed into an array indexed by the argument position
+to which they apply."
+
+   vector<IMap> imaps
+
+"When looking for the clauses matching an element of the list of goals
+to solve, for an indexing element x occurring in position i, we fetch
+the set C[x,i] of clauses associated to it."
+
+   Presumably including the functor ("predicate name") of the clause...
+   See below.
+
+"If V[i] denotes the set of clauses having variables in position i,
+then any of them can also unify with our goal element."
+
+"Thus we would need to compute the union of the sets C[x,i] and V[i] for
+each position i,..."
+
+    Why?
+
+"...and then intersect them to obtain the set of matching
+clauses. We will not actually compute the unions, however. Instead,...
+
+"...for each element of the set of clauses corresponding to the
+“predicate name” (position 0), we retain only those which are either
+in C[x,i] or in V[i] for each i > 0."
+
+   the ms/vms in index()?
+   why i > 0? Because of functor of head?
+
+"We do the same for each element for the set V[0] of clauses having
+variables in predicate positions (if any)."
+
+   "predicate positions" meaning in the predicate name position?
+
+"Finally we sort the resulting set of clause numbers and hand it over
+to the main Prolog engine for unification and possible unfolding in case
+of success."
+
+   Is the sort order an optimization?

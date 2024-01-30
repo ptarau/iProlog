@@ -20,5 +20,6 @@ nrev([X|Xs],Zs):-nrev(Xs,Ys),app(Ys,[X],Zs).
 
 
 input([1,2,3,4,5,6,7,8,9,10,11]).
+% input([1,2,3,4]).
 
 goal(Y):-input(X),nrev(X,Y),perm(X,Y),perm(Y,X).
