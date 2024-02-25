@@ -132,6 +132,8 @@
     <ClCompile Include="CellList.cpp" />
     <ClCompile Include="clause.cpp" />
     <ClCompile Include="engine.cpp" />
+    <ClCompile Include="IMap.cpp" />
+    <ClCompile Include="index.cpp" />
     <ClCompile Include="IntMap.cpp" />
     <ClCompile Include="CellStack.cpp" />
     <ClCompile Include="main.cpp" />
@@ -139,13 +141,16 @@
     <ClCompile Include="prog.cpp" />
     <ClCompile Include="spine.cpp" />
     <ClCompile Include="toks.cpp" />
+    <ClCompile Include="FastUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cell.h" />
     <ClInclude Include="clause.h" />
     <ClInclude Include="defs.h" />
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="FastUtil.h" />
     <ClInclude Include="IMap.h" />
+    <ClInclude Include="index.h" />
     <ClInclude Include="Integer.h" />
     <ClInclude Include="CellList.h" />
     <ClInclude Include="IntMap.h" />
@@ -154,6 +159,7 @@
     <ClInclude Include="spine.h" />
     <ClInclude Include="toks.h" />
     <ClInclude Include="CellStack.h" />
+    <ClInclude Include="Inty.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

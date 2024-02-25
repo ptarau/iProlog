@@ -66,8 +66,8 @@ Spine* Engine::unfold(Spine *G) {
 if(indexing) {
     cout<<"... about to call makeIndexArgs()"<<endl;
     Ip->makeIndexArgs(heap, G, goal);
-    cout<<"... about to call getn()"<<endl;
-    G->unifiables = IMap::getn(Ip->imaps, Ip->var_maps, G->unifiables);
+    cout<<"... about to try to match clauses()"<<endl;
+    G->unifiables = Ip->matching_clauses(G->unifiables);
 }
 
     size_t last = G->unifiables.size();
@@ -206,9 +206,9 @@ string Engine::getSym(int w) {
 
     //    was iota(clause_list.begin(), clause_list.end(), 0);
     vector<int> Engine::toNums(vector<Clause> clauses) {
-        size_t l = clauses.size();
+        int l = (int) clauses.size();
         vector<int> cls = vector<int>(l);
-        for (size_t i = 0; i < l; i++) {
+        for (int i = 0; i < l; i++) {
             cls[i] = i;
         }
         return cls;
@@ -223,7 +223,7 @@ Clause Engine::getQuery() {
 }
 
 /**
- * Returns the initial spine built from the query from which execution starts.
+ * "Returns the initial spine built from the query from which execution starts."
  */
 Spine *Engine::init() {
     int base = heap_size();
@@ -368,7 +368,7 @@ string Engine::showCell(cell w) {
  */
 vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
     CellStack::pushCells(heap, b, C.neck, C.len, C.base);
-    int l = C.goal_refs.size();
+    int l = (int) C.goal_refs.size();
     vector<cell> goals(l);
     goals[0] = head;
     if (is_raw)

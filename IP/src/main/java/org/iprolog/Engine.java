@@ -139,7 +139,11 @@ class Engine {
    * do not mix them up at runtime. Not negating the argument doesn't
    * seem to affect results, and improves performance only slightly (< 5%).
    */
-  final private static int maybe_invert(final int w) { return -w; }
+  final private static int maybe_invert(final int w) {
+	  return w;
+	  // return -w;
+  }
+
   final private static int tag(final int t, final int w) {
     assert t <= BAD;
     assert t >= 0;
@@ -895,7 +899,9 @@ s += "]";
     final int[] xs = getIndexables(hgs[0]);
 
 //  System.out.println ("---- putClause: returning -----");
-    // Prog.println ("---- base being set to " + base);
+    Prog.println ("---- putClause: base being set to " + base + " xs=");
+    for (int i = 0; i < MAXIND; ++i) 
+	    Prog.println ("   xs[" + i + "] = " + xs[i]);
     return new Clause(len, hgs, base, neck, xs);
   }
 
@@ -1006,7 +1012,7 @@ s += "]";
     for (int i = 0; i < n; i++) {
       final int cell = deref(heap[p + i]);
       xs[i] = cell2index(cell);
-      // Prog.println("    G->index_vector[" + i + "]=" + xs[i]);
+      Prog.println("    G->index_vector[" + i + "]=" + xs[i]);
     }
 
     G.xs = xs;
@@ -1024,8 +1030,9 @@ s += "]";
     Main.pp ("getIndexables: n=" + n);
     for (int i = 0; i < MAXIND && i < n; i++) {
       final int cell = deref(heap[p + i]);
-      Main.pp("getIndexables: c=" + showCell(cell) + " cell2index=" + showCell(cell2index(cell)));
+      Main.pp("  getIndexables: c=" + showCell(cell) + " cell2index=" + showCell(cell2index(cell)));
       xs[i] = cell2index(cell);
+      Main.pp("getIndexables: xs["+i+"] = "+xs[i]);
     }
     return xs;
   }

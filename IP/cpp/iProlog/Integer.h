@@ -2,19 +2,18 @@
 // Had this class (Java code) and it may relate mostly to
 // a need for a unique (pointer) handle....
 
-#include "unordered_map"
+#include "Inty.h"
 
 namespace iProlog {
 	using namespace std;
-	class Integer {
+	class Integer : public Inty {
 	public:
-		int i;
-		inline Integer(int x) { i = x;  }
-		inline Integer() { i = 0; }
-		inline Integer operator =(int x) { i = x;  return i; }
-		bool operator ==(const Integer x) const { return i == x.i;  }
-		bool equal_to(const Integer x) const { return i == x.i;  }
-		inline operator unsigned long () { return (unsigned long)i; }
-		string toString() const { return to_string(i); }
+		inline Integer(int x) { set(x);  }
+		inline Integer(Inty x) { set(x.as_int()); }
+		inline Integer() { set(0); }
+		inline Integer operator =(int x) { set(x);  return x; }
+		bool operator ==(const Integer x) const { return as_int() == x.as_int(); }
+		bool equal_to(const Integer x) const { return as_int() == x.as_int(); }
+		inline operator unsigned long () { return (unsigned long) as_int(); }
 	};
 }

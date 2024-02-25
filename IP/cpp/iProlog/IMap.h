@@ -8,13 +8,10 @@
 // for hashing implementation with a template, see:
 //  https://marknelson.us/posts/2011/09/03/hash-functions-for-c-unordered-containers.html
 
-#include <unordered_map>
-#include <set>
 #include <list>
 #include <algorithm>
 #include <string>
 #include <vector>
-#include <functional>
 #include "cell.h"
 #include "IntMap.h"
 #include "Integer.h"
@@ -34,33 +31,39 @@ public:
 
          struct bucket {
              Integer* key;
-             IntMap<int>* vals;
+             IntMap<int,int>* vals;
              bucket() { key = nullptr; vals = nullptr; }
-             bucket(Integer* Ip, IntMap<int>* vs) : key(Ip), vals(vs) {}
+             bucket(Integer* Ip, IntMap<int,int>* vs) : key(Ip), vals(vs) {}
          };
      
          vector<bucket> map;
 
-  IMap() {
-    map = vector<bucket>(NBUCKETS);
-    map.clear();
-  }
+      IMap() {
+            map = vector<bucket>(NBUCKETS);
+            map.clear();
+      }
 
-  inline void clear() { map.clear(); }
+      inline void clear() { map.clear(); }
 
-  Integer *put(Integer* key, int v);
-  IntMap<int>* get(Integer* key);
-  size_t size();
-  set<Integer *> keySet();
-  string toString();
-  static vector<IMap*> create(int l);
-  static Integer * put_(vector<IMap*> &imaps, int pos, cell key, int val);
-  static vector<int> getn(vector<IMap*> &iMaps,
-		          vector<IntMap<int>*> &vmaps,
-		          vector<int> &keys);
-  string show();
-  static string show(vector<IMap*> &imaps);
-  static string show(bucket &b);
-  static string show(vector<Integer *> is);
+      static inline int  to_clause_no(int index)      { return index + 1;      }
+      static inline int  to_clause_idx(int clause_no) { return clause_no - 1;  }
+      static inline bool is_var_arg(int clause_no)    { return clause_no == 0; }
+
+      Integer *put(Integer* key, int clause_no);
+      IntMap<int,int>* get(Integer* key);
+      size_t size();
+      string toString();
+      static vector<IMap*> create(int l);
+      static Integer * put_(    vector<IMap*> &imaps,
+                                int pos,
+                                cell derefd,
+                                int clause_no );
+      static vector<int> getn(  vector<IMap*> &iMaps,
+		                        vector<IntMap<int,int>*> &vmaps,
+		                        vector<int> &unifiables );
+      string show();
+      static string show(vector<IMap*> &imaps);
+      static string show(bucket &b);
+      static string show(vector<Integer *> is);
 };
 } // end namespace

@@ -102,7 +102,7 @@ Object Prog::exportTerm(cell x) {
 		pp("pp(syms):");
 		cout << "syms.size()=" << syms.size() << endl;
 		for (auto &kv : syms)
-			cout << "   " << kv.first << "," << kv.second->i << endl;
+			cout << "   " << kv.first << "," << kv.second->as_int() << endl;
 	}
 
         void Prog::ppGoals(shared_ptr<CellList> bs) {

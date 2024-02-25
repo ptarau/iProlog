@@ -41,16 +41,16 @@ namespace iProlog {
                                 //  has tried to match so far" [HHG doc]
 
         t_index_vector index_vector;  // "index elements" ("based on regs" [HHG] but no regs)
-        // "int[] regs: dereferenced goal registers" [HHG doc]
-        // [Comments in Engine.java suggest that this is regs]
-        // A note in Engine.java on makeIndexArgs(), which is called
-        // only in unfold(), says "xs contains dereferenced cells"
+            // "int[] regs: dereferenced goal registers" [HHG doc]
+            // [Comments in Engine.java suggest that this is regs]
+            // A note in Engine.java on makeIndexArgs(), which is called
+            // only in unfold(), says "xs contains dereferenced cells"
 
         vector<int> unifiables; // "array of clauses known to be unifiable
-        //  with top goal in goal stack" (for "cs" in Spine.java)
-              // [This is not listed in the HHG description of Spine.]
-              // Initialized from unifiables, in Engine. If indexing
-              // is not activated, unifiables[i] == i.]
+                //  with top goal in goal stack" ("cs" in Spine.java)
+                // [This is not listed in the HHG description of Spine.]
+                // Initialized from unifiables, in Engine. If indexing
+                // is not activated, unifiables[i] == i.]
 
         Spine() {
             head = 0;   // head of the clause to which this Spine corresponds
@@ -62,11 +62,11 @@ namespace iProlog {
                                     //  the top goal of [this] Spine
                                     //  has tried to match so far" [HHG doc]
             index_vector = { cell::tag(cell::BAD,0),
-			     cell::tag(cell::BAD,0),
-			     cell::tag(cell::BAD,0) };
+			                 cell::tag(cell::BAD,0),
+			                 cell::tag(cell::BAD,0) };
 					 // index elements ("based on regs" [HHG] but no regs)
-                                         // "int[] regs: dereferenced goal registers" [HHG doc]
-                                         // Comments in Engine.java suggest that xs is regs
+                     // "int[] regs: dereferenced goal registers" [HHG doc]
+                     // Comments in Engine.java suggest that xs is regs
             unifiables = vector<int>(0);
         }
 
@@ -79,13 +79,14 @@ namespace iProlog {
             shared_ptr<CellList> goals_0,        // was gs/goal_stack [Java]
             int trail_top_0,
             int k_0,
-            vector<int> unifiables_0); // was cs??
+            vector<int> unifiables_0); // was cs [Java]
 
         /**
-         * "Creates a specialized spine returning an answer (with no goals left to solve)." [Spine.java]
+         * "Creates a specialized spine returning an answer 
+         * (with no goals left to solve)." [Spine.java]
          */
         Spine(cell head, int trail_top);
 
-	inline bool hasGoals() { return goals != nullptr; }
+	    inline bool hasGoals() { return goals != nullptr; }
     };
 } // end namespace

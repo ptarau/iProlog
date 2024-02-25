@@ -13,12 +13,12 @@ O= \
 	index.o
 
 
-#OPT=-Os
+OPT=-Os
 #kOPT=-Ofast
-OPT=
+#OPT=
 
-DBG=-g
-#DBG=
+# DBG=-g
+DBG=
 
 #PRF=-pg
 PRF=

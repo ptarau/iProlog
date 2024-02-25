@@ -10,7 +10,7 @@ namespace iProlog {
             case e_nullptr:
                 return "$null";
             case e_integer:
-                return i.toString();
+                return to_string(i.as_int());
             case e_string:
                 return s;
             case e_vector: {

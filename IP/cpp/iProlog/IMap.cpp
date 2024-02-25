@@ -4,31 +4,34 @@
 * Copyright(c) 2017 Paul Tarau
 */
 
-#include "IMap.h"
 #include <iostream>
+#include "IMap.h"
 
 namespace iProlog {
-
-
-  Integer* IMap::put(Integer* key, int v) {
-      cout << endl << "          Entering IMap:put(" << key << "," << v << "):" << endl;
-      IntMap<int> *vals = map[phash(key)].vals;
+  Integer* IMap::put(Integer* key, int clause_no) {
+      cout << endl << "          Entering IMap:put([key->i=" << key->as_int() << "]," << clause_no << "):" << endl;
+      int b = phash(key);
+      cout <<         "             bucket b=" << b << endl;
+      IntMap<int,int>* vals = map[b].vals;
       if (nullptr == vals) {
-          vals = new IntMap<int>();
-      cout << "          Making new IntMap because vals ==null" << endl;
+          vals = new IntMap<int,int>();
+          cout << "          Making new IntMap because vals ==null" << endl;
 // it's map.put(key,vals) for a HashMap<Integer, IntMap> map in Java
-          map[phash(key)] = bucket(key, vals);
+          map[b] = bucket(key, vals);
       }
-      cout << "                   vals->size() before add("<<v<<") = " << vals->size() << endl;
-      bool r = vals->add(v);
-      cout << "                   vals->size() before add("<<v<<") = " << vals->size() << endl;
+      cout << "                   map[" << b << "] size before add("<< clause_no <<") = " << map[b].vals->size() << endl;
+      bool r = vals->add(clause_no);
+      cout << "                   map[" << b << "] size after add("<< clause_no <<") = " << map[b].vals->size() << endl;
+      
+      cout << "                   map[" << b << "].vals->get(" << key->as_int() << ") = " << map[b].vals->get(key->as_int()) << endl;
+
       return key;
   }
 
-  IntMap<int>* IMap::get(Integer* key) {
-      IntMap<int> *s = map[phash(key)].vals;
+  IntMap<int,int>* IMap::get(Integer* key) {
+      IntMap<int,int> *s = map[phash(key)].vals;
       if (s == nullptr)
-	s = new IntMap<int>();
+	        s = new IntMap<int,int>();
       return s;
   }
 
@@ -41,6 +44,7 @@ namespace iProlog {
     return s;
   }
 
+#if 0
   set<Integer *> IMap::keySet() {
       set <Integer*> s;
       for (bucket b : map)
@@ -48,10 +52,12 @@ namespace iProlog {
               s.insert(b.key);
     return s;
   }
+#endif
 
   string IMap::toString() {
-      return "map.toString() <stub>";
+      return "IMap::toString() <stub>";
   }
+
 
   // "specialization for array of int maps"
 
@@ -64,81 +70,15 @@ namespace iProlog {
       return imaps;
   }
 
-  Integer* IMap::put_(vector<IMap*> &imaps, int pos, cell key, int val) {
+  Integer* IMap::put_(vector<IMap*> &imaps, int pos, cell derefd, int clause_no) {
 
-      cout << "         entered put_(imaps,pos="<<pos <<", key="<<key.as_int()<<", val="<<val
+      cout << "         entered put_(imaps,pos="<< pos <<", derefd="<< derefd.as_int()<<", clause_no="<< clause_no
 		<<") ............" << endl;
-      Integer *ip = new Integer(key.as_int());
-      cout << "         before imaps["<<pos<<"].put(ip,val), size()=" << imaps[pos]->size() << endl;
-      bool r = imaps[pos]->put(ip, val);
+      Integer *ip = new Integer(derefd);
+      cout << "         before imaps["<<pos<<"].put(ip,clause_no), size()=" << imaps[pos]->size() << endl;
+      bool r = imaps[pos]->put(ip, clause_no);
       cout << "         exiting put_ with imaps["<<pos<<"]->size() = " << imaps[pos]->size() << endl;
       return ip;
-  }
-
-  vector<int> IMap::getn(vector<IMap*> &iMaps,
-	                 vector<IntMap<int>*> &vmaps,
-                         vector<int> &keys) {
-cout<<"Entering getn"<<endl;
-    size_t l = iMaps.size();
-    vector<IntMap<int>*> ms = vector<IntMap<int>*>();
-    vector<IntMap<int>*> vms = vector<IntMap<int>*>();
-
-    for (int i = 0; i < l; i++) {
-      int key = keys[i];
-      if (0 == key) {
-        continue;
-      }
-cout<<"   *** in getn, about to call iMaps["<<i<<"].get(...):"<<endl;
-      IntMap<int> *m = iMaps[i]->get(new Integer(key));
-
-cout<<"   *** in getn, that get(...) returned"<<endl;
-      ms.emplace_back(m);
-      vms.emplace_back(vmaps[i]);
-    }
-    vector<IntMap<int>> ims = vector<IntMap<int>>(ms.size());
-    vector<IntMap<int>> vims = vector<IntMap<int>>(vms.size());
-
-cout<<"   *** in getn, about to enter ims loop"<<endl;
-cout<<"   ***    ims.size()="<<ims.size()<<endl;
-cout<<"   ***    vms.size()="<<vms.size()<<endl;
-cout<<"   ***    ms.size()="<<ms.size()<<endl;
-cout<<"   ***    vims.size()="<<ms.size()<<endl;
-    for (int i = 0; i < ims.size(); i++) {
-cout<<"   ***       IntMap<int> *im = ms.at("<<i<<") about to be called"<<endl;
-        IntMap<int>* im = ms.at(i);
-	if (im == nullptr) abort();
-cout<<"   ***       ms["<<i<<"]=*im about to be done"<<endl;
-        ims[i] = *im;
-cout<<"   ***       IntMap<int> *vim = vms.at("<<i<<") about to be called"<<endl;
-        IntMap<int> *vim = vms.at(i);
-	if (vim == nullptr) abort();
-cout<<"   ***       vims["<<i<<"]=*im about to be done"<<endl;
-        vims[i] = *vim;
-    }
-
-    //Main.pp("-------ims=" + Arrays.toString(ims));
-    //Main.pp("-------vims=" + Arrays.toString(vims));
-    vector<int> cs;
-
-cout<<"   *** in getn, about to call IntMap intersect<int>"<<endl;
-    cs = IntMap<int>::intersect(ims, vims); // $$$ add vmaps here
-
-cout<<"   *** in getn, about to run is-filling loop"<<endl;
-    vector<int> is /*= cs.toArray() */; {
-        for (int i = 0; i < cs.size(); ++i)
-            is.push_back(cs[i]);
-        }
-cout<<"   *** in getn, is-adjusting loop"<<endl;
-    for (int i = 0; i < is.size(); i++) {
-      is[i] = is[i] - 1;
-    }
-cout<<"   *** in getn, is-sorting"<<endl;
-    std::sort(is.begin(),is.end());
-
-if(is.size()==0) cout << "     !!!!!! is=0 in IMap.getn() !!!!!!!!!"<<endl;
-else             cout << "     ?????? is="<<is.size()<<" in IMap.getn()"<<endl;
-
-    return is;
   }
 
   string IMap::show(bucket &b) {
@@ -149,10 +89,10 @@ else             cout << "     ?????? is="<<is.size()<<" in IMap.getn()"<<endl;
   string IMap::show() {
     string s = "{";
     string sep = "";
-    for (int i; i < map.size(); ++i) {
-	s += sep;
-	sep = ",";
-	s += show(map[i]);
+    for (int i = 0; i < (int) map.size(); ++i) {
+	    s += sep;
+	    sep = ",";
+	    s += show(map[i]);
     }
     s += "}";
     return s;
@@ -163,17 +103,21 @@ else             cout << "     ?????? is="<<is.size()<<" in IMap.getn()"<<endl;
     string s = "[";
     string sep = "";
     for (int i = 0; i < imaps.size(); ++i) {
-	s += sep;
-	sep = ",";
-	s += imaps[i]->show();
+	    s += sep;
+	    sep = ",";
+	    s += imaps[i]->show();
     }
     s += "]";
     return s;
   }
 
   string IMap::show(vector<Integer *> is) {
-    return "<stub: IMap show>";
-    // return Arrays.toString(is);
+      string s = "{";
+      for (int i = 0; i < is.size(); ++i)
+          s += "<stub>";
+      s += "}";
+
+      return s;
   }
 
   /*

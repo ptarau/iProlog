@@ -6,10 +6,11 @@
  */
 
 #include "defs.h"
+#include "Inty.h"
 #include <limits.h>
 
 // C++ 20 will have machine instructions generated for rotr and rotl
-// which may permit faster tag extract (thus smaller-footprint tag compare)
+// which may permit faster tag extract (thus smaller-footprint tag comparison)
 // for the hi-order tag styles.
 
 namespace iProlog {
@@ -17,15 +18,13 @@ namespace iProlog {
     using namespace std;
 
 
-    class cell {
-        int v;  // it make make sense to init at BAD-tagged cell
+    class cell : public Inty {
 
     public:
 	static const int bitwidth = CHAR_BIT * sizeof(int);
-        cell() { v = 0; }
-        cell(int i) { v = i; }
-        static inline cell nonval() { return cell(int(-1)); };
-        inline int as_int() const { return v; }
+        cell() { set(0); }
+        cell(int x) { set(x); }
+        static inline cell nonval() { return cell(int(-1)); }; // IFFY
 
     // hi_order_tag=1 -> a bit slower on 32-bit, probably because gcc
     //      is generating fatter instructions to accommodate
@@ -104,7 +103,6 @@ namespace iProlog {
     static inline bool isConstTag(int t)    { return t == C_;           }
     static inline bool isArgOffset(cell x)  { return tagOf(x) == A_;    }
     static inline bool isVarLoc(cell r, cell x)  { return x.as_int() == r.as_int(); }
-    inline bool operator ==(cell x)         { return v == x.v;          }
 
     // inline cell operator() (int i) { return (cell) i; }
 

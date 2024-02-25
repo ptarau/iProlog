@@ -33,10 +33,12 @@ namespace iProlog {
     public:
         inline CellStack()  {
             int size = MINSIZE;
+            cap = size;
 #ifdef RAW
             stack = (cell*)std::malloc(sizeof(cell) * size);
             if (stack == nullptr) abort();
-            cap = size;
+#else
+            stack.resize(cap);
 #endif
             top = -1;
         }
@@ -79,7 +81,7 @@ namespace iProlog {
 #ifdef RAW
 	    int limit = cap;
 #else
-	    int limit = stack.capacity();
+	    int limit = (int) stack.capacity();
 #endif
             if (++top >= limit) {
                 expand();

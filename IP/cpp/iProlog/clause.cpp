@@ -13,11 +13,11 @@ namespace iProlog {
 
     using namespace std;
 
-    Clause::Clause(int len_0, vector<cell> goal_refs_0, int base_0, int neck_0, t_index_vector xs) {
+    Clause::Clause(int len_0, vector<cell> goal_refs_0, int base_0, int neck_0, t_index_vector iv) {
         goal_refs = goal_refs_0;
         base = base_0;
         len = len_0;
         neck = neck_0;
-        index_vector = xs;
+        index_vector = iv;
     }
 }

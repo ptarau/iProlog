@@ -10,6 +10,8 @@
 #include "index.h"
 
 namespace iProlog {
+    typedef int ClauseNumber; /* 1 ... clause array size */
+
     /**
      * "representation of a clause" [Clause.java].
      */
@@ -28,7 +30,7 @@ namespace iProlog {
                           // Should it be "outermost termS"?
 
         Clause() : index_vector{ -1, -1, -1 }, len(size_t(0)), base(size_t(0)), neck(size_t(0)) {}
-        Clause(int len_0, vector<cell> goal_refs_0, int base_0, int neck_0, t_index_vector xs);
+        Clause(int len_0, vector<cell> goal_refs_0, int base_0, int neck_0, t_index_vector iv);
     };
 
 } // end namespace

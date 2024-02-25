@@ -171,7 +171,7 @@ public class Clause {
     this.hgs = hgs;
     this.base = base;
 
-    // Prog.println("     $$$$$$$$$$$$$$$$$$ Clause constructor: base<-" + base);
+    Prog.println("     $$$$$$$$$$$$$$$$$$ Clause constructor: base<-" + base);
 
     this.len = len;
     this.neck = neck;

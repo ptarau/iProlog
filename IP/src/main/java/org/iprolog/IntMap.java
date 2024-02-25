@@ -129,6 +129,7 @@ class IntMap implements java.io.Serializable {
   // end changes
 
   final int put(final int key, final int value) {
+	  Prog.println("IntMap.put(key=" + key + ", value=" + value + ") returns ...");
     if (key == FREE_KEY) {
       final int ret = m_freeValue;
       if (!m_hasFreeKey) {
@@ -136,6 +137,7 @@ class IntMap implements java.io.Serializable {
       }
       m_hasFreeKey = true;
       m_freeValue = value;
+      Prog.println ("former m_freeValue=" + ret);
       return ret;
     }
 
@@ -150,11 +152,13 @@ class IntMap implements java.io.Serializable {
       } else {
         ++m_size;
       }
+      Prog.println ("NO_VALUE=" + NO_VALUE);
       return NO_VALUE;
     } else if (k == key) //we check FREE prior to this call
     {
       final int ret = m_data[ptr + 1];
       m_data[ptr + 1] = value;
+      Prog.println ("m_data[" + ptr+1 + "] <- " + value + ", returning " + ret);
       return ret;
     }
 

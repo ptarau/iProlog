@@ -7,12 +7,24 @@
 #include <iostream>
 #include <chrono>
 #include <string>
+#if 0
 #include <filesystem>
+#endif
 #include <fstream>
 #include <sstream>
 
 #include "prog.h"
 #include "toks.h"
+
+#include "Inty.h"
+
+class xCell: public Inty {
+    string show() { return to_string(as_int()); }
+};
+
+void foox(xCell i) {
+    cout << i.as_int();
+}
 
 std::string file2string(std::string path) {
     std::ifstream f(path);
@@ -29,16 +41,17 @@ using namespace chrono;
 
 std::string current_working_directory()
 {
+#if 0
    std::filesystem::__cxx11::path p = std::filesystem::current_path();
    cout << "p = " << p << endl;
+#endif
 
-// #ifdef CPP17
+#ifdef CPP17
     std::filesystem::path cwd = std::filesystem::current_path();
     return cwd.string();
-// #else
-      // return "C:/Users/Michael Turner/projects/helloworld";
-//    return "C:/Users/Michael Turner/Documents/Github/iProlog/IP/";
-// #endif
+#else
+    return "C:/Users/Michael Turner/Documents/Github/iProlog/IP/";
+#endif
 }
 
 namespace iProlog {
@@ -48,9 +61,9 @@ void show(cstr h, int i) {
     cout << h << i << " (oct)" << std::oct << i << endl;
 }
 
-CellStack heap;
-unordered_map<string, Integer*> syms;
-vector<string> slist;
+    CellStack heap;
+    unordered_map<string, Integer*> syms;
+    vector<string> slist;
 
 string showCell(cell w) {
     int t = cell::tagOf(w);
@@ -70,15 +83,29 @@ string showCell(cell w) {
     return s;
 }
 
-t_index_vector getIndexables(cell ref) {
-    int p = 1 + cell::detag(ref);
-    int n = cell::detag(CellStack::getRef(heap, ref));
+/* Mostly duplicated in index.cpp, makeIndexArgs().
+ */
+t_index_vector getIndexables(cell goal) {
+    int arg_start = 1 + cell::detag(goal);
+    int n_args = cell::detag(CellStack::getRef(heap, goal));
+    int n = min(n_args,MAXIND);
+
+    cout << "getIndexables: n_args=" << n_args << endl;
     t_index_vector index_vector;
+
     for (int i = 0; i < MAXIND; ++i)
-	index_vector[i] = cell::tag(cell::BAD,0);
-    for (int i = 0; i < MAXIND && i < n; i++) {
-        cell c = CellStack::deref(heap, CellStack::cell_at(heap, p + i));
-        index_vector[i] = CellStack::cell2index(heap,c).as_int();
+	    index_vector[i] = cell::tag(cell::BAD,0);
+
+    for (int arg_pos = 0; arg_pos < n; arg_pos++) {
+        cell arg = CellStack::cell_at(heap, arg_start + arg_pos);
+        cell c = CellStack::deref(heap, arg);
+
+        cout << "getIndexables: c=" << showCell(c)
+             << " cell2index=" << showCell(CellStack::cell2index(heap,c)) << endl;
+
+        index_vector[arg_pos] = CellStack::cell2index(heap,c).as_int();
+
+        cout << "getIndexables: index_vector[" << arg_pos << "] <- " << index_vector[arg_pos].as_int() << endl;
     }
     return index_vector;
 }
@@ -89,7 +116,7 @@ t_index_vector getIndexables(cell ref) {
 Integer *addSym(string sym) {
     try { return syms.at(sym); }
     catch (const std::exception& e) {
-        Integer* I = new Integer(syms.size());
+        Integer* I = new Integer((int) syms.size());
         syms.insert(pair<string, Integer*>(sym, I));
         slist.push_back(sym);
         return I;
@@ -110,8 +137,8 @@ put_ref(string arg,
 }
 
 /*
- * Encodes string constants into symbols while leaving
- * other data types untouched.
+ * "Encodes string constants into symbols while leaving
+ * other data types untouched." [Engine.java]
  */
 cell encode(int t, string s) {
     size_t w;
@@ -120,7 +147,7 @@ cell encode(int t, string s) {
     }
     catch (const std::invalid_argument& e) {
         if (t == cell::C_)
-            w = int(addSym(s)->i);
+            w = int(addSym(s)->as_int());
         else {
             cstr err = string("bad number form in encode=") + t + ":" + s + ", [" + e.what() + "]";
             throw logic_error(err);
@@ -130,15 +157,12 @@ cell encode(int t, string s) {
 }
 
 /**
-  * Places a clause built by the Toks reader on the heap.
+  * "Places a clause built by the Toks reader on the heap." [Engine.java]
   */
 Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
-
-const bool tracing = false;
     int base = heap.getTop()+1;
-
     cell b = cell::tag(cell::V_, base);
-    // ... because b is used later in '+' ops that would otherwise mangle tags.
+        // ... because b is used later in '+' ops that would otherwise mangle tags.
     int len = int(cells.size());
     CellStack::pushCells(heap, b, 0, len, cells);
 
@@ -149,17 +173,7 @@ const bool tracing = false;
             hgs[i] = cell::relocate(b, hgs[i]);
     }
 
-    t_index_vector index_vector = getIndexables(hgs[0]);
-if(tracing) {
-    cout << endl << "In putClause(...): index_vector=";
-    string sep = "<";
-    for (int i = 0; i < MAXIND; ++i) {
-	cout << sep << index_vector[i].as_int();
-	sep = ",";
-    }
-    cout << ">" << endl;
-}
-    Clause rc = Clause(len, hgs, base, neck, index_vector);
+    Clause rc = Clause(len, hgs, base, neck, getIndexables(hgs[0]));
 
     return rc;
 }
@@ -362,7 +376,7 @@ vector<Clause> dload(cstr s) {
         testSharedCellList();
 
         string where_i_am = current_working_directory();
-        string test_directory = where_i_am + "/../../progs/";
+        string test_directory = where_i_am + "/progs/";
         cout << "... in " << where_i_am << endl;
 
         if (argc == 1) {
@@ -385,7 +399,7 @@ vector<Clause> dload(cstr s) {
 	    index *Ip = nullptr;
 
 	    if (indexing)
-		Ip = new index(clauses);
+		    Ip = new index(clauses);
 
 	    Prog *p = new Prog(heap,clauses,syms,slist,Ip);
 

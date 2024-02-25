@@ -110,7 +110,7 @@ protected:
     inline void ensureSize(CellStack &heap, int more) {
 	if (more < 0) abort();
         // assert(more > 0);
-        if (size_t(1 + heap.getTop() + more) >= heap.capacity()) {
+        if (1 + heap.getTop() + more >= (int) heap.capacity()) {
             heap.expand();
         }
     }
