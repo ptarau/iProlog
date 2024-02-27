@@ -49,11 +49,11 @@ public:
  *  -- for standalone engine, file reading, parsing & code gen is
  *     done in main.cpp for now
  */
-    Engine(CellStack &heap_0,
-           vector<Clause> &clauses_0,
-	   unordered_map<string, Integer*> &syms_0,
-	   vector<string> &slist_0,
-	   index *Ip_0)
+    Engine( CellStack &heap_0,
+            vector<Clause> &clauses_0,
+	        unordered_map<string, Integer*> &syms_0,
+	        vector<string> &slist_0,
+	        index *Ip_0)
 		: heap(heap_0), clauses(clauses_0), syms(syms_0), slist(slist_0), Ip(Ip_0) {
 
 	    if (clauses.size() == 0) {
@@ -71,25 +71,23 @@ public:
 
 protected:
 
-    Integer *addSym(string sym);
-    string getSym(int w);
+    Integer *addSym(const string sym);
+    string getSym(int w) const;
 
 // should try heap-as-class (maybe subclassed from CellStack)
 // to see whether there's a performance penalty
 
-    inline cell   cell_at(int i)            { return heap.get(i);              }
+    inline cell   cell_at(int i) const      { return heap.get(i);       }
 
-    inline void   set_cell(int i, cell v)   { heap.set(i,v);                   }
+    inline void   set_cell(int i, cell v)   { heap.set(i,v);            }
 
-    inline cell   getRef(cell x)            { return cell_at(cell::detag(x));  }
+    inline cell   getRef(cell x)  const     { return cell_at(x.arg());  }
 
-    inline void   setRef(cell w, cell r)    { set_cell(cell::detag(w), r);     }
+    inline void   setRef(cell w, cell r)    { set_cell(w.arg(), r);     }
 
     CellStack unify_stack;
 
     vector<Spine*> spines;
-
-    static cstr heapCell(int w);
 
     void makeHeap(int size = MINSIZE) {
         heap.resize(size);
@@ -97,16 +95,16 @@ protected:
     }
 
     void pushCells(CellStack &h, cell b, int from, int upto, int base);
-    void pushCells(CellStack &h, cell b, int from, int upto, vector<cell> cells);
+    void pushCells(CellStack &h, cell b, int from, int upto, const vector<cell> cells);
 
-    vector<cell> pushBody(cell b, cell head, Clause& C);
+    vector<cell> pushBody(cell b, cell head, const Clause& C);
     
     void clear();
 
     inline int heap_size() {
         return heap.getTop() + 1;
     }
-#if 1
+
     inline void ensureSize(CellStack &heap, int more) {
 	if (more < 0) abort();
         // assert(more > 0);
@@ -114,19 +112,19 @@ protected:
             heap.expand();
         }
     }
-#endif
+
     static vector<int>&
         put_ref(string arg,
                 unordered_map<string, vector<int>>& refs,
                 int clause_pos);
 
-    cell encode(int t, cstr s);
+    cell encode(int t, const cstr s);
 
     void unwindTrail(int savedTop);
 
 // maybe redefine Engine.h version to use CellStack version?
-    inline cell deref(cell x) {
-        while (cell::isVAR(x)) {
+    inline cell deref(cell x) const {
+        while (x.is_var()) {
             cell r = getRef(x);
             if (cell::isVarLoc(r,x))
                 break;
@@ -136,14 +134,13 @@ protected:
     }
 public:
     index *Ip;
-#if 0
-    vector<Clause> dload(cstr s);
-#endif
+
+    vector<Clause> dload(const cstr s);
+
     CellStack trail;
-    string showCell(cell w);
+    string showCell(cell w) const;
 
 protected:
-    void ppc(const Clause&);
     // void ppGoals(IntList *bs);
     void ppSpines() {}
 
@@ -152,7 +149,7 @@ protected:
 
     cell pushHeadtoHeap(cell b, const Clause& C);
 
-    bool hasClauses(Spine* S);
+    bool hasClauses(const Spine* S) const;
 
     Spine* unfold(Spine *G);
 
@@ -165,14 +162,8 @@ protected:
 
     Spine* yield();
     cell ask();
-#if 0
-    void linker(unordered_map<string,vector<int>> refs,
-		vector<cell>& cells,
-		vector<cell>& goals,
-		vector<Clause>& compiled_clauses);
 
-    Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck);
-#endif
+    void ppc(const Clause&);
 
     inline string showCS(string name, CellStack cs) {
         string s = name + ":";

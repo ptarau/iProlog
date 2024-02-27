@@ -46,12 +46,12 @@ namespace iProlog {
         inline CellStack(int size) {
             if (size == 0) size = MINSIZE;
 #ifdef RAW
-	    stack = (cell*)std::malloc(sizeof(cell) * size);
-	    if (stack == nullptr) abort();
-	    cap = size;
-	    top = -1;
+	        stack = (cell*)std::malloc(sizeof(cell) * size);
+	        if (stack == nullptr) abort();
+	        cap = size;
+	        top = -1;
 #else
-	    stack = vector<cell>(size);
+	        stack = vector<cell>(size);
 #endif
             clear();
         }
@@ -153,17 +153,17 @@ namespace iProlog {
 
 // maybe redefine the corresponding memb fns in Engine.h to use these?
 // check for performance penalty
-    static inline cell   cell_at(CellStack &h, int i)
+    static inline cell   cell_at(const CellStack &h, int i)
         { return h.get(i);              			}
     static inline void   set_cell(CellStack &h, int i, cell v)
-	{ h.set(i,v);                   			}
-    static inline cell   getRef(CellStack &h, cell x)
-        { return cell_at(h, cell::detag(x));  			}
+	    { h.set(i,v);                   			}
+    static inline cell   getRef(const CellStack &h, cell x)
+        { return cell_at(h, x.arg());  			}
     static inline void   setRef(CellStack &h, cell w, cell r)
-        { set_cell(h, cell::detag(w), r);     			}
+        { set_cell(h, w.arg(), r);     			}
 
-    static inline cell deref(CellStack &h, cell x) {
-        while (cell::isVAR(x)) {
+    static inline cell deref(const CellStack &h, cell x) {
+        while (x.is_var()) {
             cell r = getRef(h,x);
             if (cell::isVarLoc(r,x))
                 break;
@@ -172,9 +172,9 @@ namespace iProlog {
         return x;
     }
 
-        static inline cell cell2index(CellStack &heap, cell c) {
+        static inline cell cell2index(const CellStack &heap, cell c) {
             cell x = cell::tag(cell::V_,0);
-            int t = cell::tagOf(c);
+            int t = c.s_tag();
             switch (t) {
                 case cell::R_:
                     x = getRef(heap, c);
@@ -205,14 +205,15 @@ namespace iProlog {
 	    ensureSize(heap, count);
 
 	    if (is_raw) {
-		cell* srcp = heap.data() + base + from;
-		cell* dstp = (cell*)(heap.data() + heap.getTop()) + 1;
-		heap.setTop(heap.getTop() + count);
-		cell::cp_cells(b,srcp,dstp,count);
+		    cell* srcp = heap.data() + base + from;
+		    cell* dstp = (cell*)(heap.data() + heap.getTop()) + 1;
+		    heap.setTop(heap.getTop() + count);
+		    cell::cp_cells(b,srcp,dstp,count);
 	    }
 	    else
-		for (int i = from; i < upto; i++) {
-		    heap.push(cell::relocate(b, heap.get(base + i)));;
+		    for (int i = from; i < upto; i++) {
+		        // heap.push(heap.get(base + i).relocate(b));
+                heap.push(cell::relocate(b, heap.get(base + i)));
 	    }
 	}
 
@@ -221,18 +222,18 @@ namespace iProlog {
 	 *  TODO: Identical to pushToTopOfHeap()?
 	 * 
 	 */
-	static inline void pushCells(CellStack &heap, cell b, int from, int to, vector<cell> cells) {
+	static inline void pushCells(CellStack &heap, cell b, int from, int to, const vector<cell> &cells) {
 	    int count = to - from;
 	    ensureSize(heap, count);
 
-	    if (is_raw) {
-		cell* heap_dst = (cell*)(heap.data() + heap.getTop()) + 1;
-		heap.setTop(heap.getTop() + count);
-		cell::cp_cells(b,cells.data(),heap_dst,count);
-	    }
-	    else
-		for (int i = from; i < to; i++)
-		    heap.push(cell::relocate(b, cells[i]));
+        if (is_raw) {
+            cell* heap_dst = (cell*)(heap.data() + heap.getTop()) + 1;
+            heap.setTop(heap.getTop() + count);
+            cell::cp_cells(b, cells.data(), heap_dst, count);
+        }
+        else
+            for (int i = from; i < to; i++)
+                heap.push(cell::relocate(b, cells[i]));
 	}
     };
 } // end namespace

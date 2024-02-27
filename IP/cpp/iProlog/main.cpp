@@ -66,8 +66,8 @@ void show(cstr h, int i) {
     vector<string> slist;
 
 string showCell(cell w) {
-    int t = cell::tagOf(w);
-    int val = cell::detag(w);
+    int t = w.s_tag();
+    int val = w.arg();
     string s = "";
     string sym = "";
 
@@ -86,8 +86,8 @@ string showCell(cell w) {
 /* Mostly duplicated in index.cpp, makeIndexArgs().
  */
 t_index_vector getIndexables(cell goal) {
-    int arg_start = 1 + cell::detag(goal);
-    int n_args = cell::detag(CellStack::getRef(heap, goal));
+    int arg_start = 1 + goal.arg();
+    int n_args = CellStack::getRef(heap, goal).arg();
     int n = min(n_args,MAXIND);
 
     cout << "getIndexables: n_args=" << n_args << endl;
@@ -113,7 +113,7 @@ t_index_vector getIndexables(cell goal) {
 /**
  * "Places an identifier in the symbol table."
  */
-Integer *addSym(string sym) {
+Integer *addSym(const string sym) {
     try { return syms.at(sym); }
     catch (const std::exception& e) {
         Integer* I = new Integer((int) syms.size());
@@ -124,7 +124,7 @@ Integer *addSym(string sym) {
 }
 
 /*static*/ vector<int> &
-put_ref(string arg,
+put_ref(        const string arg,
                 unordered_map<string, vector<int>> &refs,
                 int clause_pos) {
     vector<int>& Is = refs[arg];
@@ -140,7 +140,7 @@ put_ref(string arg,
  * "Encodes string constants into symbols while leaving
  * other data types untouched." [Engine.java]
  */
-cell encode(int t, string s) {
+cell encode(int t, const string s) {
     size_t w;
     try {
         w = stoi(s);
@@ -199,7 +199,7 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
             size_t leader = -1;
             for (size_t j = 0; j < Is.size(); ++j)
                 if (/*cell::isArgOffset(cells[j])*/
-                    cell::tagOf(cells[Is[j]]) == cell::A_) {
+                    cells[Is[j]].s_tag() == cell::A_) {
                     leader = Is[j];
                     found = true;
                     break;
@@ -227,7 +227,7 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
         if (1 == goals.size())
             neck = int(cells.size());
         else
-            neck = cell::detag(goals[1L]);
+            neck = goals[1L].arg();
 
 // cout << "before putClause call" << endl;
         Clause C = putClause(cells, goals, neck); // safe to pass all?
@@ -239,7 +239,7 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
     }
 
 
-vector<Clause> dload(cstr s) {
+vector<Clause> dload(const cstr s) {
     vector<vector<vector<string>>> clause_asm_list = Toks::toSentences(s);
     vector<Clause> compiled_clauses;
 
@@ -305,10 +305,10 @@ vector<Clause> dload(cstr s) {
 
         cell r = cell::tag(cell::R_, 1);
         cout << "r=" << r.as_int() << " (oct)" << std::oct << r.as_int() << endl;
-        size_t dtr = cell::detag(r);
-        int tor = cell::tagOf(r);
-        cout << "detag(r)=" << dtr << " (oct)" << std::oct << dtr << endl;
-        cout << "tagOf(r)=" << tor << " (oct)" << std::oct << tor << endl;
+        size_t dtr = r.arg();
+        int tor = r.s_tag();
+        cout << "arg of r)=" << dtr << " (oct)" << std::oct << dtr << endl;
+        cout << "tag of r)=" << tor << " (oct)" << std::oct << tor << endl;
 
         assert(!cell::isVAR(r));
         assert(!cell::isConst(r));
@@ -341,21 +341,22 @@ vector<Clause> dload(cstr s) {
         const int the_tag = cell::A_;
         cout << "test_tagging: tag_mask = " << std::oct << cell::tag_mask << endl;
         cell i = cell::tag(the_tag, val);
-        size_t w = cell::detag(i);
-        int t = cell::tagOf(i);
+        size_t w = i.arg();
+        int t = i.s_tag();
         cout << "In test_tagging, w=" << std::oct << w << endl;
         assert(t == the_tag);
         assert(w == val);
         cout << std::dec << endl;
         cell bad = cell::tag(cell::BAD, val);
-        assert(!cell::isRef(bad));
-        assert(!cell::isVAR(bad));
+        assert(!bad.is_ref());
+        // assert(!cell::isVAR(bad));
+        assert(!bad.is_var());
         assert(!cell::isConst(bad));
         assert(!cell::isReloc(bad));
 
         cell a = cell::tag(cell::A_, 0);
-        assert(!cell::isVAR(a));
-        assert(cell::isArgOffset(a));
+        if (a.is_var()) abort();
+        if (!a.is_arg_offset()) abort();
     }
 
     void testSharedCellList() {

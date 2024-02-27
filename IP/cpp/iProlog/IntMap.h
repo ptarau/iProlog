@@ -65,7 +65,7 @@ namespace iProlog {
 		void shiftKeys(int pos);
 		void rehash(size_t newCapacity);
 
-		inline void move_to_next_entry(int& p) {
+		inline void move_to_next_entry(int& p) const {
 			p = (p + m_stride) & m_mask2;  // masking causes wraparound indexing
 		}
 		inline void make_masks(int cap) { // arg must be 2^n for some n
@@ -88,22 +88,22 @@ namespace iProlog {
 		}
 
 		inline void  set_k(int p, Key k)   { m_data[p] = k; }
-		inline Key   get_k(int p)          { return m_data[p]; }
+		inline Key   get_k(int p) const    { return m_data[p]; }
 		inline void  set_v(int p, Value v) { m_data[p + 1] = v; }
-		inline Value get_v(int p)          { return m_data[p + 1]; }
+		inline Value get_v(int p) const    { return m_data[p + 1]; }
 
-		inline int hash_pos(Key key) {
+		inline int hash_pos(Key key) const {
 			return (FastUtil::phiMix(key) & m_mask) << (m_stride - 1);
 		}
 
 	public:
 
-		inline Key get_key_at(int p) { return get_k(p); }
+		inline Key get_key_at(int p) const { return get_k(p); }
 
-		inline int size() { return m_size; }
+		inline int size() const { return m_size; }
 		
 		// inline int& operator[](int i)
-		inline Value& lval(int i)
+		inline Value& lval(int i) 
 		{
 			return m_data[i];
 		}
@@ -112,22 +112,23 @@ namespace iProlog {
 		IntMap(int size);
 		IntMap(int size, float fillFactor);
 
-		Value get(Key key);
+		Value get(Key key) const;
 		Value put(Key key, Value value);
 		Value remove(Key key);
 
-		inline bool add(Key key)      { return NO_VALUE != put(key, 666); }
-		inline bool contains(Key key) { return NO_VALUE != get(key);      }
-		inline bool retract(Key key)  { return NO_VALUE != remove(key);   }
-		inline bool isEmpty()         { return 0 == m_size;               }
+		inline bool add(Key key)            { return NO_VALUE != put(key, 666); }
+		inline bool contains(Key key) const { return NO_VALUE != get(key);      }
+		inline bool retract(Key key)        { return NO_VALUE != remove(key);   }
+		inline bool isEmpty() const         { return 0 == m_size;               }
 
 		// some kind of inlined "bool get_next_key(int &p, Key &k)" semi-iterator
 		// would be better than this -- it could hide these three, until the
 		// kv_pair rewrite is worked out for IntMap.
-		inline size_t capacity()      { return m_data.capacity();         }
-		inline int stride()           { return m_stride;                  }
-		inline bool is_free(Key k)    { return k == FREE_KEY;             }
+		inline size_t capacity() const     { return m_data.capacity();         }
+		inline int stride() const          { return m_stride;                  }
+		inline bool is_free(Key k) const   { return k == FREE_KEY;             }
 
+		// avoid dragging in string library
 		string toString();
 	};
 }

@@ -10,8 +10,6 @@
 #include "index.h"
 
 namespace iProlog {
-    typedef int ClauseNumber; /* 1 ... clause array size */
-
     /**
      * "representation of a clause" [Clause.java].
      */

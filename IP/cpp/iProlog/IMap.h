@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include "cell.h"
+#include "index.h"
 #include "IntMap.h"
 #include "Integer.h"
 
@@ -21,49 +22,40 @@ namespace iProlog {
     using namespace std; 
 
 class IMap {
-public:
+
         static const int NBUCKETS = 16;
 
-         static size_t phash(Integer *s) {
+         static size_t phash(const Integer *s) {
              size_t x = (size_t) s;
              return (size_t) (0xF & ((x >> 10) ^ (x >> 2)));
          }
 
          struct bucket {
-             Integer* key;
+             const Integer* key;
              IntMap<int,int>* vals;
              bucket() { key = nullptr; vals = nullptr; }
-             bucket(Integer* Ip, IntMap<int,int>* vs) : key(Ip), vals(vs) {}
+             bucket(const Integer* vec_elt_obj, IntMap<int,int>* vs) : key(vec_elt_obj), vals(vs) {}
          };
      
          vector<bucket> map;
-
+public:
       IMap() {
             map = vector<bucket>(NBUCKETS);
             map.clear();
       }
-
       inline void clear() { map.clear(); }
-
-      static inline int  to_clause_no(int index)      { return index + 1;      }
-      static inline int  to_clause_idx(int clause_no) { return clause_no - 1;  }
-      static inline bool is_var_arg(int clause_no)    { return clause_no == 0; }
-
-      Integer *put(Integer* key, int clause_no);
-      IntMap<int,int>* get(Integer* key);
-      size_t size();
-      string toString();
+      bool put(const Integer* vec_elt_obj, ClauseNumber clause_no);
+      IntMap<int,int>* get(const Integer* vec_elt_obj) const;
       static vector<IMap*> create(int l);
-      static Integer * put_(    vector<IMap*> &imaps,
-                                int pos,
-                                cell derefd,
-                                int clause_no );
-      static vector<int> getn(  vector<IMap*> &iMaps,
-		                        vector<IntMap<int,int>*> &vmaps,
-		                        vector<int> &unifiables );
+      size_t size();
+
+// refactor out, for micro version, or keep but
+// conditionally compiled for that version:
+
+      string toString() const;
       string show();
-      static string show(vector<IMap*> &imaps);
-      static string show(bucket &b);
-      static string show(vector<Integer *> is);
+      static string show(const vector<IMap*> &imaps);
+      static string show(const bucket &b);
+      static string show(const vector<Integer *> is);
 };
 } // end namespace

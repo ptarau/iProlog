@@ -27,12 +27,16 @@ namespace iProlog {
 #include "spine.h"
 #include "CellStack.h"
 
+
+
 namespace iProlog {
 
 class Spine;
 
 class index {
+
 public:
+
   /* "For each argument position in the head of a clause
    * (up to a maximum that can be specified by the programmer [MAXIND])
    * it associates to each indexable element(symbol, number or arity)
@@ -51,17 +55,27 @@ public:
     long n_matches;
 
     index() { n_matches = 0; };
-    index(vector<Clause> &clauses);
+    index(const vector<Clause> &clauses);
 
-    bool possible_match(t_index_vector& iv0,
-                        t_index_vector& iv1); 
+#define COUNTING_MATCHES
 
-    void put(t_index_vector& iv, ClauseNumber clause_no);
+    bool possible_match(const t_index_vector& iv0,
+                        const t_index_vector& iv1)
+#ifndef COUNTING_MATCHES
+                                                    const
+#endif
+                                                         ; 
 
-    void makeIndexArgs(CellStack &heap, Spine *G, cell goal);
+    void put(const t_index_vector& iv, ClauseNumber clause_no);
+
+    void makeIndexArgs(const CellStack &heap, Spine *G, cell goal);
 
     // "vector<ClauseNumber>" ?
     vector<int> matching_clauses(const vector<int>& unifiables);
+
+    static inline ClauseNumber to_clause_no(int i)       { return i + 1;      }
+    static inline int  to_clause_idx(ClauseNumber cl_no) { return cl_no - 1;  }
+    static inline bool is_var_arg(ClauseNumber cl_no)    { return cl_no == 0; }
 };
 
 } // namespace

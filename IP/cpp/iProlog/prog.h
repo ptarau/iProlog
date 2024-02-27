@@ -15,13 +15,13 @@ namespace iProlog {
 	public:
 		void run(bool print_ans);
 		string stats() const;
-		void ppCode();
-		void ppc(Spine &S);
-		string showClause(const Clause& s);
+		void ppCode() const;
+		void ppc(const Spine &S) const;
+		string showClause(const Clause& s) const;
 
-		void ppGoals(shared_ptr<CellList> bs);
-		void pp(string s);
-	        void pp(unordered_map<string, Integer*> syms);
+		void ppGoals(const shared_ptr<CellList> bs) const;
+		void pp(const string s) const;
+	    void pp(unordered_map<string, Integer*> syms) const;
 		void ppTrail();
 		Prog(CellStack &heap,
 		     vector<Clause> &clauses,
@@ -30,16 +30,16 @@ namespace iProlog {
 		     index *Ip)
 		         : Engine(heap,clauses,syms,slist,Ip) { };
 
-        /*virtual*/ string showTermCell(cell x);
-        /*virtual*/ string showTerm(Object O);
-        string showIMaps();
-        Object exportTerm(cell c);
+        string showTermCell(cell x) const;
+        string showTerm(Object O) const;
+        string showIMaps() const;
+        Object exportTerm(cell c) const;
 
 	private:
 		static string maybeNull(const Object& O);
 		static inline bool isListCons(cstr name);
 		static inline bool isOp(cstr name);
 		static string st0(const vector<Object>& args);
-		string showCells(int base, int len);
+		string showCells(int base, int len) const;
 	};
 };

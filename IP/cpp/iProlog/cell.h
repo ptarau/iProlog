@@ -81,38 +81,52 @@ namespace iProlog {
     static inline cell tag(int t, size_t w) {
         return cell((int)((w << ref_shift) | t));
     }
-    static inline int detag(cell w) {
+
+    inline int arg() {
         if (use_sign_bit)
-            return (w.as_int() & ref_mask);
+            return (as_int() & ref_mask);
         else
-            return w.as_int() >> ref_shift;
+            return as_int() >> ref_shift;
     }
-    static inline int tagOf(cell w) { return w.as_int() & tag_mask; }
-    static inline bool isVAR(cell x) {
-        int t = tagOf(x);
-        return t == U_ || t == V_;
-    }
-    static inline bool isRef(cell x) { return tagOf(x) == R_; }
-    static inline bool isReloc(cell x) {
+
+    inline int s_tag() const { return as_int() & tag_mask; }
+ 
+    inline bool is_var() const { int t = s_tag(); return t == U_ || t == V_;  }
+    inline bool is_ref() const { return s_tag() == R_;                        }
+
+    inline bool is_reloc() const {
         if (!use_sign_bit)
-            return isVAR(x) || isRef(x);
+            return is_var() || is_ref();
         else
-            return x.as_int() < 0;
+            return as_int() < 0;
     }
-    static inline bool isConst(cell x)      { return tagOf(x) == C_;    }
-    static inline bool isConstTag(int t)    { return t == C_;           }
-    static inline bool isArgOffset(cell x)  { return tagOf(x) == A_;    }
-    static inline bool isVarLoc(cell r, cell x)  { return x.as_int() == r.as_int(); }
 
-    // inline cell operator() (int i) { return (cell) i; }
+    inline bool is_const() const          { return s_tag() == C_; }
+    static inline bool isConstTag(int t)  { return t == C_;       }
+    inline bool is_arg_offset() const     { return s_tag() == A_; }
+    static inline bool isVarLoc(cell r, cell x) { return x.as_int() == r.as_int(); }
 
-    static inline cell relocate(cell b, const cell c) {
-        if (isReloc(c)) {
+    static inline cell relocate(cell b, cell c) {
+        if (c.is_reloc()) {
             if (use_sign_bit)   return c.as_int() + (b.as_int() & ref_mask);
             else                return c.as_int() + b.as_int();
         }
         return c;
     }
+
+    static inline cell argOffset(size_t o) { return tag(A_, o);  }
+    static inline cell reference(size_t r) { return tag(R_, r);  }
+
+    static inline void cp_cells(cell b, const cell *srcp, cell *dstp, int count) {
+#       define STEP *dstp++ = cell::relocate(b, *srcp++)
+            while (count >= 4) { STEP; STEP; STEP; STEP; count -= 4; }
+            switch (count) {
+                case 3: STEP; case 2: STEP; case 1: STEP; case 0: ;
+                }
+#       undef STEP
+    }
+
+    // Need to avoid string lib in small memory
 
     static string tagSym(int t) {
         if (t == V_) return "V";
@@ -123,19 +137,6 @@ namespace iProlog {
         if (t == A_) return "A";
         return "?";
     }
-
-    static inline cell argOffset(size_t o) { return tag(A_, o);  }
-    static inline cell reference(size_t r) { return tag(R_, r);  }
-
-    static inline void cp_cells(cell b, cell *srcp, cell *dstp, int count) {
-#       define STEP *dstp++ = cell::relocate(b, *srcp++) 
-            while (count >= 4) { STEP; STEP; STEP; STEP; count -= 4; }
-            switch (count) {
-                case 3: STEP; case 2: STEP; case 1: STEP; case 0: ;
-                }
-#       undef STEP
-    }
-
 
   };
 

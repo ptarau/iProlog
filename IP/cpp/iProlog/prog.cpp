@@ -15,14 +15,14 @@ namespace iProlog {
     /**
      * raw display of a term - to be overridden
      */
-    /*virtual*/ string Prog::showTermCell(cell x) {
+    /*virtual*/ string Prog::showTermCell(cell x) const {
       return showTerm(exportTerm(x));
     }
 
     /**
      * raw display of an externalized term
      */
-    string Prog::showTerm(Object O) {
+    string Prog::showTerm(Object O) const {
         if (O.type == Object::e_integer)
             return O.toString();
         if (O.type == Object::e_vector)
@@ -30,19 +30,19 @@ namespace iProlog {
         return O.toString();
     }
 
-    string Prog::showIMaps() {
+    string Prog::showIMaps() const {
        cout << "INDEX" << endl;
        return IMap::show(Ip->imaps);
     }
 
-Object Prog::exportTerm(cell x) {
+Object Prog::exportTerm(cell x) const {
 
     if (x == cell::tag(cell::BAD,0))
-	return Object();
+	    return Object();
 
     x = deref(x);
-    int t = cell::tagOf(x);
-    int w = cell::detag(x);
+    int t = x.s_tag();
+    int w = x.arg();
 
     Object res;
     switch (t) {
@@ -53,10 +53,10 @@ Object Prog::exportTerm(cell x) {
 
         case cell::R_: {
                     cell a = cell_at(w);
-                    if (!cell::isArgOffset(a)) {
+                    if (!a.is_arg_offset()) {
                         throw logic_error(cstr("*** should be A, found=") + showCell(a));
                     }
-                    int n = cell::detag(a);
+                    int n = a.arg();
                     vector<Object> args;
                     int k = w + 1;
                     for (int i = 0; i < n; i++) {
@@ -75,7 +75,7 @@ Object Prog::exportTerm(cell x) {
 }
 
 
-    string Prog::showCells(int base, int len) {
+    string Prog::showCells(int base, int len) const {
 	string buf;
 	for (int k = 0; k < len; k++) {
 	    cell instr = cell_at(base + k);
@@ -94,23 +94,23 @@ Object Prog::exportTerm(cell x) {
         }
     }
 
-	void Prog::pp(string s) {
+	void Prog::pp(const string s) const {
 	    std::cout << s << endl;
 	}
 
-	void Prog::pp(unordered_map<string, Integer*> syms) {
+	void Prog::pp(unordered_map<string, Integer*> syms) const {
 		pp("pp(syms):");
 		cout << "syms.size()=" << syms.size() << endl;
 		for (auto &kv : syms)
 			cout << "   " << kv.first << "," << kv.second->as_int() << endl;
 	}
 
-        void Prog::ppGoals(shared_ptr<CellList> bs) {
-            for (shared_ptr<CellList> bp = bs; bs != nullptr; bs = CellList::tail(bs)) {
+        void Prog::ppGoals(const shared_ptr<CellList> bs) const {
+            for (shared_ptr<CellList> bp = bs; bp != nullptr; bp = CellList::tail(bs)) {
                 pp(showTerm(exportTerm(CellList::head(bp))));
             }
         }
-        void Prog::ppc(Spine &S) {
+        void Prog::ppc(const Spine &S) const {
             shared_ptr<CellList> bs = S.goals;
             pp(cstr("\nppc: t=") + S.trail_top + ",last_clause_tried=" + S.last_clause_tried + "len=" + bs->size());
             ppGoals(bs);
@@ -130,7 +130,7 @@ Object Prog::exportTerm(cell x) {
     }
 
 /**
- * run - execute the logig program. "It also unpacks the actual answer term
+ * run - execute the logic program. "It also unpacks the actual answer term
  * (by calling the method exportTerm) to a tree representation of a term,
  * consisting of recursively embedded arrays hosting as leaves,
  * an external representation of symbols, numbers and variables." [HHG doc]
@@ -150,7 +150,7 @@ if(indexing)
         pp(cstr("n_alloced=") + CellList::alloced());
     }
 
-    void Prog::ppCode() {
+    void Prog::ppCode() const {
         string t;
 
         for (size_t i = 0; i < slist.size(); i++) {
@@ -160,7 +160,7 @@ if(indexing)
 
         pp("\nSYMS:\n{" + t + "}");
 
-	pp(syms);
+	    pp(syms);
 
         pp("\nCLAUSES:\n");
 
@@ -170,12 +170,11 @@ if(indexing)
         pp("");
     }
 
-    string Prog::showClause(const Clause &s) {
+    string Prog::showClause(const Clause &s) const {
         string buf;
 
         size_t l = s.goal_refs.size();
         buf += "\n";
-        // buf += showTerm(s.goal_refs[0]);
         buf += showCell(s.goal_refs[0]);
 
         if (l > 1) {
@@ -183,7 +182,6 @@ if(indexing)
             for (int i = 1; i < l; i++) {
                 cell e = s.goal_refs[i];
                 buf += "   ";
-                // buf += showTerm(e);
                 buf += showCell(e);
                 buf += "\n";
             }

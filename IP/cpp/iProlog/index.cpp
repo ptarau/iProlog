@@ -30,19 +30,14 @@ namespace iProlog {
 
 // "Indexing extensions - ony active if START_INDEX clauses or more."
 
-    index::index(vector<Clause> &clauses) {
+    index::index(const vector<Clause> &clauses) {
 
-		cout<<"Entering index() constr...."<<endl;
-
-		// was vcreate in Java version:
+	  // was vcreate in Java version:
 		var_maps = vector<IntMap<int,int>*>(MAXIND);
 
-		for (int arg_pos = 0; arg_pos < MAXIND; arg_pos++) {
+		for (int arg_pos = 0; arg_pos < MAXIND; arg_pos++)
 			var_maps[arg_pos] = new IntMap<int,int>();
-			cout << "  In index::index() constr, var_maps["<< arg_pos <<"]->size()="
-				 << var_maps[arg_pos]->size() << endl;
-		}
-		// end vcreate inlined
+	  // end vcreate inlined
 
 		if (clauses.size() < START_INDEX) {
 			imaps = vector<IMap*>();
@@ -52,17 +47,12 @@ namespace iProlog {
 		imaps = IMap::create(MAXIND);
 
 		for (int i = 0; i < clauses.size(); i++)
-			put(clauses[i].index_vector, IMap::to_clause_no(i));
-			// ...because possible_match() is using 0 as "ignore"?
-
-		cout << "After put calls, IMap:" << endl;
-		cout << IMap::show(imaps) << endl;
-		cout<<"Exiting index() constr."<<endl;
+			put(clauses[i].index_vector, to_clause_no(i));
     }
 
-    inline cell cell2index(CellStack &heap, cell c) {
+    inline cell cell2index(const CellStack &heap, cell c) {
 		cell x = cell::tag(cell::V_,0);
-		int t = cell::tagOf(c);
+		int t = c.s_tag();
 		switch (t) {
 			case cell::R_:
 				x = CellStack::getRef(heap,c);
@@ -82,23 +72,29 @@ namespace iProlog {
  * ("abstraction of which"???)
  * Supposedly, none of these "abstractions" can be -1
  */
-	bool index::possible_match(t_index_vector& iv0,
-							   t_index_vector& iv1) {
+	bool index::possible_match(const t_index_vector& iv0,
+							   const t_index_vector& iv1)
+#ifndef COUNTING_MATCHES
+														 const
+#endif
+																{
 		cout << "possible_match(): ... ";
 
 	// reasonable candidate for loop unrolling:
 		for (size_t i = 0; i < MAXIND; i++) {
 			cell x = iv0[i];
 			cell y = iv1[i];
-			if (!cell::isVAR(x) && !cell::isVAR(y))
-				if (!cell::isVarLoc(x,y)) // strange name, just an as_int == test
+			if (!x.is_var() && !y.is_var())
+				if (!cell::isVarLoc(x,y)) // strange name, it's just an as_int == test
 					return false;
 		}
+#ifdef COUNTING_MATCHES
 		n_matches++;
+#endif
 		return true;
 	}
 
-	string show(t_index_vector& iv) {
+	string show(const t_index_vector& iv) {
 		string s = "";
 		char d = '<';
 		for (int arg_pos = 0; arg_pos < MAXIND; ++arg_pos) {
@@ -109,25 +105,23 @@ namespace iProlog {
 		s += ">";
 		return s;
 	}
-	// "clause_no" = clause array index + 1
-    void index::put(t_index_vector &iv, ClauseNumber clause_no) {
+
+    void index::put(const t_index_vector &iv, ClauseNumber cl_no) {
 
 		cout << "    index::put entered with keys=" << show(iv) << endl;
 
 		for (int arg_pos = 0; arg_pos < MAXIND; arg_pos++) {
 			cell vec_elt = iv[arg_pos];
-			if (!cell::isVAR(vec_elt)) {
+			if (!vec_elt.is_var())
 	// INDEX PARTLY FAILED BEFORE WHEN CELL SIGN BIT ON
 	// Probably because 0 is tag(V_,0) with sign bit off
-				IMap::put_(imaps, arg_pos, vec_elt, clause_no);
-			}
-			else {
+				bool r = imaps[arg_pos]->put(new Integer(vec_elt), cl_no);
+			else
 			 /* "If [var_maps[arg_pos]] denotes the set of clauses
 			  * having variables in position [arg_pos], then any of them
 			  * can also unify with our goal element"
 			  */
-				var_maps[arg_pos]->add(clause_no);
-			}
+				var_maps[arg_pos]->add(cl_no);
 		}
 		cout << "    index::put exiting........" << endl;
     }
@@ -138,14 +132,14 @@ namespace iProlog {
  * Note that [index_vector] contains dereferenced cells - this is done once for
  * each goal's toplevel subterms." [Engine.java]
  */
-    void index::makeIndexArgs(CellStack &heap, Spine *G, cell goal) {
-		if (cell::tagOf(G->index_vector[0]) != cell::BAD
+    void index::makeIndexArgs(const CellStack &heap, Spine *G, cell goal) {
+		if (G->index_vector[0].s_tag() != cell::BAD
 		// || !G->hasGoals()
 		)
 			return;
 
-		int arg_start = 1 + cell::detag(goal); // point to # of args of goal
-		int n_args = cell::detag(CellStack::getRef(heap, goal));
+		int arg_start = 1 + goal.arg(); // point to # of args of goal
+		int n_args = CellStack::getRef(heap, goal).arg();
 		int n = min(MAXIND, n_args); // # args to compare
 
 		for (int arg_pos = 0; arg_pos < n; arg_pos++) {
@@ -205,7 +199,7 @@ namespace iProlog {
 		vector<IntMap<int, int>*> vms = vector<IntMap<int, int>*>();
 
 		for (int i = 0; i < MAXIND; i++)
-			if (!IMap::is_var_arg(unifiables[i])) {
+			if (!index::is_var_arg(unifiables[i])) {
 				IntMap<int, int>* m = imaps[i]->get(new Integer(unifiables[i]));
 				ms.emplace_back(m);
 				vms.emplace_back(var_maps[i]);
@@ -232,7 +226,7 @@ namespace iProlog {
 		}
 
 		for (int i = 0; i < is.size(); i++) {
-			is[i] = IMap::to_clause_idx(is[i]);
+			is[i] = to_clause_idx(is[i]);
 		}
 
 		/* "Finally we sort the resulting set of clause numbers and

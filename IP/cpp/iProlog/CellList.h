@@ -33,20 +33,20 @@ namespace iProlog {
         static void init();
         static int alloced();
 
-        inline static bool isEmpty(shared_ptr<CellList> Xs) { return nullptr == Xs; }
+        inline static bool isEmpty(const shared_ptr<CellList> Xs) { return nullptr == Xs; }
 
-        static cell head(shared_ptr<CellList> Xs) {
+        static cell head(const shared_ptr<CellList> Xs) {
             assert(Xs != nullptr);
             return Xs->head_;
         }
 #if 0  // strange error message from this:
         static const CellList* empty = nullptr;
 #endif
-        static shared_ptr<CellList> tail(shared_ptr<CellList> Xs) {
+        static shared_ptr<CellList> tail(const shared_ptr<CellList> Xs) {
             return Xs->tail_;
         }
 
-        static shared_ptr<CellList> cons(cell X, shared_ptr<CellList> Xs) {
+        static shared_ptr<CellList> cons(cell X, const shared_ptr<CellList> Xs) {
             shared_ptr<CellList> cl = make_shared<CellList>(X);
             cl->tail_ = Xs;
             return cl;

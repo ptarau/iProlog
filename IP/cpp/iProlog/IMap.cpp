@@ -5,31 +5,24 @@
 */
 
 #include <iostream>
+#include "index.h"
 #include "IMap.h"
 
 namespace iProlog {
-  Integer* IMap::put(Integer* key, int clause_no) {
-      cout << endl << "          Entering IMap:put([key->i=" << key->as_int() << "]," << clause_no << "):" << endl;
-      int b = phash(key);
-      cout <<         "             bucket b=" << b << endl;
+
+  bool IMap::put(const Integer* vec_elt_obj, ClauseNumber cl_no) {
+      int b = phash(vec_elt_obj);
       IntMap<int,int>* vals = map[b].vals;
+
       if (nullptr == vals) {
           vals = new IntMap<int,int>();
-          cout << "          Making new IntMap because vals ==null" << endl;
-// it's map.put(key,vals) for a HashMap<Integer, IntMap> map in Java
-          map[b] = bucket(key, vals);
+          map[b] = bucket(vec_elt_obj, vals);
       }
-      cout << "                   map[" << b << "] size before add("<< clause_no <<") = " << map[b].vals->size() << endl;
-      bool r = vals->add(clause_no);
-      cout << "                   map[" << b << "] size after add("<< clause_no <<") = " << map[b].vals->size() << endl;
-      
-      cout << "                   map[" << b << "].vals->get(" << key->as_int() << ") = " << map[b].vals->get(key->as_int()) << endl;
-
-      return key;
+      return vals->add(cl_no);
   }
 
-  IntMap<int,int>* IMap::get(Integer* key) {
-      IntMap<int,int> *s = map[phash(key)].vals;
+  IntMap<int,int>* IMap::get(const Integer* vec_elt_obj) const {
+      IntMap<int,int> *s = map[phash(vec_elt_obj)].vals;
       if (s == nullptr)
 	        s = new IntMap<int,int>();
       return s;
@@ -54,7 +47,7 @@ namespace iProlog {
   }
 #endif
 
-  string IMap::toString() {
+  string IMap::toString() const {
       return "IMap::toString() <stub>";
   }
 
@@ -70,18 +63,7 @@ namespace iProlog {
       return imaps;
   }
 
-  Integer* IMap::put_(vector<IMap*> &imaps, int pos, cell derefd, int clause_no) {
-
-      cout << "         entered put_(imaps,pos="<< pos <<", derefd="<< derefd.as_int()<<", clause_no="<< clause_no
-		<<") ............" << endl;
-      Integer *ip = new Integer(derefd);
-      cout << "         before imaps["<<pos<<"].put(ip,clause_no), size()=" << imaps[pos]->size() << endl;
-      bool r = imaps[pos]->put(ip, clause_no);
-      cout << "         exiting put_ with imaps["<<pos<<"]->size() = " << imaps[pos]->size() << endl;
-      return ip;
-  }
-
-  string IMap::show(bucket &b) {
+  string IMap::show(const bucket &b) {
     string s = "@";
     return s;
   }
@@ -98,7 +80,7 @@ namespace iProlog {
     return s;
   }
 
-  string IMap::show(vector<IMap*> &imaps) {
+  string IMap::show(const vector<IMap*> &imaps) {
     // return Arrays.toString(imaps); // Java
     string s = "[";
     string sep = "";

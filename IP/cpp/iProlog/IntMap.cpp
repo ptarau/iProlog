@@ -42,7 +42,7 @@ namespace iProlog {
   }
 
   template<class Key,class Value>
-  Value IntMap<Key,Value>::get(Key key) {
+  Value IntMap<Key,Value>::get(Key key) const {
       if (key == FREE_KEY)
           return m_hasFreeKey ? m_freeValue : NO_VALUE;
 

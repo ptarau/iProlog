@@ -11,6 +11,8 @@
 using namespace std;
 
 namespace iProlog {
+    typedef int ClauseNumber; /* 1 ... clause array size */
+
     typedef const string cstr;
     inline cstr operator+(cstr s, int i) { return s + to_string(i); }
     inline cstr operator+(cstr s, size_t i) { return s + to_string(i); }

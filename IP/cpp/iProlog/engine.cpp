@@ -64,9 +64,7 @@ Spine* Engine::unfold(Spine *G) {
     cell goal = CellList::head(G->goals);
 
 if(indexing) {
-    cout<<"... about to call makeIndexArgs()"<<endl;
     Ip->makeIndexArgs(heap, G, goal);
-    cout<<"... about to try to match clauses()"<<endl;
     G->unifiables = Ip->matching_clauses(G->unifiables);
 }
 
@@ -117,12 +115,12 @@ bool Engine::unify(int base) {
         cell x2 = deref(unify_stack.pop());
 
         if (x1.as_int() != x2.as_int()) {
-            int t1 = cell::tagOf(x1);
-            int t2 = cell::tagOf(x2);
-            int w1 = cell::detag(x1);
-            int w2 = cell::detag(x2);
-            if (cell::isVAR(x1)) {                  /* "unb. var. v1" */
-                if (cell::isVAR(x2) && w2 > w1) {   /* "unb. var. v2" */
+            int t1 = x1.s_tag();
+            int t2 = x2.s_tag();
+            int w1 = x1.arg();
+            int w2 = x2.arg();
+            if (x1.is_var()) {                  /* "unb. var. v1" */
+                if (x2.is_var() && w2 > w1) {   /* "unb. var. v2" */
                     set_cell(w2,x1);
                     if (w2 <= base) {
                         trail.push(x2);
@@ -133,7 +131,7 @@ bool Engine::unify(int base) {
                         trail.push(x1);
                     }
                 }
-            } else if (cell::isVAR(x2)) {           /* "x1 is NONVAR" */
+            } else if (x2.is_var()) {           /* "x1 is NONVAR" */
                 set_cell(w2,x1);
                 if (w2 <= base) {
                     trail.push(x2);
@@ -152,16 +150,18 @@ bool Engine::unify(int base) {
 }
 
 bool Engine::unify_args(int w1, int w2) { // w1 & w1 already detagged in unify()
-    assert(cell::isArgOffset(cell_at(w1)) && cell::isArgOffset(cell_at(w2)));
+    assert(cell_at(w1).is_arg_offset() && cell_at(w2).is_arg_offset());
 
     cell v1 = cell_at(w1);
     cell v2 = cell_at(w2);
 
-    // both should be A:
-    if(cell::tagOf(v1) != cell::A_) abort();
-    if(cell::tagOf(v2) != cell::A_) abort();
-    int n1 = cell::detag(v1);
-    int n2 = cell::detag(v2);
+    // "both should be A:"
+
+    if (!v1.is_arg_offset()) abort();
+    if (!v2.is_arg_offset()) abort();
+
+    int n1 = v1.arg();
+    int n2 = v2.arg();
 
     if (n1 != n2)
         return false;
@@ -173,11 +173,12 @@ bool Engine::unify_args(int w1, int w2) { // w1 & w1 already detagged in unify()
         int i1 = b1 + i;
         int i2 = b2 + i;
 
-        cell u1 = cell_at(size_t(i1));
-        cell u2 = cell_at(size_t(i2));
-        if (u1 == u2) {
+        cell u1 = cell_at(i1);
+        cell u2 = cell_at(i2);
+
+        if (u1 == u2)
             continue;
-        }
+
         unify_stack.push(u2);
         unify_stack.push(u1);
     }
@@ -188,15 +189,11 @@ void Engine::clear() {
     heap.setTop(-1);
 }
 
-cstr Engine::heapCell(int w) {
-    return cell::tagSym(cell::tagOf(w)) + ":" + cell::detag(w) + "[" + w + "]";
-}
-
 /**
  * Returns the symbol associated to an integer index
  * in the symbol table.
  */
-string Engine::getSym(int w) {
+string Engine::getSym(int w) const {
     if (w < 0 || w >= slist.size()) {
         cout << (cstr("BADSYMREF=") + w) << endl;
         abort();
@@ -247,7 +244,7 @@ Spine* Engine::answer(int trail_top) {
  * hasClauses - "Detects availability of alternative clauses for the
  * top goal of this spine."
  */
-bool Engine::hasClauses(Spine* S) {
+bool Engine::hasClauses(const Spine* S) const {
     return S->last_clause_tried < S->unifiables.size();
 }
 
@@ -292,7 +289,7 @@ cell Engine::ask() {
 void Engine::unwindTrail(int savedTop) {
     while (savedTop < trail.getTop()) {
         cell href = trail.pop();
-        int x = cell::detag(href);
+        int x = href.arg();
         setRef(href, href);
     }
 }
@@ -343,9 +340,9 @@ Spine* Engine::yield() {
     return nullptr;
 }
 
-string Engine::showCell(cell w) {
-    int t = cell::tagOf(w);
-    int val = cell::detag(w);
+string Engine::showCell(cell w) const {
+    int t = w.s_tag();
+    int val = w.arg();
     string s = "";
     string sym = "";
 
@@ -366,13 +363,13 @@ string Engine::showCell(cell w) {
  * while also placing head as the first element of array 'goals' that,
  * when returned, contains references to the toplevel spine of the clause."
  */
-vector<cell> Engine::pushBody(cell b, cell head, Clause &C) {
+vector<cell> Engine::pushBody(cell b, cell head, const Clause &C) {
     CellStack::pushCells(heap, b, C.neck, C.len, C.base);
     int l = (int) C.goal_refs.size();
     vector<cell> goals(l);
     goals[0] = head;
     if (is_raw)
-	cell::cp_cells (b, C.goal_refs.data()+1, goals.data()+1, l-1);
+	    cell::cp_cells (b, C.goal_refs.data()+1, goals.data()+1, l-1);
     else
         for (int k = 1; k < l; k++)
             goals[k] = cell::relocate(b, C.goal_refs[k]);
