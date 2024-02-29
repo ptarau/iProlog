@@ -28,7 +28,7 @@ namespace iProlog {
 
         void expand();
         const int MINSIZE = 1 << 10; // power of 2
-        const int SIZE = 16; // power of 2
+        const int SIZE = 16;         // power of 2
 
     public:
         inline CellStack()  {
@@ -56,7 +56,7 @@ namespace iProlog {
             clear();
         }
 
-        inline int getTop() {
+        inline int getTop() const {
             return top;
         }
 
@@ -68,7 +68,7 @@ namespace iProlog {
             top = -1;
         }
 
-        inline bool isEmpty() {
+        inline bool isEmpty() const {
             return top < 0;
         }
 
@@ -78,14 +78,9 @@ namespace iProlog {
          * element." [Java code]
          */
         inline void push(cell i) {
-#ifdef RAW
-	    int limit = cap;
-#else
-	    int limit = (int) stack.capacity();
-#endif
-            if (++top >= limit) {
+            if (++top >= capacity())
                 expand();
-            }
+
             stack[top] = i;
         }
 
@@ -109,24 +104,24 @@ namespace iProlog {
             for (int i = 0; i < c.size(); ++i)
                 stack[i] = c.stack[i];
             top = c.top;
-	    return *this;
+	        return *this;
         }
 
-        inline int size() {
+        inline int size() const {
             return top + 1;
         }
 
-        inline size_t capacity() {
+        inline size_t capacity() const {
 #ifdef RAW
-		return cap;
+		    return cap;
 #else
-		return stack.size();
+		    return stack.size();
 #endif
         }
 
         inline void realloc_(int l) {
 #ifdef RAW
-            cell* tcp = (cell*)std::realloc((void*)stack, l*sizeof(cell));
+            cell* tcp = (cell*)std::realloc((void*)stack, l * sizeof(cell));
             if (tcp == nullptr) abort();
             cap = l;
             stack = tcp;
@@ -135,37 +130,37 @@ namespace iProlog {
 
         inline void resize(int l) {
 #ifdef RAW
-		realloc_(l);
+            realloc_(l);
 #else
-		stack.resize(l);
+            stack.resize(l);
 #endif
         }
 
         vector<cell> toArray();
 
-        inline cell *data() {
+        inline cell *data() const {
 #ifdef RAW
-	    return stack;
+	        return stack;
 #else
-	    return stack.data();
+	        return stack.data();
 #endif
         }
 
-// maybe redefine the corresponding memb fns in Engine.h to use these?
-// check for performance penalty
-    static inline cell   cell_at(const CellStack &h, int i)
-        { return h.get(i);              			}
-    static inline void   set_cell(CellStack &h, int i, cell v)
-	    { h.set(i,v);                   			}
-    static inline cell   getRef(const CellStack &h, cell x)
-        { return cell_at(h, x.arg());  			}
-    static inline void   setRef(CellStack &h, cell w, cell r)
-        { set_cell(h, w.arg(), r);     			}
+    static inline cell   cell_at(const CellStack &h, int i)        { return h.get(i);              			}
+    static inline void   set_cell(CellStack &h, int i, cell v)	   { h.set(i,v);                   			}
+    static inline cell   getRef(const CellStack &h, cell x)        { return cell_at(h, x.arg());  			}
+    static inline void   setRef(CellStack &h, cell w, cell r)      { set_cell(h, w.arg(), r);     			}
+
+    static inline bool isVarLoc_(const CellStack& h, cell x)  {
+       cell r = getRef(h, x); 
+       return x.as_int() == r.as_int();   // if rel addressing, check if var and arg is zero
+    }
 
     static inline cell deref(const CellStack &h, cell x) {
         while (x.is_var()) {
             cell r = getRef(h,x);
-            if (cell::isVarLoc(r,x))
+            // if (isVarLoc(r,x))
+            if (isVarLoc_(h, r))
                 break;
             x = r;
         }
@@ -211,10 +206,8 @@ namespace iProlog {
 		    cell::cp_cells(b,srcp,dstp,count);
 	    }
 	    else
-		    for (int i = from; i < upto; i++) {
-		        // heap.push(heap.get(base + i).relocate(b));
-                heap.push(cell::relocate(b, heap.get(base + i)));
-	    }
+		    for (int i = from; i < upto; i++)
+		        heap.push(heap.get(base + i).relocated_by(b));
 	}
 
 	/**
@@ -233,7 +226,7 @@ namespace iProlog {
         }
         else
             for (int i = from; i < to; i++)
-                heap.push(cell::relocate(b, cells[i]));
+                heap.push(cells[i].relocated_by(b));
 	}
-    };
+  };
 } // end namespace

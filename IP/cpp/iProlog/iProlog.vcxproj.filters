@@ -104,5 +104,8 @@
     <ClInclude Include="Inty.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="RelocStack.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

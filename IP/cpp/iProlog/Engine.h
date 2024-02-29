@@ -126,7 +126,7 @@ protected:
     inline cell deref(cell x) const {
         while (x.is_var()) {
             cell r = getRef(x);
-            if (cell::isVarLoc(r,x))
+            if (CellStack::isVarLoc_(heap,x))
                 break;
             x = r;
         }

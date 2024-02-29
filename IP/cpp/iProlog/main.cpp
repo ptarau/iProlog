@@ -17,6 +17,7 @@
 #include "toks.h"
 
 #include "Inty.h"
+#include "RelocStack.h"
 
 class xCell: public Inty {
     string show() { return to_string(as_int()); }
@@ -170,7 +171,7 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
         cell::cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
     } else {
         for (size_t i = 0; i < hgs.size(); i++)
-            hgs[i] = cell::relocate(b, hgs[i]);
+            hgs[i] = hgs[i].relocated_by(b);
     }
 
     Clause rc = Clause(len, hgs, base, neck, getIndexables(hgs[0]));
@@ -356,7 +357,7 @@ vector<Clause> dload(const cstr s) {
 
         cell a = cell::tag(cell::A_, 0);
         if (a.is_var()) abort();
-        if (!a.is_arg_offset()) abort();
+        if (!a.is_offset()) abort();
     }
 
     void testSharedCellList() {
@@ -429,6 +430,10 @@ cout << "---------------------------------------" << endl;
         catch (exception& e) {
             cout << e.what() << endl;
         }
+
+        cout << "sizeof(vector<cell>)=" << sizeof(vector<cell>) << endl;
+        cout << "sizeof(RelocStack<cell>)=" << sizeof(RelocStack<cell>) << endl;
+
         return 0;
     }
 

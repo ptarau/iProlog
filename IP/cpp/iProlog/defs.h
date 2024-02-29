@@ -6,6 +6,7 @@
 #include <memory>
 #include <climits>
 #include <stdexcept>
+#include <stdint.h>
 
 
 using namespace std;
@@ -18,14 +19,14 @@ namespace iProlog {
     inline cstr operator+(cstr s, size_t i) { return s + to_string(i); }
     inline cstr operator+(cstr s, long i) { return s + to_string(i); }
 
-    const int MINSIZE = 1 << 10;
+    const int MINSIZE = 1 << 10;  // of cell heap
 
 /* RAW, when defined, says to go with a less-safe, faster implementation
  *    than STL vectors, with no bounds check, and less header info, to
  *    save a little space. The fast-copy cell heap-to-heap relocation may
  *    end up in this class eventually.
  */
-// #define RAW
+#define RAW true
 #ifdef RAW
     const bool is_raw = true;
 #else

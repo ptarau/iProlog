@@ -59,7 +59,8 @@ public:
 
 #define COUNTING_MATCHES
 
-    bool possible_match(const t_index_vector& iv0,
+    bool possible_match(const CellStack &h,
+                        const t_index_vector& iv0,
                         const t_index_vector& iv1)
 #ifndef COUNTING_MATCHES
                                                     const

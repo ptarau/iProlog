@@ -102,23 +102,19 @@ namespace iProlog {
     }
 
     inline bool is_const() const          { return s_tag() == C_; }
-    static inline bool isConstTag(int t)  { return t == C_;       }
-    inline bool is_arg_offset() const     { return s_tag() == A_; }
-    static inline bool isVarLoc(cell r, cell x) { return x.as_int() == r.as_int(); }
+    inline bool is_offset() const     { return s_tag() == A_; }
 
-    static inline cell relocate(cell b, cell c) {
-        if (c.is_reloc()) {
-            if (use_sign_bit)   return c.as_int() + (b.as_int() & ref_mask);
-            else                return c.as_int() + b.as_int();
-        }
-        return c;
+    inline cell relocated_by(cell b) const {
+        if (!is_reloc())    return *this;
+        if (use_sign_bit)   return as_int() + (b.as_int() & ref_mask);
+        else                return as_int() + b.as_int();
     }
 
     static inline cell argOffset(size_t o) { return tag(A_, o);  }
     static inline cell reference(size_t r) { return tag(R_, r);  }
 
     static inline void cp_cells(cell b, const cell *srcp, cell *dstp, int count) {
-#       define STEP *dstp++ = cell::relocate(b, *srcp++)
+#       define STEP *dstp++ =  (*srcp++).relocated_by(b)
             while (count >= 4) { STEP; STEP; STEP; STEP; count -= 4; }
             switch (count) {
                 case 3: STEP; case 2: STEP; case 1: STEP; case 0: ;

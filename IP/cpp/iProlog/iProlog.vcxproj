@@ -149,6 +149,7 @@
     <ClInclude Include="defs.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="FastUtil.h" />
+    <ClInclude Include="RelocStack.h" />
     <ClInclude Include="IMap.h" />
     <ClInclude Include="index.h" />
     <ClInclude Include="Integer.h" />

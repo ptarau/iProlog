@@ -73,7 +73,7 @@ if(indexing) {
     for (int k = G->last_clause_tried; k < last; k++) {
         Clause* C0 = &clauses[G->unifiables[k]];
 if(indexing) {
-        if (!Ip->possible_match(G->index_vector, C0->index_vector))
+        if (!Ip->possible_match(heap, G->index_vector, C0->index_vector))
             continue;
 }
         int base0 = base - C0->base;
@@ -157,8 +157,8 @@ bool Engine::unify_args(int w1, int w2) { // w1 & w1 already detagged in unify()
 
     // "both should be A:"
 
-    if (!v1.is_arg_offset()) abort();
-    if (!v2.is_arg_offset()) abort();
+    if (!v1.is_offset()) abort();
+    if (!v2.is_offset()) abort();
 
     int n1 = v1.arg();
     int n2 = v2.arg();
@@ -372,7 +372,7 @@ vector<cell> Engine::pushBody(cell b, cell head, const Clause &C) {
 	    cell::cp_cells (b, C.goal_refs.data()+1, goals.data()+1, l-1);
     else
         for (int k = 1; k < l; k++)
-            goals[k] = cell::relocate(b, C.goal_refs[k]);
+            goals[k] = C.goal_refs[k].relocated_by(b);
     return goals;
 }
 
@@ -383,7 +383,7 @@ vector<cell> Engine::pushBody(cell b, cell head, const Clause &C) {
 cell Engine::pushHeadtoHeap(cell b, const Clause& C) {
     CellStack::pushCells(heap, b, 0, C.neck, C.base);
     cell head = C.goal_refs[0];
-    cell reloc_head = cell::relocate(b, head);
+    cell reloc_head = head.relocated_by(b);
     return reloc_head;
 }
 

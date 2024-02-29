@@ -41,37 +41,25 @@ Object Prog::exportTerm(cell x) const {
 	    return Object();
 
     x = deref(x);
-    int t = x.s_tag();
     int w = x.arg();
 
-    Object res;
-    switch (t) {
-        case cell::C_: res = getSym(w);     break;
-        case cell::N_: res = Integer(w);            break;
-        case cell::V_: res = cstr("V") + w;         break;
-            /*case U_:*/ 
-
-        case cell::R_: {
-                    cell a = cell_at(w);
-                    if (!a.is_arg_offset()) {
-                        throw logic_error(cstr("*** should be A, found=") + showCell(a));
-                    }
-                    int n = a.arg();
-                    vector<Object> args;
-                    int k = w + 1;
-                    for (int i = 0; i < n; i++) {
-                        int j = k + i;
-                        cell c = cell_at(j);
-                        Object o = exportTerm(c);
-                        args.push_back(o);
-                    }
-                    res = args;
+    switch (x.s_tag()) {
+    case cell::C_: return Object(getSym(w));
+    case cell::N_: return Object(Integer(w));
+    case cell::V_: return Object(cstr("V") + w);
+        /*case U_:*/
+    case cell::R_: {
+                 cell a = cell_at(w);
+                 if (!a.is_offset()) throw logic_error(cstr("*** should be A, found=") + showCell(a));
+                 int n = a.arg();
+                 vector<Object> args;
+                 for (int k = w + 1; n-- > 0; k++)
+                     args.push_back(exportTerm(cell_at(k)));
+                 return Object(args);
                 }
-                break;
         default:
                     throw logic_error(cstr("*BAD TERM*") + showCell(x));
     }
-    return res;
 }
 
 

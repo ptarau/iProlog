@@ -23,11 +23,15 @@ namespace iProlog {
 
 class IMap {
 
-        static const int NBUCKETS = 16;
+        static const unsigned NBUCKETS_2_exp = 4;
+        static const int NBUCKETS = 1 << NBUCKETS_2_exp;
+        static const int NBUCKETS_mask = NBUCKETS + 1;
 
-         static size_t phash(const Integer *s) {
+        // Should parameterize this further to avoid sizeof(pointer) = 8
+        // periodicity on 128-bit machines
+         static int phash(const Integer *s) {
              size_t x = (size_t) s;
-             return (size_t) (0xF & ((x >> 10) ^ (x >> 2)));
+             return NBUCKETS_mask  & ((x >> 10) ^ (x >> 2));
          }
 
          struct bucket {

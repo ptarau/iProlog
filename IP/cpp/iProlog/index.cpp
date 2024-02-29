@@ -72,8 +72,9 @@ namespace iProlog {
  * ("abstraction of which"???)
  * Supposedly, none of these "abstractions" can be -1
  */
-	bool index::possible_match(const t_index_vector& iv0,
-							   const t_index_vector& iv1)
+	bool index::possible_match( const CellStack &h,
+								const t_index_vector& iv0,
+							    const t_index_vector& iv1)
 #ifndef COUNTING_MATCHES
 														 const
 #endif
@@ -85,7 +86,7 @@ namespace iProlog {
 			cell x = iv0[i];
 			cell y = iv1[i];
 			if (!x.is_var() && !y.is_var())
-				if (!cell::isVarLoc(x,y)) // strange name, it's just an as_int == test
+				if (!CellStack::isVarLoc_(h,y)) // strange name, it's just an as_int == test
 					return false;
 		}
 #ifdef COUNTING_MATCHES
