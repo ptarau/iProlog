@@ -104,6 +104,9 @@ namespace iProlog {
     inline bool is_const() const          { return s_tag() == C_; }
     inline bool is_offset() const     { return s_tag() == A_; }
 
+    // The offset b will be shifted according to the tag architecture
+    // chosen. When copies are forward in the cell heap, b > 0.
+    //
     inline cell relocated_by(cell b) const {
         if (!is_reloc())    return *this;
         if (use_sign_bit)   return as_int() + (b.as_int() & ref_mask);

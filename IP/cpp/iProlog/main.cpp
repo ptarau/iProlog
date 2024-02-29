@@ -19,13 +19,6 @@
 #include "Inty.h"
 #include "RelocStack.h"
 
-class xCell: public Inty {
-    string show() { return to_string(as_int()); }
-};
-
-void foox(xCell i) {
-    cout << i.as_int();
-}
 
 std::string file2string(std::string path) {
     std::ifstream f(path);
@@ -311,9 +304,9 @@ vector<Clause> dload(const cstr s) {
         cout << "arg of r)=" << dtr << " (oct)" << std::oct << dtr << endl;
         cout << "tag of r)=" << tor << " (oct)" << std::oct << tor << endl;
 
-        assert(!cell::isVAR(r));
-        assert(!cell::isConst(r));
-        assert(cell::isReloc(r));
+        assert(!r.is_var());
+        assert(!r.is_const());
+        assert(r.is_reloc());
 
         cell rx = cell::tag(cell::R_, 0);
         cell ry = cell::tag(cell::R_, 1);
@@ -350,10 +343,9 @@ vector<Clause> dload(const cstr s) {
         cout << std::dec << endl;
         cell bad = cell::tag(cell::BAD, val);
         assert(!bad.is_ref());
-        // assert(!cell::isVAR(bad));
         assert(!bad.is_var());
-        assert(!cell::isConst(bad));
-        assert(!cell::isReloc(bad));
+        assert(!bad.is_const());
+        assert(!bad.is_reloc());
 
         cell a = cell::tag(cell::A_, 0);
         if (a.is_var()) abort();

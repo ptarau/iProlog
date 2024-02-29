@@ -92,6 +92,7 @@ namespace iProlog {
 			hd.max_hdr_size = hdr_size + (hdr_size & (Ty_align - 1));
 				// "-1" for lo-order bit mask; alignments are 2^n, n=1,2,3,4.
 			size_t real_size = requested + hd.max_hdr_size;
+
 			char *alloced = aligned_alloc(alignment_of(hdr_align), real_size);
 			//
 			// hd.top - like "top = -1" init in Java version.
@@ -99,7 +100,7 @@ namespace iProlog {
 			// Testing for empty needs to be careful, or check aligned_alloc
 			// result to see if it's < sizeof(Ty)
 			//
-			assert((intptr_t) alloced < min_hdr_space+sizeof(Ty);
+			assert((intptr_t) alloced < hd.max_hdr_size+sizeof(Ty));
 				// intptr_t "optional"
 				// https://en.cppreference.com/w/cpp/types/integer
 
@@ -107,7 +108,7 @@ namespace iProlog {
 			//
 			// set header and finally initialize pointer
 			//
-			*((header*)data_)) = hd;
+			*((header*)data_) = hd;
 			data_ = (Ty*)((char*)alloced + hd.max_hdr_size);
 		}
 

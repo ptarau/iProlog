@@ -150,7 +150,7 @@ bool Engine::unify(int base) {
 }
 
 bool Engine::unify_args(int w1, int w2) { // w1 & w1 already detagged in unify()
-    assert(cell_at(w1).is_arg_offset() && cell_at(w2).is_arg_offset());
+    assert(cell_at(w1).is_offset() && cell_at(w2).is_offset());
 
     cell v1 = cell_at(w1);
     cell v2 = cell_at(w2);

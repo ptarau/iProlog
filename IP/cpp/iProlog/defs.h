@@ -7,6 +7,7 @@
 #include <climits>
 #include <stdexcept>
 #include <stdint.h>
+#include <assert.h>
 
 
 using namespace std;
