@@ -9,30 +9,32 @@
 #include "defs.h"
 #include "Integer.h"
 #include <unordered_map>
+#include "Inty.h"
 
 namespace iProlog {
 
 	class sym_tab {
 	public:
-		unordered_map<string, Integer*> syms;
+		unordered_map<string, Inty> syms;
 		vector<string> slist;
 
 		/**
          * "Places an identifier in the symbol table."
          */
-		Integer* addSym(const string sym) {
+		Inty addSym(const string sym) {
 			try { return syms.at(sym); }
 			catch (const std::exception& e) {
-				Integer* I = new Integer((int)syms.size());
-				syms.insert(pair<string, Integer*>(sym, I));
+				Inty I;
+				I.set((int)syms.size());
+				syms.insert(pair<string, Inty>(sym, I));
 				slist.push_back(sym);
 				return I;
 			}
 		}
 
 		/**
-         * Returns the symbol associated to an integer index
-         * in the symbol table.
+		 * "Returns the symbol associated to an [Inty] index
+         * in the symbol table."
          */
 		string getSym(int w) const {
 			if (w < 0 || w >= slist.size()) {

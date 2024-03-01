@@ -15,6 +15,7 @@
 #include "CellStack.h"
 #include "index.h"
 #include "clause.h"
+#include "sym_tab.h"
 
 namespace iProlog {
 
@@ -34,8 +35,7 @@ public:
 
     // "Symbol table - made of map (syms) + reverse map from
     //  ints to syms (slist)" [Engine.java]
-    unordered_map<string, Integer*> syms;
-    vector<string> slist;
+    sym_tab sym;
 
     /** Runtime areas: **/
     // 
@@ -49,15 +49,14 @@ public:
  *  -- for standalone engine, file reading, parsing & code gen is
  *     done in main.cpp for now
  */
-    Engine( CellStack &heap_0,
-            vector<Clause> &clauses_0,
-	        unordered_map<string, Integer*> &syms_0,
-	        vector<string> &slist_0,
-	        index *Ip_0)
-		: heap(heap_0), clauses(clauses_0), syms(syms_0), slist(slist_0), Ip(Ip_0) {
+    Engine(CellStack&       heap_0,
+           vector<Clause>&  clauses_0,
+           sym_tab&         sym_0,
+	       index *          Ip_0)
+		                    : heap(heap_0), clauses(clauses_0), sym(sym_0), Ip(Ip_0) {
 
 	    if (clauses.size() == 0) {
-		throw logic_error(cstr("clauses: none"));
+		    throw logic_error(cstr("clauses: none"));
 	    }
 
 	    CellList::init();
@@ -71,18 +70,12 @@ public:
 
 protected:
 
-    Integer *addSym(const string sym);
-    string getSym(int w) const;
-
 // should try heap-as-class (maybe subclassed from CellStack)
 // to see whether there's a performance penalty
 
     inline cell   cell_at(int i) const      { return heap.get(i);       }
-
     inline void   set_cell(int i, cell v)   { heap.set(i,v);            }
-
     inline cell   getRef(cell x)  const     { return cell_at(x.arg());  }
-
     inline void   setRef(cell w, cell r)    { set_cell(w.arg(), r);     }
 
     CellStack unify_stack;
@@ -93,9 +86,6 @@ protected:
         heap.resize(size);
         clear();
     }
-
-    void pushCells(CellStack &h, cell b, int from, int upto, int base);
-    void pushCells(CellStack &h, cell b, int from, int upto, const vector<cell> cells);
 
     vector<cell> pushBody(cell b, cell head, const Clause& C);
     
@@ -113,13 +103,6 @@ protected:
         }
     }
 
-    static vector<int>&
-        put_ref(string arg,
-                unordered_map<string, vector<int>>& refs,
-                int clause_pos);
-
-    cell encode(int t, const cstr s);
-
     void unwindTrail(int savedTop);
 
 // maybe redefine Engine.h version to use CellStack version?
@@ -134,14 +117,11 @@ protected:
     }
 public:
     index *Ip;
-
-    vector<Clause> dload(const cstr s);
-
     CellStack trail;
+
     string showCell(cell w) const;
 
 protected:
-    // void ppGoals(IntList *bs);
     void ppSpines() {}
 
     bool unify(int base);

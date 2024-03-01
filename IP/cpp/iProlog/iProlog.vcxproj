@@ -158,6 +158,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="prog.h" />
     <ClInclude Include="spine.h" />
+    <ClInclude Include="sym_tab.h" />
     <ClInclude Include="toks.h" />
     <ClInclude Include="CellStack.h" />
     <ClInclude Include="Inty.h" />

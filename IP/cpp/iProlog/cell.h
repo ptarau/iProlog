@@ -24,7 +24,7 @@ namespace iProlog {
 	static const int bitwidth = CHAR_BIT * sizeof(int);
         cell() { set(0); }
         cell(int x) { set(x); }
-        static inline cell nonval() { return cell(int(-1)); }; // IFFY
+        static inline cell nonval() { return cell(-1); }; // IFFY
 
     // hi_order_tag=1 -> a bit slower on 32-bit, probably because gcc
     //      is generating fatter instructions to accommodate

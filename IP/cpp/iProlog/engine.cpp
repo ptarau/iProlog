@@ -189,6 +189,7 @@ void Engine::clear() {
     heap.setTop(-1);
 }
 
+#if 0
 /**
  * Returns the symbol associated to an integer index
  * in the symbol table.
@@ -200,6 +201,7 @@ string Engine::getSym(int w) const {
     }
     return slist[w];
 }
+#endif
 
     //    was iota(clause_list.begin(), clause_list.end(), 0);
     vector<int> Engine::toNums(vector<Clause> clauses) {
@@ -344,13 +346,12 @@ string Engine::showCell(cell w) const {
     int t = w.s_tag();
     int val = w.arg();
     string s = "";
-    string sym = "";
 
     switch (t) {
         case cell::V_:    s = cstr("v:") + val;        break;
         case cell::U_:    s = cstr("u:") + val;        break;
         case cell::N_:    s = cstr("n:") + val;        break;
-        case cell::C_:    s = cstr("c:") + getSym(val);break;
+        case cell::C_:    s = cstr("c:") + sym.getSym(val); break;
         case cell::R_:    s = cstr("r:") + val;        break;
         case cell::A_:    s = cstr("a:") + val;        break;
         default:    s = cstr("*BAD*=") + w.as_int();

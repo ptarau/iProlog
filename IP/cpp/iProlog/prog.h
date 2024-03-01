@@ -21,14 +21,13 @@ namespace iProlog {
 
 		void ppGoals(const shared_ptr<CellList> bs) const;
 		void pp(const string s) const;
-	    void pp(unordered_map<string, Integer*> syms) const;
+		void pp(sym_tab &sym) const;
 		void ppTrail();
-		Prog(CellStack &heap,
-		     vector<Clause> &clauses,
-		     unordered_map<string, Integer*> &syms,
-		     vector<string> &slist,
-		     index *Ip)
-		         : Engine(heap,clauses,syms,slist,Ip) { };
+		Prog(	CellStack&		 heap,
+				vector<Clause>&  clauses,
+				sym_tab&		 sym,
+				index *			 Ip)
+									: Engine(heap, clauses, sym, Ip) { };
 
         string showTermCell(cell x) const;
         string showTerm(Object O) const;

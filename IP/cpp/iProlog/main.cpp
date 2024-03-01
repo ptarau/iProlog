@@ -18,6 +18,7 @@
 
 #include "Inty.h"
 #include "RelocStack.h"
+#include "sym_tab.h"
 
 
 std::string file2string(std::string path) {
@@ -56,20 +57,18 @@ void show(cstr h, int i) {
 }
 
     CellStack heap;
-    unordered_map<string, Integer*> syms;
-    vector<string> slist;
+    sym_tab sym;
 
 string showCell(cell w) {
     int t = w.s_tag();
     int val = w.arg();
     string s = "";
-    string sym = "";
 
     switch (t) {
         case cell::V_:    s = cstr("v:") + val;        break;
         case cell::U_:    s = cstr("u:") + val;        break;
         case cell::N_:    s = cstr("n:") + val;        break;
-        case cell::C_:    s = cstr("c:") + val;break;//had getSym
+        case cell::C_:    s = cstr("c:") + val; break;      //had getSym(...)
         case cell::R_:    s = cstr("r:") + val;        break;
         case cell::A_:    s = cstr("a:") + val;        break;
         default:    s = cstr("*BAD*=") + w.as_int();
@@ -104,19 +103,6 @@ t_index_vector getIndexables(cell goal) {
     return index_vector;
 }
 
-/**
- * "Places an identifier in the symbol table."
- */
-Integer *addSym(const string sym) {
-    try { return syms.at(sym); }
-    catch (const std::exception& e) {
-        Integer* I = new Integer((int) syms.size());
-        syms.insert(pair<string, Integer*>(sym, I));
-        slist.push_back(sym);
-        return I;
-    }
-}
-
 /*static*/ vector<int> &
 put_ref(        const string arg,
                 unordered_map<string, vector<int>> &refs,
@@ -141,7 +127,7 @@ cell encode(int t, const string s) {
     }
     catch (const std::invalid_argument& e) {
         if (t == cell::C_)
-            w = int(addSym(s)->as_int());
+            w = int(sym.addSym(s).as_int());
         else {
             cstr err = string("bad number form in encode=") + t + ":" + s + ", [" + e.what() + "]";
             throw logic_error(err);
@@ -395,7 +381,7 @@ vector<Clause> dload(const cstr s) {
 	    if (indexing)
 		    Ip = new index(clauses);
 
-	    Prog *p = new Prog(heap,clauses,syms,slist,Ip);
+	    Prog *p = new Prog(heap,clauses,sym,Ip);
 
 if(indexing)
 	    cout << p->showIMaps() << endl;

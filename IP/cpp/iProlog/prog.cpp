@@ -44,7 +44,7 @@ Object Prog::exportTerm(cell x) const {
     int w = x.arg();
 
     switch (x.s_tag()) {
-    case cell::C_: return Object(getSym(w));
+    case cell::C_: return Object(sym.getSym(w));
     case cell::N_: return Object(Integer(w));
     case cell::V_: return Object(cstr("V") + w);
         /*case U_:*/
@@ -85,12 +85,15 @@ Object Prog::exportTerm(cell x) const {
 	void Prog::pp(const string s) const {
 	    std::cout << s << endl;
 	}
-
+#if 0
 	void Prog::pp(unordered_map<string, Integer*> syms) const {
+#else
+    void Prog::pp(sym_tab &syms) const {
+#endif
 		pp("pp(syms):");
-		cout << "syms.size()=" << syms.size() << endl;
-		for (auto &kv : syms)
-			cout << "   " << kv.first << "," << kv.second->as_int() << endl;
+		cout << "syms.size()=" << syms.syms.size() << endl;
+		for (auto &kv : syms.syms)
+			cout << "   " << kv.first << "," << kv.second.as_int() << endl;
 	}
 
         void Prog::ppGoals(const shared_ptr<CellList> bs) const {
@@ -141,14 +144,14 @@ if(indexing)
     void Prog::ppCode() const {
         string t;
 
-        for (size_t i = 0; i < slist.size(); i++) {
+        for (size_t i = 0; i < sym.slist.size(); i++) {
             if (i > 0) t += ", ";
-            t += slist[i] + "=" + i;
+            t += sym.slist[i] + "=" + i;
         }
 
         pp("\nSYMS:\n{" + t + "}");
 
-	    pp(syms);
+	    pp((sym_tab&) sym);  // compiler was erroring out on trying to convert to string??
 
         pp("\nCLAUSES:\n");
 
