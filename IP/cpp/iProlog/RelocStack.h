@@ -49,27 +49,27 @@ namespace iProlog {
 	template <class Ty>
 	class RelocStack
 #ifndef RAW
-			         : vector<class Ty>
+		: vector<Ty>
 #endif    
-						               { /*start class body*/
+	{ /*start class body*/
 
 #ifdef RAW
 		typedef struct {
 			public:
-				Ty * top;				     // fast access
+				Ty* top;				     // fast access
 				uint_fast16_t cap;		     // checked often
 				uint_least16_t elt_size;     // less often
 				uint_least8_t max_hdr_size;  // for testing empty
 				bool lock;					 // reloc safety catch
 		} header;
 
-		Ty * data_;
+		Ty* data_;
 
 	public:
 		RelocStack<Ty>(unsigned short min_no) {
 			header hd;
 
-			hd.elt_size = (uint_least16_t) sizeof(Ty);
+			hd.elt_size = (uint_least16_t)sizeof(Ty);
 			hd.lock = false;
 			hd.cap = min_no;
 			//
@@ -79,10 +79,10 @@ namespace iProlog {
 			//  causes the function to fail and return a null pointer ..."
 			// https://en.cppreference.com/w/c/memory/aligned_alloc
 			// 
-			
+
 			size_t hdr_align = alignment_of(header);
-			size_t hdr_size  = sizeof(header);
-			size_t Ty_align  = alignment_of(Ty);
+			size_t hdr_size = sizeof(header);
+			size_t Ty_align = alignment_of(Ty);
 			size_t requested = sizeof(Ty) * min_no;
 			//
 			// sizeof(Ty) could be less or greater than sizeof(header)
@@ -90,37 +90,40 @@ namespace iProlog {
 			// of largest alignment
 			//
 			hd.max_hdr_size = hdr_size + (hdr_size & (Ty_align - 1));
-				// "-1" for lo-order bit mask; alignments are 2^n, n=1,2,3,4.
-			size_t real_size = requested + hd.max_hdr_size;
+			// "-1" for lo-order bit mask; alignments are 2^n, n=1,2,3,4.
+		size_t real_size = requested + hd.max_hdr_size;
 
-			char *alloced = aligned_alloc(alignment_of(hdr_align), real_size);
-			//
-			// hd.top - like "top = -1" init in Java version.
-			// DANGER -- what if alloc can start at addr 0 and sizeof(Ty) > min_space?
-			// Testing for empty needs to be careful, or check aligned_alloc
-			// result to see if it's < sizeof(Ty)
-			//
-			assert((intptr_t) alloced < hd.max_hdr_size+sizeof(Ty));
-				// intptr_t "optional"
-				// https://en.cppreference.com/w/cpp/types/integer
+		char* alloced = aligned_alloc(alignment_of(hdr_align), real_size);
+		//
+		// hd.top - like "top = -1" init in Java version.
+		// DANGER -- what if alloc can start at addr 0 and sizeof(Ty) > min_space?
+		// Testing for empty needs to be careful, or check aligned_alloc
+		// result to see if it's < sizeof(Ty)
+		//
+		assert((intptr_t)alloced < hd.max_hdr_size + sizeof(Ty));
+		// intptr_t "optional"
+		// https://en.cppreference.com/w/cpp/types/integer
 
-			hd.top = (Ty *)((char*)this + hd.max_hdr_size) - 1;
-			//
-			// set header and finally initialize pointer
-			//
-			*((header*)data_) = hd;
-			data_ = (Ty*)((char*)alloced + hd.max_hdr_size);
-		}
+	hd.top = (Ty*)((char*)this + hd.max_hdr_size) - 1;
+	//
+	// set header and finally initialize pointer
+	//
+	*((header*)data_) = hd;
+	data_ = (Ty*)((char*)alloced + hd.max_hdr_size);
+}
 
-		Ty* s_data_with_lock() {
-					header* bp = (header*)this;
-					bp->lock = true;
-					return data_;
-		}
+Ty* s_data_with_lock() {
+			header* bp = (header*)this;
+			bp->lock = true;
+			return data_;
+}
 
-		void unlock_data() {
-			((header*)this)->lock = false;
-		}
+void unlock_data() {
+	((header*)this)->lock = false;
+}
+#else
+		int nothing;
+		void stub() {}
 #endif
 	};
 }

@@ -82,7 +82,7 @@ protected:
 
     vector<Spine*> spines;
 
-    void makeHeap(int size = MINSIZE) {
+    void makeHeap(int size = MIN_HEAP_SIZE) {
         heap.resize(size);
         clear();
     }

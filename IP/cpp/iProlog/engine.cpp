@@ -189,27 +189,12 @@ void Engine::clear() {
     heap.setTop(-1);
 }
 
-#if 0
-/**
- * Returns the symbol associated to an integer index
- * in the symbol table.
- */
-string Engine::getSym(int w) const {
-    if (w < 0 || w >= slist.size()) {
-        cout << (cstr("BADSYMREF=") + w) << endl;
-        abort();
-    }
-    return slist[w];
-}
-#endif
-
     //    was iota(clause_list.begin(), clause_list.end(), 0);
     vector<int> Engine::toNums(vector<Clause> clauses) {
         int l = (int) clauses.size();
         vector<int> cls = vector<int>(l);
-        for (int i = 0; i < l; i++) {
+        for (int i = 0; i < l; i++) 
             cls[i] = i;
-        }
         return cls;
     }
 

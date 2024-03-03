@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClInclude Include="cell.h" />
     <ClInclude Include="clause.h" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="defs.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="FastUtil.h" />

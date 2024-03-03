@@ -142,7 +142,7 @@ namespace iProlog {
 #ifdef RAW
 	        return stack;
 #else
-	        return stack.data();
+	        return (cell *) stack.data();
 #endif
         }
 

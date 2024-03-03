@@ -9,29 +9,20 @@
 #include <stdint.h>
 #include <assert.h>
 
-
-using namespace std;
+#include "config.h"
 
 namespace iProlog {
-    typedef int ClauseNumber; /* 1 ... clause array size */
 
+    using namespace std;
+
+    // I need a more specific header file for this:
+    // typedef int ClauseNumber; /* 1 ... clause array size */
+
+    // If one of the goals is to avoid bringing in the
+    // string library, this might better be put elsewhere.
     typedef const string cstr;
     inline cstr operator+(cstr s, int i) { return s + to_string(i); }
     inline cstr operator+(cstr s, size_t i) { return s + to_string(i); }
     inline cstr operator+(cstr s, long i) { return s + to_string(i); }
-
-    const int MINSIZE = 1 << 10;  // of cell heap
-
-/* RAW, when defined, says to go with a less-safe, faster implementation
- *    than STL vectors, with no bounds check, and less header info, to
- *    save a little space. The fast-copy cell heap-to-heap relocation may
- *    end up in this class eventually.
- */
-#define RAW true
-#ifdef RAW
-    const bool is_raw = true;
-#else
-    const bool is_raw = false;
-#endif
 }
 

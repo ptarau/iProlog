@@ -82,6 +82,8 @@ namespace iProlog {
         return cell((int)((w << ref_shift) | t));
     }
 
+    static const int BAD_VAL = BAD << ref_shift;
+
     inline int arg() {
         if (use_sign_bit)
             return (as_int() & ref_mask);

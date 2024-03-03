@@ -11,9 +11,10 @@ namespace iProlog {
 	class Inty {
 		int i;
 	public:
-		inline int as_int() const { return i; }
-		inline int set(int x) { i = x;  return i; }
-		inline bool operator == (Inty x) const { return i == x.as_int(); }
+		inline int as_int() const				{ return i;					}
+		inline int set(int x)					{ i = x;  return i;			}
+		inline bool operator == (Inty x) const  { return i == x.as_int();   }
+		inline bool operator != (Inty x) const  { return i != x.as_int();   }
 	};
 
 } // namespace

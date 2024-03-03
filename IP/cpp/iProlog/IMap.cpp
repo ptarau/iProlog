@@ -10,21 +10,21 @@
 
 namespace iProlog {
 
-  bool IMap::put(const Integer* vec_elt_obj, ClauseNumber cl_no) {
-      int b = phash(vec_elt_obj);
-      IntMap<int,int>* vals = map[b].vals;
+  bool IMap::put(const Integer* cl_no_p, int dref) {
+      int b = phash(cl_no_p);
+      IntMap<ClauseNumber, int>* cl_2_dref = map[b].cl_2_dref;
 
-      if (nullptr == vals) {
-          vals = new IntMap<int,int>();
-          map[b] = bucket(vec_elt_obj, vals);
+      if (nullptr == cl_2_dref) {
+          cl_2_dref = new IntMap<ClauseNumber, int>();
+          map[b] = bucket(cl_no_p, cl_2_dref);
       }
-      return vals->add(cl_no);
+      return cl_2_dref->add(dref);
   }
 
-  IntMap<int,int>* IMap::get(const Integer* vec_elt_obj) const {
-      IntMap<int,int> *s = map[phash(vec_elt_obj)].vals;
+  IntMap<ClauseNumber, int>* IMap::get(const Integer* cl_no_p) const {
+      IntMap<ClauseNumber,int>*s = map[phash(cl_no_p)].cl_2_dref;
       if (s == nullptr)
-	        s = new IntMap<int,int>();
+	        s = new IntMap<ClauseNumber, int>();
       return s;
   }
 
@@ -32,7 +32,7 @@ namespace iProlog {
   size_t IMap::size() {
     size_t s = 0;
     for (bucket b : map) {
-        s += b.vals->size();
+        s += b.cl_2_dref->size();
     }
     return s;
   }

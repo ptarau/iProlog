@@ -19,7 +19,7 @@ namespace iProlog {
         shared_ptr<CellList> goals_0,        // was gs/goal_stack [Java]
         int trail_top_0,
         int k_0,
-        vector<int> unifiables_0)
+        vector<ClauseNumber> unifiables_0)
     {
         head = goal_refs_0[0];
         base = base_0;

@@ -22,5 +22,5 @@ namespace iProlog {
 
 	const int MAXIND = 3;       // "number of index args" [Engine.java]
 	const int START_INDEX = 1;	// "if # of clauses < START_INDEX,
-	// turn off indexing" [Engine.java]
+								// turn off indexing" [Engine.java]
 }

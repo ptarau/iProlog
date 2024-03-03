@@ -46,7 +46,7 @@ namespace iProlog {
             // A note in Engine.java on makeIndexArgs(), which is called
             // only in unfold(), says "xs contains dereferenced cells"
 
-        vector<int> unifiables; // "array of clauses known to be unifiable
+        vector<ClauseNumber> unifiables; // "array of clauses known to be unifiable
                 //  with top goal in goal stack" ("cs" in Spine.java)
                 // [This is not listed in the HHG description of Spine.]
                 // Initialized from unifiables, in Engine. If indexing
