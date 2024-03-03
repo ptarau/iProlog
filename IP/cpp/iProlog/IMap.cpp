@@ -12,19 +12,19 @@ namespace iProlog {
 
   bool IMap::put(const Integer* cl_no_p, int dref) {
       int b = phash(cl_no_p);
-      IntMap<ClauseNumber, int>* cl_2_dref = map[b].cl_2_dref;
+      clause_no_to_int* cl_2_dref = map[b].cl_2_dref;
 
       if (nullptr == cl_2_dref) {
-          cl_2_dref = new IntMap<ClauseNumber, int>();
+          cl_2_dref = new clause_no_to_int();
           map[b] = bucket(cl_no_p, cl_2_dref);
       }
       return cl_2_dref->add(dref);
   }
 
-  IntMap<ClauseNumber, int>* IMap::get(const Integer* cl_no_p) const {
+  clause_no_to_int* IMap::get(const Integer* cl_no_p) const {
       IntMap<ClauseNumber,int>*s = map[phash(cl_no_p)].cl_2_dref;
       if (s == nullptr)
-	        s = new IntMap<ClauseNumber, int>();
+	        s = new clause_no_to_int();
       return s;
   }
 

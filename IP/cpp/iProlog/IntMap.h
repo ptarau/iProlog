@@ -67,10 +67,7 @@ namespace iProlog {
 
 		/** Switch for int/kv_pair array traversal, allocation, etc. */
 		static const int m_stride = 2; // 2=int array, 1=kv_pair array
-#if 0
-		void shiftKeys(int pos);
-		void rehash(size_t newCapacity);
-#endif
+
 		inline void move_to_next_entry(int& p) const {
 			p = (p + m_stride) & m_mask2;  // masking causes wraparound indexing
 		}
@@ -81,6 +78,27 @@ namespace iProlog {
 		inline void alloc(int cap) {
 			m_data = vector<int>(cap * m_stride);
 		}
+
+
+        // newCapacity should be 2^n for some n
+
+        void rehash(size_t newCapacity) {
+            m_threshold = (int)(newCapacity / 2 * m_fillFactor);
+            make_masks(newCapacity);
+
+            size_t      oldCapacity = m_data.capacity();
+            vector<int> oldData = m_data;
+
+            alloc(newCapacity);
+            m_size = m_hasFreeKey ? 1 : 0;
+
+            for (int i = 0; i < oldCapacity; i += m_stride) {
+                int oldKey = oldData[i];
+                if (!is_free(oldKey)) {
+                    put(oldKey, oldData[i + 1]);
+                }
+            }
+        }
 
 		inline void maybe_resize() {
 			if (m_size >= m_threshold)
@@ -193,7 +211,6 @@ namespace iProlog {
             }
         }
 
-
         Value put(Key key, Value value) {
             if (is_free(key)) {
                 int ret = m_freeValue;
@@ -294,28 +311,6 @@ namespace iProlog {
                 set_kv(last, k, get_v(pos));
             }
         }
-
-        // newCapacity should be 2^n for some n
-
-
-        void rehash(size_t newCapacity) {
-            m_threshold = (newCapacity / 2 * m_fillFactor);
-            make_masks(newCapacity);
-
-            size_t      oldCapacity = m_data.capacity();
-            vector<int> oldData = m_data;
-
-            alloc(newCapacity);
-            m_size = m_hasFreeKey ? 1 : 0;
-
-            for (int i = 0; i < oldCapacity; i += m_stride) {
-                int oldKey = oldData[i];
-                if (!is_free(oldKey)) {
-                    put(oldKey, oldData[i + 1]);
-                }
-            }
-        }
-
 
 
         // @Override

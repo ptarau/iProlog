@@ -45,7 +45,7 @@ public:
    * collected in a separate set for each argument position."
    */
    // should be array<IMap<>*,MAXIND> var_maps?
-    vector<IntMap<ClauseNumber,int>> var_maps;
+    vector<clause_no_to_int> var_maps;
 
     long n_matches;
 

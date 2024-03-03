@@ -22,6 +22,7 @@ namespace iProlog {
     using namespace std; 
 
     typedef int ClauseNumber; /* 1 ... clause array size */
+    typedef IntMap<ClauseNumber, int> clause_no_to_int;
 
 class IMap {
 
@@ -39,10 +40,11 @@ class IMap {
          struct bucket {
              const Integer* cl_no_p;             ////// why Integer *?????????????????????????
 
-             IntMap<ClauseNumber, int>* cl_2_dref;
+             // IntMap<ClauseNumber, int>* cl_2_dref;
+             clause_no_to_int* cl_2_dref;
 
              bucket() { cl_no_p = nullptr; cl_2_dref = nullptr; }
-             bucket(const Integer* cl_no_p, IntMap<ClauseNumber, int>* cl_2_dref) : cl_no_p(cl_no_p), cl_2_dref(cl_2_dref) {}
+             bucket(const Integer* cl_no_p, clause_no_to_int* cl_2_dref) : cl_no_p(cl_no_p), cl_2_dref(cl_2_dref) {}
          };
      
          vector<bucket> map;
@@ -53,7 +55,7 @@ public:
       }
       inline void clear() { map.clear(); }
       bool put(const Integer* cl_no_p, int vec_elt);
-      IntMap<ClauseNumber, int>* get(const Integer* cl_no_p) const;
+      clause_no_to_int* get(const Integer* cl_no_p) const;
       static vector<IMap*> create(int l);
       size_t size();
 

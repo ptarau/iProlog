@@ -34,10 +34,10 @@ namespace iProlog {
     index::index(const vector<Clause> &clauses) {
 
 	  // was vcreate in Java version:
-		var_maps = vector<IntMap<int,int>>(MAXIND);
+		var_maps = vector<clause_no_to_int>(MAXIND);
 
 		for (int arg_pos = 0; arg_pos < MAXIND; arg_pos++)
-			var_maps[arg_pos] = IntMap<ClauseNumber,int>();
+			var_maps[arg_pos] = clause_no_to_int();
 	  // end vcreate inlined
 
 		if (clauses.size() < START_INDEX) {
@@ -154,7 +154,6 @@ namespace iProlog {
 	*/ 
     }
 
-
 	/* "When looking for the clauses matching an element of
      * the list of goals to solve, for an indexing element x occurring in position i,
      * we fetch the set Cx,i of clauses associated to it.
@@ -171,9 +170,9 @@ namespace iProlog {
      * having variables in predicate positions (if any)." [HHG/ICLP 2017]
      */
 	void intersect0(
-		IntMap<ClauseNumber, int>& m,
-		vector<IntMap<ClauseNumber, int>>& maps,
-		vector<IntMap<ClauseNumber, int>>& vmaps,
+		clause_no_to_int& m,
+		vector<clause_no_to_int>& maps,
+		vector<clause_no_to_int>& vmaps,
 		vector<ClauseNumber>& cl_nos) {
 
 	// r: clause index array
@@ -189,9 +188,9 @@ namespace iProlog {
 				continue;
 			for (int arg_pos = 1; arg_pos < MAXIND; arg_pos++) {
 				int cval = maps[arg_pos].get(cl_no);
-				if (cval == IntMap<ClauseNumber, int>::NO_VALUE) {
+				if (cval == clause_no_to_int::NO_VALUE) {
 					int vcval = vmaps[arg_pos].get(cl_no);
-					if (vcval == IntMap<ClauseNumber, int>::NO_VALUE) {
+					if (vcval == clause_no_to_int::NO_VALUE) {
 						found = false;
 						break;
 					}
@@ -205,27 +204,24 @@ namespace iProlog {
 	/*
 	 * This translation is from IMap.get, with ArrayList for ms & vms 
 	 */
-
 	vector<int> index::matching_clauses(const vector<ClauseNumber>& unifiables) {
-		vector<IntMap<ClauseNumber, int>> ms;
-		vector<IntMap<ClauseNumber, int>> vms;
+		vector<clause_no_to_int> ms;
+		vector<clause_no_to_int> vms;
 
 		for (int i = 0; i < unifiables.size(); i++)
 			if (is_not_cl_no(unifiables[i])) {  // should be legal ClauseNumber
 				
-				IntMap<ClauseNumber, int>* m = imaps[i]->get(new Integer(unifiables[i]));
+				clause_no_to_int* m = imaps[i]->get(new Integer(unifiables[i]));
 
 				ms.emplace_back(*m);
 				vms.emplace_back(var_maps[i]);
 			}
 		
-		vector<IntMap<ClauseNumber, int>> ims  = vector<IntMap<ClauseNumber, int>>(ms.size());
-		vector<IntMap<ClauseNumber, int>> vims = vector<IntMap<ClauseNumber, int>>(vms.size());
+		vector<clause_no_to_int> ims  = vector<clause_no_to_int>(ms.size());
+		vector<clause_no_to_int> vims = vector<clause_no_to_int>(vms.size());
 
 		for (int i = 0; i < ims.size(); i++) {
-			// IntMap<ClauseNumber, int> im =  ms[i];
 			ims[i] = ms[i];
-			// IntMap<ClauseNumber, int> vim = vms.at(i);
 			vims[i] = vms[i];
 		}
 
@@ -256,7 +252,6 @@ namespace iProlog {
 		return is;
 	}
 
-
 	string index::show(const t_index_vector& iv) {
 		string s = "";
 		char d = '<';
@@ -268,7 +263,4 @@ namespace iProlog {
 		s += ">";
 		return s;
 	}
-
-	// template class IntMap<int, int, 0>; // mysterious....
-
 } // namespace

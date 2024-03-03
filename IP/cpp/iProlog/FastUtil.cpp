@@ -59,7 +59,7 @@ namespace iProlog {
      * @throws IllegalArgumentException if the necessary size is larger than 2<sup>30</sup>.
      */
     long FastUtil::arraySize(int expected, float f) {
-        long s = nextPowerOfTwo((long)((expected / f) + 1));
+        long s = nextPowerOfTwo((size_t)((expected / f) + 1));
         if (s < 2) s = 2;
 
         if (s > 1L << 30) {
