@@ -134,7 +134,6 @@
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="IMap.cpp" />
     <ClCompile Include="index.cpp" />
-    <ClCompile Include="IntMap.cpp" />
     <ClCompile Include="CellStack.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Object.cpp" />
