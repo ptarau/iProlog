@@ -2,6 +2,15 @@
 namespace iProlog {
 	const int MIN_HEAP_SIZE = 1 << 10;
 
+	// For tuning speed/space tradeoffs.
+	// See https://en.cppreference.com/w/cpp/types/integer
+
+	typedef int cell_int;
+
+	typedef int sym_idx_int;
+
+	typedef int hashable_int_ptr_int;
+
 	/* RAW=true says to go with a less-safe, faster implementation
 	 *    than STL vectors, with no bounds check, and less header info, to
 	 *    save a little space. The fast-copy cell heap-to-heap relocation may

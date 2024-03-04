@@ -13,20 +13,22 @@
 
 namespace iProlog {
 
+	typedef Inty<sym_idx_int> sym_idx;
+
 	class sym_tab {
 	public:
-		unordered_map<string, Inty> syms;
+		unordered_map<string, sym_idx> syms;
 		vector<string> slist;
 
 		/**
          * "Places an identifier in the symbol table."
          */
-		Inty addSym(const string sym) {
+		sym_idx addSym(const string sym) {
 			try { return syms.at(sym); }
 			catch (const std::exception& e) {
-				Inty I;
+				sym_idx I;
 				I.set((int)syms.size());
-				syms.insert(pair<string, Inty>(sym, I));
+				syms.insert(pair<string, sym_idx>(sym, I));
 				slist.push_back(sym);
 				return I;
 			}

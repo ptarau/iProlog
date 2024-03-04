@@ -6,7 +6,7 @@
 
 namespace iProlog {
 	using namespace std;
-	class Integer : public Inty {
+	class Integer : public Inty<hashable_int_ptr_int> {
 	public:
 		inline Integer(int x) { set(x);  }
 		inline Integer(Inty x) { set(x.as_int()); }

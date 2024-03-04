@@ -8,8 +8,8 @@
  */
 
 namespace iProlog {
-	class Inty {
-		int i;
+	template <class int_type> class Inty {
+		int_type i;
 	public:
 		inline int as_int() const				{ return i;					}
 		inline int set(int x)					{ i = x;  return i;			}

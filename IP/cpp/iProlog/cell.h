@@ -17,8 +17,7 @@ namespace iProlog {
 
     using namespace std;
 
-
-    class cell : public Inty {
+    class cell : public Inty<cell_int> {
 
     public:
 	static const int bitwidth = CHAR_BIT * sizeof(int);
