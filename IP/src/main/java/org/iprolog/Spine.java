@@ -28,14 +28,15 @@ class Spine {
           // the top goal of [this] Spine
           // has tried to match so far " [HHG doc]
 
-  int[] xs; // index elements ("based on regs" [HHG] but no regs)
+  int[] index_vector; // index elements ("based on regs" [HHG] but no regs)
   // "int[] regs: dereferenced goal registers" [HHG doc]
   // Comments in Engine.java suggest that xs is regs
   
-  int[] cs; // array of clauses known to be unifiable with top goal in goal stack.
+  int[] unifiables; // array of clauses known to be unifiable
+  	  // with top goal in goal stack.
           // (This is not listed in the HHG description of Spine.)
           // Initialized from cls, in Engine. If indexing is not
-          // activated, cs[i] == i.
+          // activated, clause_list[i] == i.
 
   /**
    * Creates a spine - as a snapshot of some runtime elements.
@@ -54,7 +55,7 @@ class Spine {
     this.trail_top = trail_top;
     this.k = k;
     // Prog.println("\n     *** in new Spine() spine.base = " + base + " spine.kount=" + this.k + "\n");
-    this.cs = cs;
+    this.unifiables = cs;
   }
 
   /**
@@ -67,6 +68,6 @@ class Spine {
     this.trail_top = trail_top;
     this.k = -1;
     // Prog.println("\n     *** in Spine(h,tt): spine.base = " + this.base + " spine.kount=" + this.k + "\n");
-    this.cs = null;
+    this.unifiables = null;
   }
 }

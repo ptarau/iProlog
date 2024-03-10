@@ -896,13 +896,13 @@ s += "]";
     for (int i = 0; i < hgs.length; i++)
       hgs[i] = relocate(b, hgs[i]);
 
-    final int[] xs = getIndexables(hgs[0]);
+    final int[] index_vector = getIndexables(hgs[0]);
 
 //  System.out.println ("---- putClause: returning -----");
-    Prog.println ("---- putClause: base being set to " + base + " xs=");
+    Prog.println ("---- putClause: base being set to " + base + " index_vector=");
     for (int i = 0; i < MAXIND; ++i) 
-	    Prog.println ("   xs[" + i + "] = " + xs[i]);
-    return new Clause(len, hgs, base, neck, xs);
+	    Prog.println ("   index_vector[" + i + "] = " + index_vector[i]);
+    return new Clause(len, hgs, base, neck, index_vector);
   }
 
   /**
@@ -994,47 +994,47 @@ s += "]";
   /**
    * Makes, if needed, registers associated to top goal of a Spine.
    * These registers will be reused when matching with candidate clauses.
-   * Note that xs contains dereferenced cells - this is done once for
+   * Note that index_vector contains dereferenced cells - this is done once for
    * each goal's toplevel subterms.
    */
   final private void makeIndexArgs(final Spine G, final int goal) {
 
     // Prog.println("makeIndexArgs() entered...");
-    if (null != G.xs)  // made only once
+    if (null != G.index_vector)  // made only once
       return;
     // Prog.println("  makeIndexArgs() Found work to do ...");
 
     final int p = 1 + detag(goal);
     final int n = Math.min(MAXIND, detag(getRef(goal)));
 
-    final int[] xs = new int[MAXIND];
+    final int[] index_vector = new int[MAXIND];
 
     for (int i = 0; i < n; i++) {
       final int cell = deref(heap[p + i]);
-      xs[i] = cell2index(cell);
-      Prog.println("    G->index_vector[" + i + "]=" + xs[i]);
+      index_vector[i] = cell2index(cell);
+      Prog.println("    G->index_vector[" + i + "]=" + index_vector[i]);
     }
 
-    G.xs = xs;
+    G.index_vector = index_vector;
 
     if (null == imaps)
       return;
-    final int[] cs = IMap.get(imaps, vmaps, xs);
-    G.cs = cs;
+    final int[] cs = IMap.get(imaps, vmaps, index_vector);
+    G.unifiables = cs;
   }
 
   final private int[] getIndexables(final int ref) {
     final int p = 1 + detag(ref);
     final int n = detag(getRef(ref));
-    final int[] xs = new int[MAXIND];
+    final int[] index_vector = new int[MAXIND];
     Main.pp ("getIndexables: n=" + n);
     for (int i = 0; i < MAXIND && i < n; i++) {
       final int cell = deref(heap[p + i]);
       Main.pp("  getIndexables: c=" + showCell(cell) + " cell2index=" + showCell(cell2index(cell)));
-      xs[i] = cell2index(cell);
-      Main.pp("getIndexables: xs["+i+"] = "+xs[i]);
+      index_vector[i] = cell2index(cell);
+      Main.pp("getIndexables: index_vector["+i+"] = "+index_vector[i]);
     }
-    return xs;
+    return index_vector;
   }
 
   final private int cell2index(final int cell) {
@@ -1056,14 +1056,14 @@ s += "]";
   /**
    * Tests if the head of a clause, not yet copied to the heap
    * for execution, could possibly match the current goal, an
-   * abstraction of which has been placed in xs.
+   * abstraction of which has been placed in index_vector.
    * ("abstraction of which"???)
    * Supposedly, none of these "abstractions" can == -1
    */
-  private final boolean possible_match(final int[] xs, final Clause C0) {
+  private final boolean possible_match(final int[] index_vector, final Clause C0) {
     for (int i = 0; i < MAXIND; i++) {
-      final int x = xs[i];
-      final int y = C0.xs[i];
+      final int x = index_vector[i];
+      final int y = C0.index_vector[i];
       if (0 == x || 0 == y) {
         continue;
       }
@@ -1105,26 +1105,26 @@ s += "]";
 
     makeIndexArgs(G, goal);
 
-    final int last = G.cs.length;
+    final int last = G.unifiables.length;
     // G.k: "index of the last clause [that]
           // the top goal of [this] Spine [G]
           // has tried to match so far " [HHG doc]
 
     // Prog.println("before unfold loop: G->kount=" + G.k);
-    // for (int i = 0; i<G.cs.length; ++i)
-    //   Prog.println ("G.cs[" + i + "]=" + G.cs[i]);
+    // for (int i = 0; i<G.unifiables.length; ++i)
+    //   Prog.println ("G.unifiables[" + i + "]=" + G.unifiables[i]);
     // for (int k = G.k; k < last; k++) {
-    //   Prog.println("clauses[" +G.cs[k] + "].base=" + clauses[G.cs[k]].base);
+    //   Prog.println("clauses[" +G.unifiables[k] + "].base=" + clauses[G.unifiables[k]].base);
     // }
 
     for (int k = G.k; k < last; k++) {
       // Prog.println("unfold loop: k = " + k);
-      final Clause C0 = clauses[G.cs[k]];
+      final Clause C0 = clauses[G.unifiables[k]];
 
       // Prog.println ("C0.base=" + C0.base);
       // Prog.println ("     " + showHeap("heab before pushHead"));
 
-      if (!possible_match(G.xs, C0))
+      if (!possible_match(G.index_vector, C0))
           continue;
 
       // Prog.println("??????? possible match? ???????");
@@ -1207,8 +1207,8 @@ s += "]";
    * top goal of this spine.
    */
   final private boolean hasClauses(final Spine S) {
-    // Prog.println("hasClauses: S.base= "+S.base+" S.k=" + S.k + " S.cs.length=" + S.cs.length);
-    return S.k < S.cs.length;
+    // Prog.println("hasClauses: S.base= "+S.base+" S.k=" + S.k + " S.unifiables.length=" + S.unifiables.length);
+    return S.k < S.unifiables.length;
   }
 
   /**
@@ -1353,7 +1353,7 @@ s += "]";
       final Clause c = clauses[i];
 
       // Prog.println ("C["+i+"]="+c.toString());
-      put(imaps, vmaps, c.xs, i + 1); // $$$ UGLY INC
+      put(imaps, vmaps, c.index_vector, i + 1); // $$$ UGLY INC
 
     }
     Main.pp("INDEX");

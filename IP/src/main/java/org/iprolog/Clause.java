@@ -152,7 +152,8 @@ public class Clause {
                   // From tracing hgs.length, I think not.
   final int base; // the point in the heap where this clause starts
   final int neck; // first after the end of the head (=length of the head)
-  final int[] xs; // indexables in head. In the video, this is described as
+  final int[] index_vector; // indexables in head. In the video, this is
+		  // described as
                   // "the index vector containing dereferenced constants,
                   // numbers or array sizes as extracted from the outermost
                   // term of the head of the clause, with zero values
@@ -167,7 +168,7 @@ public class Clause {
 // String functor;  // String just a start; this really needs to index into some symbol table
 // List<String> terms;
 
-  Clause(final int len, final int[] hgs, final int base, final int neck, final int[] xs) {
+  Clause(final int len, final int[] hgs, final int base, final int neck, final int[] index_vector) {
     this.hgs = hgs;
     this.base = base;
 
@@ -175,7 +176,7 @@ public class Clause {
 
     this.len = len;
     this.neck = neck;
-    this.xs = xs;
+    this.index_vector = index_vector;
   }
 
 }
