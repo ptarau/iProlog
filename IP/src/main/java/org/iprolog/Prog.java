@@ -187,13 +187,13 @@ public class Prog extends Engine implements Spliterator<Object> {
 
   String showClause(final Clause s) {
     final StringBuilder buf = new StringBuilder();
-    final int l = s.hgs.length;
+    final int l = s.skeleton.length;
     buf.append("\n ");
-    buf.append(showTerm(s.hgs[0]));
+    buf.append(showTerm(s.skeleton[0]));
     if (l > 1) {
       buf.append(Term.if_sym).append("\n");
       for (int i = 1; i < l; i++) {
-        final int e = s.hgs[i];
+        final int e = s.skeleton[i];
         buf.append("   ");
         buf.append(showTerm(e));
         buf.append("\n");
@@ -208,12 +208,12 @@ public class Prog extends Engine implements Spliterator<Object> {
             .append(" -----\n");
     buf.append(showCells(s.base, s.len)); // TODO
     buf.append("\n");
-    buf.append(showCell(s.hgs[0]));
+    buf.append(showCell(s.skeleton[0]));
 
     buf.append(" :- [");
     for (int i = 1; i < l; i++) {
 
-      final int e = s.hgs[i];
+      final int e = s.skeleton[i];
       buf.append(showCell(e));
       if (i < l - 1) {
         buf.append(", ");

@@ -144,7 +144,7 @@ public class Clause {
 // Skeletal elements for compiled form:
 
   final int len; // length of heap slice
-  final int[] hgs; // "head+goals pointing to cells in clauses"???
+  final int[] skeleton; // "head+goals pointing to cells in clauses"???
                   // In the video presentation, this seems to be "gs",
                   // described as "the top level skeleton of a clause
                   // containing references to its head then body elements."
@@ -168,8 +168,8 @@ public class Clause {
 // String functor;  // String just a start; this really needs to index into some symbol table
 // List<String> terms;
 
-  Clause(final int len, final int[] hgs, final int base, final int neck, final int[] index_vector) {
-    this.hgs = hgs;
+  Clause(final int len, final int[] skeleton, final int base, final int neck, final int[] index_vector) {
+    this.skeleton = skeleton;
     this.base = base;
 
     Prog.println("     $$$$$$$$$$$$$$$$$$ Clause constructor: base<-" + base);

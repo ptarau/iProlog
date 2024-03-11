@@ -503,14 +503,14 @@ s += "]";
     else
       neck = detag(goals.get(1));
 
-    final int[] hgs = goals.toArray();
+    final int[] skeleton = goals.toArray();
 
-    assert hgs.length > 0;
+    assert skeleton.length > 0;
 
           // Prog.println("cells before entering putClause()");
           // for (int i = 0; i < cells.size(); ++i) Prog.println(showCell(cells.get(i)));
 
-    final Clause C = putClause(cells.toArray(), hgs, neck);
+    final Clause C = putClause(cells.toArray(), skeleton, neck);
 
     Clauses.add(C);
 
@@ -965,7 +965,7 @@ s += "]";
     assert tagOf(b) == V;
     assert V == 0;
     pushCells(b, 0, C.neck, C.base);
-    final int head = C.hgs[0];
+    final int head = C.skeleton[0];
     int reloc_head = relocate(b, head);
     // Prog.println("+++ pushHead: head=" + showCell(head) + " b = " + showCell(b) + " C.neck = " + C.neck + " C.base = " + C.base);
     // Prog.println(showHeap("+++ pushHead exiting with heap"));
@@ -982,11 +982,11 @@ s += "]";
     assert tagOf(b) == V;
     assert V == 0;
     pushCells(b, C.neck, C.len, C.base);
-    final int l = C.hgs.length;
+    final int l = C.skeleton.length;
     final int[] goals = new int[l];
     goals[0] = head;
     for (int k = 1; k < l; k++) {
-      final int cell = C.hgs[k];
+      final int cell = C.skeleton[k];
       goals[k] = relocate(b, cell);
     }
     return goals;
@@ -1188,7 +1188,7 @@ s += "]";
 
     final Clause G = getQuery();
     // Prog.println("trail.getTop()=" + trail.getTop());
-    final Spine Q = new Spine(G.hgs, base, IntList.empty, trail.getTop(), 0, clause_list);
+    final Spine Q = new Spine(G.skeleton, base, IntList.empty, trail.getTop(), 0, clause_list);
     // Prog.println("Q.last_clause_tried=" + Q.last_clause_tried);
     spines.push(Q);
     return Q;
