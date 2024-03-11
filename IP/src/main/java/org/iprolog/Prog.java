@@ -247,7 +247,7 @@ public class Prog extends Engine implements Spliterator<Object> {
   void ppc(final Spine S) {
     //stats();
     final IntList bs = S.goals;
-    pp("\nppc: trail_top=" + S.trail_top + ", k=" + S.k + " len=" + IntList.len(bs));
+    pp("\nppc: trail_top=" + S.trail_top + ", last_clause_tried=" + S.last_clause_tried + " len=" + IntList.len(bs));
     ppGoals(bs);
   }
 

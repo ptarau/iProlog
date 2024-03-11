@@ -1107,18 +1107,18 @@ s += "]";
     makeIndexArgs(G, goal);
 
     final int last = G.unifiables.length;
-    // G.k: "index of the last clause [that]
+    // G.last_clause_tried: "index of the last clause [that]
           // the top goal of [this] Spine [G]
           // has tried to match so far " [HHG doc]
 
-    // Prog.println("before unfold loop: G->kount=" + G.k);
+    // Prog.println("before unfold loop: G->kount=" + G.last_clause_tried);
     // for (int i = 0; i<G.unifiables.length; ++i)
     //   Prog.println ("G.unifiables[" + i + "]=" + G.unifiables[i]);
-    // for (int k = G.k; k < last; k++) {
+    // for (int k = G.last_clause_tried; k < last; k++) {
     //   Prog.println("clauses[" +G.unifiables[k] + "].base=" + clauses[G.unifiables[k]].base);
     // }
 
-    for (int k = G.k; k < last; k++) {
+    for (int k = G.last_clause_tried; k < last; k++) {
       // Prog.println("unfold loop: k = " + k);
       final Clause C0 = clauses[G.unifiables[k]];
 
@@ -1155,9 +1155,9 @@ s += "]";
       // Prog.println("$$$$$$$$$$$ goals after pushBody:");
       // for (int i = 0; i < goals.length; ++i) { Prog.println(" " + showCell(goals[i]));}
       IntList tl = IntList.tail(G.goals);
-      G.k = k + 1;
+      G.last_clause_tried = k + 1;
 
-      // Prog.println("\n     *** spine.base = " + G.base + " UPDATED spine.kount=" + G.k + "\n");
+      // Prog.println("\n     *** spine.base = " + G.base + " UPDATED spine.last_clause_tried=" + G.last_clause_tried + "\n");
 
       // if (!IntList.isEmpty(new_goals)) {
       if (goals.length != 0 || tl != null) {
@@ -1189,7 +1189,7 @@ s += "]";
     final Clause G = getQuery();
     // Prog.println("trail.getTop()=" + trail.getTop());
     final Spine Q = new Spine(G.hgs, base, IntList.empty, trail.getTop(), 0, clause_list);
-    // Prog.println("Q.k=" + Q.k);
+    // Prog.println("Q.last_clause_tried=" + Q.last_clause_tried);
     spines.push(Q);
     return Q;
   }
@@ -1208,8 +1208,8 @@ s += "]";
    * top goal of this spine.
    */
   final private boolean hasClauses(final Spine S) {
-    // Prog.println("hasClauses: S.base= "+S.base+" S.k=" + S.k + " S.unifiables.length=" + S.unifiables.length);
-    return S.k < S.unifiables.length;
+    // Prog.println("hasClauses: S.base= "+S.base+" S.last_clause_tried=" + S.last_clause_tried + " S.unifiables.length=" + S.unifiables.length);
+    return S.last_clause_tried < S.unifiables.length;
   }
 
   /**
@@ -1242,7 +1242,7 @@ s += "]";
     while (!spines.isEmpty()) {
       final Spine G = spines.peek(); // "The active component of a Spine is the topmost goal
                                      // in [its]] immutable [goal_stack]" [HHG doc]
-      // Prog.println ("  yield: G.k=" + G.k);
+      // Prog.println ("  yield: G.last_clause_tried=" + G.last_clause_tried);
       if (!hasClauses(G)) {
         popSpine(); // no clauses left
         continue;
@@ -1254,7 +1254,7 @@ s += "]";
                     // the topmost Spine is popped off." [HHG doc]
         continue;
       }
-      // Prog.println ("  yield: C.k=" + C.k);
+      // Prog.println ("  yield: C.last_clause_tried=" + C.last_clause_tried);
       if (any_goals_left(C)) {
         spines.push(C);
         continue;
@@ -1285,7 +1285,7 @@ s += "]";
    * an external representation of symbols, numbers and variables." [HHG doc]
    */
   Object POJO_ask() {
-    // Prog.println(" POJO_ask(), spines.peek().k=" + spines.peek().k);
+    // Prog.println(" POJO_ask(), spines.peek().last_clause_tried=" + spines.peek().last_clause_tried);
     query = yield();
     if (null == query)
       return null;
@@ -1303,7 +1303,7 @@ s += "]";
     long ctr = 0L;
     int MAX_OUTPUT_LINES = 5;
 
-    // Prog.println(" &&&& run(): spines.peek().k=" + spines.peek().k);
+    // Prog.println(" &&&& run(): spines.peek().last_clause_tried=" + spines.peek().last_clause_tried);
 
     for (;; ctr++) {
       final Object A = POJO_ask();

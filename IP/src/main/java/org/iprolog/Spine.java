@@ -24,7 +24,7 @@ class Spine {
   final int trail_top; // top of the trail when this Spine was created
                         // "as it was when this clause got unified" [HHG doc]
 
-  int k; // "index of the last clause [that]
+  int last_clause_tried; // "index of the last clause [that]
           // the top goal of [this] Spine
           // has tried to match so far " [HHG doc]
 
@@ -45,7 +45,7 @@ class Spine {
        ,final int     base
        ,final IntList goal_stack
        ,final int     trail_top
-       ,final int     k
+       ,final int     last_clause_tried
        ,final int[]   cs
        ) {
     this.head = goal_refs_0[0];
@@ -53,7 +53,7 @@ class Spine {
     // prepends the goals of clause with head:
     this.goals = IntList.tail(IntList.concat(goal_refs_0, goal_stack));
     this.trail_top = trail_top;
-    this.k = k;
+    this.last_clause_tried = last_clause_tried;
     // Prog.println("\n     *** in new Spine() spine.base = " + base + " spine.kount=" + this.k + "\n");
     this.unifiables = cs;
   }
@@ -66,7 +66,7 @@ class Spine {
     this.base = 0;
     this.goals = IntList.empty;
     this.trail_top = trail_top;
-    this.k = -1;
+    this.last_clause_tried = -1;
     // Prog.println("\n     *** in Spine(h,tt): spine.base = " + this.base + " spine.kount=" + this.k + "\n");
     this.unifiables = null;
   }

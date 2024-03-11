@@ -78,7 +78,7 @@ namespace iProlog {
             int base_0,               // base
             shared_ptr<CellList> goals_0,        // was gs/goal_stack [Java]
             int trail_top_0,
-            int k_0,
+            int last_clause_tried_0,
             vector<int> unifiables_0); // was cs [Java]
 
         /**

@@ -18,14 +18,14 @@ namespace iProlog {
         int base_0,               // base
         shared_ptr<CellList> goals_0,        // was gs/goal_stack [Java]
         int trail_top_0,
-        int k_0,
+        int last_clause_tried_0,
         vector<ClauseNumber> unifiables_0)
     {
         head = goal_refs_0[0];
         base = base_0;
         trail_top = trail_top_0;
         index_vector = t_index_vector{ -1,-1,-1 };
-        last_clause_tried = k_0; 
+        last_clause_tried = last_clause_tried_0;
         goals = CellList::tail(CellList::concat(goal_refs_0, goals_0));
         unifiables = unifiables_0;
     }
