@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/f008893ed5500665/CELLSTACK.ipch" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/.vs/iPrologC++/v17/ipch/AutoPCH/f008893ed5500665/CELLSTACK.ipch" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/iProlog.vcxproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/iProlog.vcxproj.user" afterDir="false" />
-    </list>
+    <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

@@ -17,7 +17,7 @@ namespace iProlog {
         // Skeletal elements for compiled form:
 
         int len;            // length of heap slice
-        vector<cell> goal_refs; // "head+goals pointing to cells in clauses"???
+        vector<cell> skeleton; // "head+goals pointing to cells in clauses"???
         int base;           // the point in the heap where this clause starts
         int neck;           // first after the end of the head (=length of the head)
         t_index_vector index_vector; // indexables in head. In the video, this is described as

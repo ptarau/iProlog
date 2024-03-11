@@ -212,7 +212,7 @@ Clause Engine::getQuery() {
 Spine *Engine::init() {
     int base = heap_size();
     Clause G = getQuery();
-    Spine *Q = new Spine(G.goal_refs, base, nullptr, trail.getTop(), 0, clause_list);
+    Spine *Q = new Spine(G.skeleton, base, nullptr, trail.getTop(), 0, clause_list);
 
     spines.push_back(Q);
     return Q;
@@ -351,14 +351,14 @@ string Engine::showCell(cell w) const {
  */
 vector<cell> Engine::pushBody(cell b, cell head, const Clause &C) {
     CellStack::pushCells(heap, b, C.neck, C.len, C.base);
-    int l = (int) C.goal_refs.size();
+    int l = (int) C.skeleton.size();
     vector<cell> goals(l);
     goals[0] = head;
     if (is_raw)
-	    cell::cp_cells (b, C.goal_refs.data()+1, goals.data()+1, l-1);
+	    cell::cp_cells (b, C.skeleton.data()+1, goals.data()+1, l-1);
     else
         for (int k = 1; k < l; k++)
-            goals[k] = C.goal_refs[k].relocated_by(b);
+            goals[k] = C.skeleton[k].relocated_by(b);
     return goals;
 }
 
@@ -368,7 +368,7 @@ vector<cell> Engine::pushBody(cell b, cell head, const Clause &C) {
  */
 cell Engine::pushHeadtoHeap(cell b, const Clause& C) {
     CellStack::pushCells(heap, b, 0, C.neck, C.base);
-    cell head = C.goal_refs[0];
+    cell head = C.skeleton[0];
     cell reloc_head = head.relocated_by(b);
     return reloc_head;
 }
