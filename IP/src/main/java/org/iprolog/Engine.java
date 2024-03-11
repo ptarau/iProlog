@@ -66,9 +66,10 @@ class Engine {
    */
   final private IntStack trail;
   
-  /* ustack - unification stack; helps to handle term unification non-recursively
+  /* unify_stack
+   * - unification stack; helps to handle term unification non-recursively
    */
-  final private IntStack ustack;
+  final private IntStack unify_stack;
   
   /* spines - stack of abstractions of clauses and goals;
    *    both a choice-point stack and goal stack
@@ -93,7 +94,7 @@ class Engine {
     makeHeap();
 
     trail = new IntStack();
-    ustack = new IntStack();
+    unify_stack = new IntStack();
 
     // Main.println ("Calling dload_from_x");
     clauses = dload_from_x(s, fromFile); // load "natural language" source
@@ -780,16 +781,16 @@ s += "]";
   }
 
   /**
-   * Unification algorithm for cells X1 and X2 on ustack that also takes care
-   * to trail bindings below a given heap address "base".
+   * Unification algorithm for cells X1 and X2 on unify_stack
+   * that also takes care to trail bindings below a given heap address "base".
    */
   final private boolean unify(final int base) {
-    // Prog.println ("  Entering unify(), unify_stack.getTop()=" + ustack.getTop());
-    while (!ustack.isEmpty()) {
-      final int x1 = deref(ustack.pop());
-      final int x2 = deref(ustack.pop());
+    // Prog.println ("  Entering unify(), unify_stack.getTop()=" + unify_stack.getTop());
+    while (!unify_stack.isEmpty()) {
+      final int x1 = deref(unify_stack.pop());
+      final int x2 = deref(unify_stack.pop());
       // Prog.println("      unify loop: x1=" + showCell(x1) + " x2=" + showCell(x2));
-      // Prog.println("      unify loop: unify_stack.getTop() =" + ustack.getTop());
+      // Prog.println("      unify loop: unify_stack.getTop() =" + unify_stack.getTop());
       if (x1 != x2) {
         final int t1 = tagOf(x1);
         final int t2 = tagOf(x2);
@@ -821,7 +822,7 @@ s += "]";
             return false;
         } else
           return false;
-        // Prog.println("      unify loop: unify_stack.getTop() NOW =" + ustack.getTop());
+        // Prog.println("      unify loop: unify_stack.getTop() NOW =" + unify_stack.getTop());
       }
     }
     return true;
@@ -870,9 +871,9 @@ s += "]";
       if (u1 == u2) {
         continue;
       }
-      ustack.push(u2);
-      ustack.push(u1);
-      // Prog.println("                       "+ showCS("unify_stack", ustack));
+      unify_stack.push(u2);
+      unify_stack.push(u1);
+      // Prog.println("                       "+ showCS("unify_stack", unify_stack));
       // Prog.println("                       "+ showHeap("heap"));
     }
     return true;
@@ -1133,12 +1134,12 @@ s += "]";
       assert V == 0;
       final int head = pushHead(b, C0);
 
-      ustack.clear(); // set up unification stack
+      unify_stack.clear(); // set up unification stack
 
-      ustack.push(head);
-      ustack.push(goal);
+      unify_stack.push(head);
+      unify_stack.push(goal);
       // Prog.println("pushed to unify_stack: head=" + showCell(head) + " goal=" + showCell(goal));
-      // Prog.println("                       "+ showCS("unify_stack", ustack));
+      // Prog.println("                       "+ showCS("unify_stack", unify_stack));
       // Prog.println("                       "+ showHeap("heap"));
       // Prog.println("                       base=" + base);
 
