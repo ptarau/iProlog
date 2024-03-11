@@ -41,21 +41,21 @@ class Spine {
   /**
    * Creates a spine - as a snapshot of some runtime elements.
    */
-  Spine(final int[]   goal_refs_0
+  Spine(final int[]   skeleton
        ,final int     base
        ,final IntList goal_stack
        ,final int     trail_top
        ,final int     last_clause_tried
-       ,final int[]   cs
+       ,final int[]   unifiables
        ) {
-    this.head = goal_refs_0[0];
+    this.head = skeleton[0];
     this.base = base;
     // prepends the goals of clause with head:
-    this.goals = IntList.tail(IntList.concat(goal_refs_0, goal_stack));
+    this.goals = IntList.tail(IntList.concat(skeleton, goal_stack));
     this.trail_top = trail_top;
     this.last_clause_tried = last_clause_tried;
     // Prog.println("\n     *** in new Spine() spine.base = " + base + " spine.kount=" + this.k + "\n");
-    this.unifiables = cs;
+    this.unifiables = unifiables;
   }
 
   /**
