@@ -44,7 +44,7 @@ Object Prog::exportTerm(cell x) const {
     int w = x.arg();
 
     switch (x.s_tag()) {
-    case cell::C_: return Object(sym.getSym(w));
+    case cell::C_: return Object(symTab.getSym(w));
     case cell::N_: return Object(Integer(w));
     case cell::V_: return Object(cstr("V") + w);
         /*case U_:*/
@@ -144,14 +144,14 @@ if(indexing)
     void Prog::ppCode() const {
         string t;
 
-        for (size_t i = 0; i < sym.slist.size(); i++) {
+        for (size_t i = 0; i < symTab.slist.size(); i++) {
             if (i > 0) t += ", ";
-            t += sym.slist[i] + "=" + i;
+            t += symTab.slist[i] + "=" + i;
         }
 
         pp("\nSYMS:\n{" + t + "}");
 
-	    pp((sym_tab&) sym);  // compiler was erroring out on trying to convert to string??
+	    pp((sym_tab&) symTab);  // compiler was erroring out on trying to convert to string??
 
         pp("\nCLAUSES:\n");
 

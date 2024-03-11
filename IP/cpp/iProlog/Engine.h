@@ -35,7 +35,7 @@ public:
 
     // "Symbol table - made of map (syms) + reverse map from
     //  ints to syms (slist)" [Engine.java]
-    sym_tab sym;
+    sym_tab symTab;
 
     /** Runtime areas: **/
     // 
@@ -53,7 +53,7 @@ public:
            vector<Clause>&  clauses_0,
            sym_tab&         sym_0,
 	       index *          Ip_0)
-		                    : heap(heap_0), clauses(clauses_0), sym(sym_0), Ip(Ip_0) {
+		                    : heap(heap_0), clauses(clauses_0), symTab(sym_0), Ip(Ip_0) {
 
 	    if (clauses.size() == 0) {
 		    throw logic_error(cstr("clauses: none"));

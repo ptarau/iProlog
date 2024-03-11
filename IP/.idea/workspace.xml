@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/sym_tab.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Prog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Prog.java" afterDir="false" />
-    </list>
+    <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

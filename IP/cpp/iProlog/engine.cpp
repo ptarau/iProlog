@@ -336,7 +336,7 @@ string Engine::showCell(cell w) const {
         case cell::V_:    s = cstr("v:") + val;        break;
         case cell::U_:    s = cstr("u:") + val;        break;
         case cell::N_:    s = cstr("n:") + val;        break;
-        case cell::C_:    s = cstr("c:") + sym.getSym(val); break;
+        case cell::C_:    s = cstr("c:") + symTab.getSym(val); break;
         case cell::R_:    s = cstr("r:") + val;        break;
         case cell::A_:    s = cstr("a:") + val;        break;
         default:    s = cstr("*BAD*=") + w.as_int();
