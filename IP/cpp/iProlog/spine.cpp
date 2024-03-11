@@ -24,7 +24,8 @@ namespace iProlog {
         head = goal_refs_0[0];
         base = base_0;
         trail_top = trail_top_0;
-        index_vector = t_index_vector{ -1,-1,-1 };
+        for (int i = 0; i < MAXIND; ++i)
+            index_vector[i] = cell::BAD;
         last_clause_tried = last_clause_tried_0;
         goals = CellList::tail(CellList::concat(goal_refs_0, goals_0));
         unifiables = unifiables_0;
@@ -39,7 +40,8 @@ namespace iProlog {
         goals = nullptr;
         trail_top = tt;
         last_clause_tried = -1;
-        index_vector = { -1,-1,-1 };
+        for (int i = 0; i < MAXIND; ++i)
+            index_vector[i] = cell::BAD;
     }
 
 } // end namespace
