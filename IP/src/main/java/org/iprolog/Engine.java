@@ -50,8 +50,7 @@ class Engine {
   final int[] clause_list; // if no indexing, [0..clauses.length-1]
 
   /* Symbol table - made of map (syms) + reverse map from ints to syms (slist) */
-  final LinkedHashMap<String, Integer> syms; // syms->ints
-  final private ArrayList<String> slist;     // resizeable ints->syms
+  final protected sym_tab symTab;
 
     /** Runtime areas: **/
 
@@ -88,9 +87,10 @@ class Engine {
    * Builds a new engine from a natural-language-style assembler.nl file
    */
   Engine(final String s, final boolean fromFile) {
-    syms = new LinkedHashMap<String, Integer>();
-    slist = new ArrayList<String>();
+    // syms = new LinkedHashMap<String, Integer>();
+    // list = new ArrayList<String>();
 
+    symTab = new sym_tab();
     makeHeap();
 
     trail = new IntStack();
@@ -163,30 +163,6 @@ class Engine {
    */
   final private static int tagOf(final int w) {
     return maybe_invert(w) & TAG_MASK;
-  }
-
-  /**
-   * Places an identifier in the symbol table.
-   */
-  final private int addSym(final String sym) {
-    Integer I = syms.get(sym);
-    if (null == I) {
-      final int i = syms.size();
-      I = new Integer(i);
-      syms.put(sym, I);
-      slist.add(sym);
-    }
-    return I.intValue();
-  }
-
-  /**
-   * Returns the symbol associated to an integer index
-   * in the symbol table.
-   */
-  final private String getSym(final int w) {
-    if (w < 0 || w >= slist.size())
-      return "BADSYMREF=" + w;
-    return slist.get(w);
   }
 
   private final void makeHeap() {
@@ -536,7 +512,7 @@ s += "]";
       w = Integer.parseInt(s);
     } catch (final Exception e) {
       if (C == t) {
-        w = addSym(s);
+        w = symTab.addSym(s);
       } else
         //pp("bad in encode=" + t + ":" + s);
         return tag(BAD, 666);
@@ -651,7 +627,7 @@ s += "]";
     Object res = null;
     switch (t) {
       case C: // symbol
-        res = getSym(w);
+        res = symTab.getSym(w);
       break;
       case N: // integer
         res = new Integer(w);
@@ -723,7 +699,7 @@ s += "]";
       case V:        s = "v:" + val;          break;
       case U:        s = "u:" + val;          break;
       case N:        s = "n:" + val;          break;
-      case C:        s = "c:" + getSym(val);  break;
+      case C:        s = "c:" + symTab.getSym(val);  break;
       case R:        s = "r:" + val;          break;
       case A:        s = "a:" + val;          break;
 

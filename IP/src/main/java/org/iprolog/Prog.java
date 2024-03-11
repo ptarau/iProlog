@@ -173,7 +173,7 @@ public class Prog extends Engine implements Spliterator<Object> {
 
   void ppCode() {
     pp("\nSYMS:");
-    pp(syms);
+    pp(symTab);
     pp("\nCLAUSES:\n");
 
     for (int i = 0; i < clauses.length; i++) {
