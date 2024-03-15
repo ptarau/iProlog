@@ -77,11 +77,13 @@ class Engine {
 
    /* imaps - contains indexes for up to MAXIND>0 arg positions (0 for pred symbol itself)
    */
-  final IMap<Integer>[] imaps;
+  // final IMap<Integer>[] imaps;
 
     /* vmaps - contains clause numbers for which vars occur in indexed arg positions
    */
-  final IntMap[] vmaps;
+  // final IntMap[] vmaps;
+
+  index Ip;
 
   /**
    * Builds a new engine from a natural-language-style assembler.nl file
@@ -104,9 +106,7 @@ class Engine {
 
     query = init();  /* initial spine built from query from which execution starts */
 
-    vmaps = vcreate(MAXIND); // array of MAXIND IntMaps
-
-    imaps = index(clauses, vmaps);
+    Ip = new index(clauses);
   }
 
   /**
@@ -994,9 +994,9 @@ s += "]";
 
     G.index_vector = index_vector;
 
-    if (null == imaps)
+    if (null == Ip.imaps)
       return;
-    final int[] cs = IMap.get(imaps, vmaps, index_vector);
+    final int[] cs = IMap.get(Ip.imaps, Ip.vmaps, index_vector);
     G.unifiables = cs;
   }
 
@@ -1293,50 +1293,5 @@ s += "]";
       Prog.println("...");
     Prog.println("TOTAL ANSWERS=" + ctr);
     Prog.println("Total matches=" + n_matches);
-  }
-
-  // Indexing extensions - ony active if START_INDEX clauses or more.
-
-  public static IntMap[] vcreate(final int l) {
-    final IntMap[] vss = new IntMap[l];
-    for (int i = 0; i < l; i++) {
-      vss[i] = new IntMap();
-    }
-    return vss;
-  }
-
-  final static void put(final IMap<Integer>[] imaps, final IntMap[] vss, final int[] keys, final int val) {
-    for (int i = 0; i < imaps.length; i++) {
-      final int key = keys[i];
-      if (key != 0) {
-	Main.pp("put: keys[" + i + "] -- IMap.put(imaps," + i + "," + key + "," + val + ")");
-        IMap.put(imaps, i, key, val);
-      } else {
-	Main.pp("put: keys[" + i + "] -- vss[" + i + "].add(" + val + ")");
-        vss[i].add(val);
-      }
-    }
-  }
-
-  final IMap<Integer>[] index(final Clause[] clauses, final IntMap[] vmaps) {
-
-	  // Prog.println ("Entered index() with START_INDEX=" + START_INDEX);
-	  // Prog.println ("  clauses.length=" + clauses.length);
-    if (clauses.length < START_INDEX)
-      return null;
-
-    final IMap<Integer>[] imaps = IMap.create(vmaps.length);
-    for (int i = 0; i < clauses.length; i++) {
-      final Clause c = clauses[i];
-
-      // Prog.println ("C["+i+"]="+c.toString());
-      put(imaps, vmaps, c.index_vector, i + 1); // $$$ UGLY INC
-
-    }
-    Main.pp("INDEX");
-    Main.pp(IMap.show(imaps));
-    Main.pp(Arrays.toString(vmaps));
-    Main.pp("");
-    return imaps;
   }
 }
