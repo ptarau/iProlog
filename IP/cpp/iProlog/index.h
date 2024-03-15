@@ -52,13 +52,11 @@ public:
 
     Engine* eng;
 
-    index() { n_matches = 0; };
     index(Engine *e);
 
 #define COUNTING_MATCHES
 
-    bool possible_match(const CellStack &h,
-                        const t_index_vector& iv0,
+    bool possible_match(const t_index_vector& iv0,
                         const t_index_vector& iv1)
 #ifndef COUNTING_MATCHES
                                                     const
@@ -67,7 +65,7 @@ public:
 
     void put(const t_index_vector& iv, ClauseNumber clause_no);
 
-    void makeIndexArgs(const CellStack &heap, Spine *G, cell goal);
+    void makeIndexArgs(Spine *G, cell goal);
 
     // "int" because result i indices into clause array, not ClauseNumbers
     vector<int> matching_clauses(const vector<ClauseNumber>& unifiables);
@@ -84,7 +82,7 @@ public:
 
     static inline int  to_clause_idx(ClauseNumber cl_no) { return cl_no - 1; }
 
-
+    cell cell2index(cell c);
 
     string show(const t_index_vector& iv);
 };

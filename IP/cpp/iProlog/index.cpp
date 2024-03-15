@@ -23,7 +23,7 @@ MAXIND is that maximum.
 
 #include <iostream>
 #include <assert.h>
-#include "index.h"
+// #include "index.h"
 #include "Engine.h"
 
 namespace iProlog {
@@ -52,12 +52,13 @@ namespace iProlog {
 			put(e->clauses[i].index_vector, to_clause_no(i));
     }
 
-    inline cell cell2index(const CellStack &heap, cell c) {
+    cell index::cell2index(cell c) {
+		
 		cell x = cell::tag(cell::V_,0);
 		int t = c.s_tag();
 		switch (t) {
 			case cell::R_:
-				x = CellStack::getRef(heap,c);
+				x = CellStack::getRef(eng->heap,c);
 				break;
 			case cell::C_:
 			case cell::N_:
@@ -74,8 +75,7 @@ namespace iProlog {
  * ("abstraction of which"???)
  * Supposedly, none of these "abstractions" can be -1
  */
-	bool index::possible_match( const CellStack &h,
-								const t_index_vector& iv0,
+	bool index::possible_match(	const t_index_vector& iv0,
 							    const t_index_vector& iv1)
 #ifndef COUNTING_MATCHES
 														 const
@@ -129,30 +129,23 @@ namespace iProlog {
  * Note that [index_vector] contains dereferenced cells - this is done once for
  * each goal's toplevel subterms." [Engine.java]
  */
-    void index::makeIndexArgs(const CellStack &heap, Spine *G, cell goal) {
+    void index::makeIndexArgs(Spine *G, cell goal) {
 		if (G->index_vector[0].s_tag() != cell::BAD
 		// || !G->hasGoals()
 		)
 			return;
 
 		int arg_start = 1 + goal.arg(); // point to # of args of goal
-		int n_args = CellStack::getRef(heap, goal).arg();
+		int n_args = CellStack::getRef(eng->heap, goal).arg();
 		int n = min(MAXIND, n_args); // # args to compare
 
 		for (int arg_pos = 0; arg_pos < n; arg_pos++) {
-			cell arg = CellStack::cell_at(heap, arg_start + arg_pos);
-			cell arg_val = CellStack::deref(heap, arg);
-			G->index_vector[arg_pos] = cell2index(heap, arg_val);
+			cell arg = CellStack::cell_at(eng->heap, arg_start + arg_pos);
+			cell arg_val = CellStack::deref(eng->heap, arg);
+			G->index_vector[arg_pos] = cell2index(arg_val);
 		}
-	/* imaps and var_maps (=vmaps) are not available here,
-	 * so the C++ equivalent of the following code
-	 * is put just after makeIndexArgs is called
-	 * (if indexing is turned on.)
-		if (null == imaps)
-		  return;
-		final int[] cs = IMap.get(imaps, vmaps, xs);
-		G.cs = cs;
-	*/ 
+
+		G->unifiables = matching_clauses(G->unifiables);
     }
 
 	/* "When looking for the clauses matching an element of

@@ -64,8 +64,8 @@ Spine* Engine::unfold(Spine *G) {
     cell goal = CellList::head(G->goals);
 
 if(indexing) {
-    Ip->makeIndexArgs(heap, G, goal);
-    G->unifiables = Ip->matching_clauses(G->unifiables);
+    Ip->makeIndexArgs(G, goal);
+    // G->unifiables = Ip->matching_clauses(G->unifiables);
 }
 
     size_t last = G->unifiables.size();
@@ -73,7 +73,7 @@ if(indexing) {
     for (int k = G->last_clause_tried; k < last; k++) {
         Clause* C0 = &clauses[G->unifiables[k]];
 if(indexing) {
-        if (!Ip->possible_match(heap, G->index_vector, C0->index_vector))
+        if (!Ip->possible_match(G->index_vector, C0->index_vector))
             continue;
 }
         int base0 = base - C0->base;
