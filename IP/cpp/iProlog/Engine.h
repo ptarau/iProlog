@@ -51,9 +51,8 @@ public:
  */
     Engine(CellStack&       heap_0,
            vector<Clause>&  clauses_0,
-           sym_tab&         sym_0,
-	       index *          Ip_0)
-		                    : heap(heap_0), clauses(clauses_0), symTab(sym_0), Ip(Ip_0) {
+           sym_tab&         sym_0)
+		                    : heap(heap_0), clauses(clauses_0), symTab(sym_0) {
 
 	    if (clauses.size() == 0) {
 		    throw logic_error(cstr("clauses: none"));

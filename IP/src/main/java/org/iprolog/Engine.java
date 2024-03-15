@@ -867,10 +867,6 @@ s += "]";
 
     final int[] index_vector = getIndexables(hgs[0]);
 
-//  System.out.println ("---- putClause: returning -----");
-    Prog.println ("---- putClause: base being set to " + base + " index_vector=");
-    for (int i = 0; i < MAXIND; ++i) 
-	    Prog.println ("   index_vector[" + i + "] = " + index_vector[i]);
     return new Clause(len, hgs, base, neck, index_vector);
   }
 
@@ -981,14 +977,12 @@ s += "]";
     for (int i = 0; i < n; i++) {
       final int cell = deref(heap[p + i]);
       index_vector[i] = cell2index(cell);
-      Prog.println("    G->index_vector[" + i + "]=" + index_vector[i]);
     }
 
     G.index_vector = index_vector;
 
     if (Ip.is_empty())
       return;
-    // final int[] cs = IMap.get(Ip, index_vector);
     final int[] cs = Ip.get(index_vector);
     G.unifiables = cs;
   }
@@ -1094,8 +1088,10 @@ s += "]";
       // Prog.println ("C0.base=" + C0.base);
       // Prog.println ("     " + showHeap("heab before pushHead"));
 
-      if (!possible_match(G.index_vector, C0))
+      if (!Ip.possible_match(G.index_vector, C0))
           continue;
+      else
+          ++n_matches;
 
       // Prog.println("??????? possible match? ???????");
       final int base0 = base - C0.base;

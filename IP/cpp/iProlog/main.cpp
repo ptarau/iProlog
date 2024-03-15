@@ -376,12 +376,8 @@ vector<Clause> dload(const cstr s) {
 
 	    string source = file2string(pl_nl);
 	    vector<Clause> clauses = dload(source);
-	    index *Ip = nullptr;
 
-	    if (indexing)
-		    Ip = new index(clauses);
-
-	    Prog *p = new Prog(heap,clauses,sym,Ip);
+	    Prog *p = new Prog(heap,clauses,sym); // any index-building done there
 
 if(indexing)
 	    cout << p->showIMaps() << endl;

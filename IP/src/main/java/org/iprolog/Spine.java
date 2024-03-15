@@ -33,7 +33,7 @@ class Spine {
   // Comments in Engine.java suggest that xs is regs
   
   int[] unifiables; // array of clauses known to be unifiable
-  	  // with top goal in goal stack.
+  	      // with top goal in goal stack.
           // (This is not listed in the HHG description of Spine.)
           // Initialized from cls, in Engine. If indexing is not
           // activated, clause_list[i] == i.

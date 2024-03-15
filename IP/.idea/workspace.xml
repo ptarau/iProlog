@@ -6,7 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/Engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/Engine.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/prog.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/prog.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/progs/queens.pl.nl" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Spine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Spine.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/index.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/index.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

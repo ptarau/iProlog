@@ -108,7 +108,7 @@ public class index {
      * ("abstraction of which"???)
      * Supposedly, none of these "abstractions" can == -1
      */
-    private final boolean possible_match(final int[] index_vector, final Clause C0) {
+    final boolean possible_match(final int[] index_vector, final Clause C0) {
         for (int i = 0; i < Engine.MAXIND; i++) {
             final int x = index_vector[i];
             final int y = C0.index_vector[i];
