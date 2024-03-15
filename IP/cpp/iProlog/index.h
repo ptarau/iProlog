@@ -50,6 +50,8 @@ public:
 
     long n_matches;
 
+    Engine* eng;
+
     index() { n_matches = 0; };
     index(Engine *e);
 

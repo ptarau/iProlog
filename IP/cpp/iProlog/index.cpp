@@ -24,8 +24,6 @@ MAXIND is that maximum.
 #include <iostream>
 #include <assert.h>
 #include "index.h"
-#include "IntMap.h"
-#include "IMap.h"
 #include "Engine.h"
 
 namespace iProlog {
@@ -33,6 +31,8 @@ namespace iProlog {
 // "Indexing extensions - ony active if [there are] START_INDEX clauses or more."
 
     index::index(Engine *e) {
+
+		eng = e;
 
 	  // was vcreate in Java version:
 		var_maps = vector<clause_no_to_int>(MAXIND);
