@@ -7,7 +7,6 @@
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/Engine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/IMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/IMap.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/iprolog/index.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/iprolog/index.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

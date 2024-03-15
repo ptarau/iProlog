@@ -146,14 +146,14 @@ class Engine {
   /**
    * Removes tag after (maybe) flipping sign.
    */
-  final private static int detag(final int w) {
+  final static int detag(final int w) {
     return maybe_invert(w) >> n_tag_bits;
   }
 
   /**
    * Extracts the tag of a cell.
    */
-  final private static int tagOf(final int w) {
+  final static int tagOf(final int w) {
     return maybe_invert(w) & TAG_MASK;
   }
 

@@ -100,4 +100,25 @@ public class index {
         java.util.Arrays.sort(is);
         return is;
     }
+
+    /**
+     * Tests if the head of a clause, not yet copied to the heap
+     * for execution, could possibly match the current goal, an
+     * abstraction of which has been placed in index_vector.
+     * ("abstraction of which"???)
+     * Supposedly, none of these "abstractions" can == -1
+     */
+    private final boolean possible_match(final int[] index_vector, final Clause C0) {
+        for (int i = 0; i < Engine.MAXIND; i++) {
+            final int x = index_vector[i];
+            final int y = C0.index_vector[i];
+            if (0 == x || 0 == y) {
+                continue;
+            }
+            if (x != y)
+                return false;
+        }
+        // Prog.println("*** possible match found");
+        return true;
+    }
 }
