@@ -76,33 +76,6 @@ string showCell(cell w) {
     return s;
 }
 
-/* Mostly duplicated in index.cpp, makeIndexArgs().
- */
-t_index_vector getIndexables(cell goal) {
-    int arg_start = 1 + goal.arg();
-    int n_args = CellStack::getRef(heap, goal).arg();
-    int n = min(n_args,MAXIND);
-
-    cout << "getIndexables: n_args=" << n_args << endl;
-    t_index_vector index_vector;
-
-    for (int i = 0; i < MAXIND; ++i)
-	    index_vector[i] = cell::tag(cell::BAD,0);
-
-    for (int arg_pos = 0; arg_pos < n; arg_pos++) {
-        cell arg = CellStack::cell_at(heap, arg_start + arg_pos);
-        cell c = CellStack::deref(heap, arg);
-
-        cout << "getIndexables: c=" << showCell(c)
-             << " cell2index=" << showCell(CellStack::cell2index(heap,c)) << endl;
-
-        index_vector[arg_pos] = CellStack::cell2index(heap,c).as_int();
-
-        cout << "getIndexables: index_vector[" << arg_pos << "] <- " << index_vector[arg_pos].as_int() << endl;
-    }
-    return index_vector;
-}
-
 /*static*/ vector<int> &
 put_ref(        const string arg,
                 unordered_map<string, vector<int>> &refs,
@@ -139,7 +112,7 @@ cell encode(int t, const string s) {
 /**
   * "Places a clause built by the Toks reader on the heap." [Engine.java]
   */
-Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
+Clause putClause(vector<cell> cells, vector<cell> &skel, int neck) {
     int base = heap.getTop()+1;
     cell b = cell::tag(cell::V_, base);
         // ... because b is used later in '+' ops that would otherwise mangle tags.
@@ -147,13 +120,13 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
     CellStack::pushCells(heap, b, 0, len, cells);
 
     if (is_raw) {
-        cell::cp_cells(b, hgs.data(), hgs.data(), (int) hgs.size());
+        cell::cp_cells(b, skel.data(), skel.data(), (int)skel.size());
     } else {
-        for (size_t i = 0; i < hgs.size(); i++)
-            hgs[i] = hgs[i].relocated_by(b);
+        for (size_t i = 0; i < skel.size(); i++)
+            skel[i] = skel[i].relocated_by(b);
     }
 
-    Clause rc = Clause(len, hgs, base, neck, getIndexables(hgs[0]));
+    Clause rc = Clause(len, skel, base, neck);
 
     return rc;
 }

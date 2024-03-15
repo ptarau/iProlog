@@ -156,32 +156,6 @@ namespace iProlog {
        return x.as_int() == r.as_int();   // if rel addressing, check if var and arg is zero
     }
 
-    static inline cell deref(const CellStack &h, cell x) {
-        while (x.is_var()) {
-            cell r = getRef(h,x);
-            // if (isVarLoc(r,x))
-            if (isVarLoc_(h, r))
-                break;
-            x = r;
-        }
-        return x;
-    }
-
-        static inline cell cell2index(const CellStack &heap, cell c) {
-            cell x = cell::tag(cell::V_,0);
-            int t = c.s_tag();
-            switch (t) {
-                case cell::R_:
-                    x = getRef(heap, c);
-                    break;
-                case cell::C_:
-                case cell::N_:
-                    x = c;
-                    break;
-            }
-            return x;
-        }
-
         static inline void ensureSize(CellStack &heap, int more) {
 	    if (more < 0) abort();
             // assert(more > 0);

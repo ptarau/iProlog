@@ -32,6 +32,7 @@ namespace iProlog {
             for (int i = 0; i < MAXIND; ++i) index_vector[i] = cell::BAD;
         }
         Clause(int len_0, vector<cell> goal_refs_0, int base_0, int neck_0, t_index_vector iv);
+        Clause(int len_0, vector<cell> skeleton_0, int base_0, int neck_0);
     };
 
 } // end namespace

@@ -82,10 +82,11 @@ public:
 
     static inline int  to_clause_idx(ClauseNumber cl_no) { return cl_no - 1; }
 
-    cell cell2index(cell c);
+    t_index_vector getIndexables(cell goal);
 
-    string show(const t_index_vector& iv);
+    cell cell2index(cell c) const;
+
+    string show(const t_index_vector& iv) const;
 };
-
 
 } // namespace

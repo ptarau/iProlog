@@ -30,9 +30,34 @@ namespace iProlog {
 
 // "Indexing extensions - ony active if [there are] START_INDEX clauses or more."
 
+	t_index_vector index::getIndexables(cell goal) {
+		int arg_start = 1 + goal.arg();
+		int n_args = eng->getRef(goal).arg();
+		int n = min(n_args, MAXIND);
+
+		cout << "getIndexables: n_args=" << n_args << endl;
+		t_index_vector index_vector;
+
+		for (int i = 0; i < MAXIND; ++i)
+			index_vector[i] = cell::tag(cell::BAD, 0);
+
+		for (int arg_pos = 0; arg_pos < n; arg_pos++) {
+			cell arg = eng->cell_at(arg_start + arg_pos);
+			cell c = eng->deref(arg);
+
+			index_vector[arg_pos] = cell2index(c).as_int();
+
+			cout << "getIndexables: index_vector[" << arg_pos << "] <- " << index_vector[arg_pos].as_int() << endl;
+		}
+		return index_vector;
+	}
+
     index::index(Engine *e) {
 
 		eng = e;
+
+		for (int i = 0; i < e->clauses.size(); ++i)
+			e->clauses[i].index_vector = getIndexables(e->clauses[i].skeleton[0]);
 
 	  // was vcreate in Java version:
 		var_maps = vector<clause_no_to_int>(MAXIND);
@@ -52,7 +77,7 @@ namespace iProlog {
 			put(e->clauses[i].index_vector, to_clause_no(i));
     }
 
-    cell index::cell2index(cell c) {
+    cell index::cell2index(cell c) const {
 		
 		cell x = cell::tag(cell::V_,0);
 		int t = c.s_tag();
@@ -140,8 +165,8 @@ namespace iProlog {
 		int n = min(MAXIND, n_args); // # args to compare
 
 		for (int arg_pos = 0; arg_pos < n; arg_pos++) {
-			cell arg = CellStack::cell_at(eng->heap, arg_start + arg_pos);
-			cell arg_val = CellStack::deref(eng->heap, arg);
+			cell arg = eng->cell_at(arg_start + arg_pos);
+			cell arg_val = eng->deref(arg);
 			G->index_vector[arg_pos] = cell2index(arg_val);
 		}
 
@@ -246,7 +271,7 @@ namespace iProlog {
 		return is;
 	}
 
-	string index::show(const t_index_vector& iv) {
+	string index::show(const t_index_vector& iv) const {
 		string s = "";
 		char d = '<';
 		for (int arg_pos = 0; arg_pos < MAXIND; ++arg_pos) {

@@ -75,6 +75,11 @@ public:
     inline cell   getRef(cell x)  const     { return cell_at(x.arg());  }
     inline void   setRef(cell w, cell r)    { set_cell(w.arg(), r);     }
 
+    inline bool isVarLoc_(cell x) const {
+        cell r = getRef(x);
+        return x.as_int() == r.as_int();   // if rel addressing, check if var and arg is zero
+    }
+
 protected:    CellStack unify_stack;
 
     vector<Spine*> spines;
@@ -102,16 +107,17 @@ protected:    CellStack unify_stack;
 
     void unwindTrail(int savedTop);
 
+public:
     inline cell deref(cell x) const {
         while (x.is_var()) {
             cell r = getRef(x);
-            if (CellStack::isVarLoc_(heap,x))
+            if (CellStack::isVarLoc_(heap, x))
                 break;
             x = r;
         }
         return x;
     }
-public:
+
     index *Ip;
     CellStack trail;
 
