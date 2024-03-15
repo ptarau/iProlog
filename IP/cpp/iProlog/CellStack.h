@@ -146,31 +146,22 @@ namespace iProlog {
 #endif
         }
 
-    static inline cell   cell_at(const CellStack &h, int i)        { return h.get(i);              			}
-    static inline void   set_cell(CellStack &h, int i, cell v)	   { h.set(i,v);                   			}
-    static inline cell   getRef(const CellStack &h, cell x)        { return cell_at(h, x.arg());  			}
-    static inline void   setRef(CellStack &h, cell w, cell r)      { set_cell(h, w.arg(), r);     			}
-
-    static inline bool isVarLoc_(const CellStack& h, cell x)  {
-       cell r = getRef(h, x); 
-       return x.as_int() == r.as_int();   // if rel addressing, check if var and arg is zero
-    }
-
         static inline void ensureSize(CellStack &heap, int more) {
-	    if (more < 0) abort();
-            // assert(more > 0);
-            if (size_t(1 + heap.getTop() + more) >= heap.capacity()) {
+            if (more == 0) return;
+            assert(more > 0);
+            if (size_t(1 + heap.getTop() + more) >= heap.capacity())
                 heap.expand();
-            }
         }
 
 	/**
 	 * "Pushes slice[from,to] at given base onto the heap."
-	 * b has cell structure, i.e, index, shifted left 3 bits, with tag V_
+	 * b has cell structure, i.e, index, shifted, with tag V_
 	 */
 	static inline void pushCells(CellStack &heap, cell b, int from, int upto, int base) {
-
+        assert(upto >= from);
 	    int count = upto - from;
+        if (count == 0)
+            return;
 	    ensureSize(heap, count);
 
 	    if (is_raw) {

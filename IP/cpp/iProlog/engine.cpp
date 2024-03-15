@@ -349,9 +349,14 @@ string Engine::showCell(cell w) const {
  * when returned, contains references to the toplevel spine of the clause."
  */
 vector<cell> Engine::pushBody(cell b, cell head, const Clause &C) {
-    CellStack::pushCells(heap, b, C.neck, C.len, C.base);
-    int l = (int) C.skeleton.size();
+    int l = (int)C.skeleton.size();
     vector<cell> goals(l);
+
+    if (C.len == C.neck)
+        return goals;
+
+    CellStack::pushCells(heap, b, C.neck, C.len, C.base);
+
     goals[0] = head;
     if (is_raw)
 	    cell::cp_cells (b, C.skeleton.data()+1, goals.data()+1, l-1);

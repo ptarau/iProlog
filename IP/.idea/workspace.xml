@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4e7fd721-f198-467d-bea4-bb96364d5a56" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/cpp/iProlog/CellStack.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/CellStack.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/index.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/index.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/iProlog/index.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/index.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp/iProlog/Engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/iProlog/Engine.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
