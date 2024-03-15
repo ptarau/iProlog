@@ -83,10 +83,11 @@ final class IMap<K> implements java.io.Serializable {
   }
 
   final static boolean put(final IMap<Integer>[] imaps, final int pos, final int key, final int val) {
+
     return imaps[pos].put(new Integer(key), val);
   }
 
-  final static int[] get(index Ip, final int[] keys) {
+  final int[] get(index Ip, final int[] keys) {
     final int l = Ip.imaps.length;
     final ArrayList<IntMap> ms = new ArrayList<IntMap>();
     final ArrayList<IntMap> vms = new ArrayList<IntMap>();

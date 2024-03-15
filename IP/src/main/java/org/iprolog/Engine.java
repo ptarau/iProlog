@@ -75,14 +75,6 @@ class Engine {
    */
   final private ObStack<Spine> spines = new ObStack<Spine>();
 
-   /* imaps - contains indexes for up to MAXIND>0 arg positions (0 for pred symbol itself)
-   */
-  // final IMap<Integer>[] imaps;
-
-    /* vmaps - contains clause numbers for which vars occur in indexed arg positions
-   */
-  // final IntMap[] vmaps;
-
   index Ip;
 
   /**
@@ -994,9 +986,10 @@ s += "]";
 
     G.index_vector = index_vector;
 
-    if (null == Ip.imaps)
+    if (Ip.is_empty())
       return;
-    final int[] cs = IMap.get(Ip, index_vector);
+    // final int[] cs = IMap.get(Ip, index_vector);
+    final int[] cs = Ip.get(index_vector);
     G.unifiables = cs;
   }
 

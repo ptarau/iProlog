@@ -1,6 +1,7 @@
 package org.iprolog;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class index {
@@ -16,6 +17,8 @@ public class index {
             vmaps = vcreate(Engine.MAXIND);
             imaps = make_index(clauses, vmaps);
         }
+
+        boolean is_empty() { return imaps.length == 0; }
 
         public static IntMap[] vcreate(final int l) {
             final IntMap[] vss = new IntMap[l];
@@ -47,7 +50,7 @@ public class index {
         return imaps;
     }
 
-    final void put(final IMap<Integer>[] imaps, final IntMap[] vss, final int[] keys, final int val) {
+    private void put(final IMap<Integer>[] imaps, final IntMap[] vss, final int[] keys, final int val) {
         for (int i = 0; i < imaps.length; i++) {
             final int key = keys[i];
             if (key != 0) {
@@ -58,5 +61,43 @@ public class index {
                 vss[i].add(val);
             }
         }
+    }
+
+    final int[] get(final int[] keys) {
+        final int l = imaps.length;
+        final ArrayList<IntMap> ms = new ArrayList<IntMap>();
+        final ArrayList<IntMap> vms = new ArrayList<IntMap>();
+
+        for (int i = 0; i < l; i++) {
+            final int key = keys[i];
+            if (0 == key) {
+                continue;
+            }
+            //Main.pp("i=" + i + " ,key=" + key);
+            final IntMap m = imaps[i].get(new Integer(key));
+            //Main.pp("m=" + m);
+            ms.add(m);
+            vms.add(vmaps[i]);
+        }
+        final IntMap[] ims = new IntMap[ms.size()];
+        final IntMap[] vims = new IntMap[vms.size()];
+
+        for (int i = 0; i < ims.length; i++) {
+            final IntMap im = ms.get(i);
+            ims[i] = im;
+            final IntMap vim = vms.get(i);
+            vims[i] = vim;
+        }
+
+        // Main.pp("-------ims=" + Arrays.toString(ims));
+        // Main.pp("-------vims=" + Arrays.toString(vims));
+
+        final IntStack cs = IntMap.intersect(ims, vims); // $$$ add vmaps here
+        final int[] is = cs.toArray();
+        for (int i = 0; i < is.length; i++) {
+            is[i] = is[i] - 1;
+        }
+        java.util.Arrays.sort(is);
+        return is;
     }
 }
