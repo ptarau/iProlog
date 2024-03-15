@@ -212,8 +212,6 @@ Clause putClause(vector<cell> cells, vector<cell> &hgs, int neck) {
 // cout << "before putClause call" << endl;
         Clause C = putClause(cells, goals, neck); // safe to pass all?
 
-        int len = int(cells.size());
-
 // cout << "about to push C to compiled_clauses" << endl;
         compiled_clauses.push_back(C);
     }

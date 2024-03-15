@@ -67,8 +67,6 @@ public:
 
     virtual ~Engine();
 
-protected:
-
 // should try heap-as-class (maybe subclassed from CellStack)
 // to see whether there's a performance penalty
 
@@ -77,7 +75,7 @@ protected:
     inline cell   getRef(cell x)  const     { return cell_at(x.arg());  }
     inline void   setRef(cell w, cell r)    { set_cell(w.arg(), r);     }
 
-    CellStack unify_stack;
+protected:    CellStack unify_stack;
 
     vector<Spine*> spines;
 
@@ -104,7 +102,6 @@ protected:
 
     void unwindTrail(int savedTop);
 
-// maybe redefine Engine.h version to use CellStack version?
     inline cell deref(cell x) const {
         while (x.is_var()) {
             cell r = getRef(x);

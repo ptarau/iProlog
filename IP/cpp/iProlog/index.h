@@ -24,7 +24,7 @@ namespace iProlog {
 
 namespace iProlog {
 
-class Spine;  ///////// forward ref still required?
+class Spine;
 class Engine;
 
 #define BAD_VAL 0

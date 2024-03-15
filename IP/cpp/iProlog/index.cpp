@@ -58,7 +58,7 @@ namespace iProlog {
 		int t = c.s_tag();
 		switch (t) {
 			case cell::R_:
-				x = CellStack::getRef(eng->heap,c);
+				x = eng->getRef(c);
 				break;
 			case cell::C_:
 			case cell::N_:
@@ -136,7 +136,7 @@ namespace iProlog {
 			return;
 
 		int arg_start = 1 + goal.arg(); // point to # of args of goal
-		int n_args = CellStack::getRef(eng->heap, goal).arg();
+		int n_args = eng->getRef(goal).arg();
 		int n = min(MAXIND, n_args); // # args to compare
 
 		for (int arg_pos = 0; arg_pos < n; arg_pos++) {

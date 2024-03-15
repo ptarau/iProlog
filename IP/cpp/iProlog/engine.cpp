@@ -63,19 +63,17 @@ Spine* Engine::unfold(Spine *G) {
 
     cell goal = CellList::head(G->goals);
 
-if(indexing) {
-    Ip->makeIndexArgs(G, goal);
-    // G->unifiables = Ip->matching_clauses(G->unifiables);
-}
+    if(indexing) 
+        Ip->makeIndexArgs(G, goal);
 
     size_t last = G->unifiables.size();
 
     for (int k = G->last_clause_tried; k < last; k++) {
         Clause* C0 = &clauses[G->unifiables[k]];
-if(indexing) {
-        if (!Ip->possible_match(G->index_vector, C0->index_vector))
+
+        if(indexing && !Ip->possible_match(G->index_vector, C0->index_vector))
             continue;
-}
+
         int base0 = base - C0->base;
         cell b = cell::tag(cell::V_, base0);  // TODO - I really need a "heap index(offset)" type
         cell head = pushHeadtoHeap(b, *C0);
