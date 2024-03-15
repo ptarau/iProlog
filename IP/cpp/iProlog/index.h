@@ -25,6 +25,7 @@ namespace iProlog {
 namespace iProlog {
 
 class Spine;  ///////// forward ref still required?
+class Engine;
 
 #define BAD_VAL 0
 
@@ -50,7 +51,7 @@ public:
     long n_matches;
 
     index() { n_matches = 0; };
-    index(const vector<Clause> &clauses);
+    index(Engine *e);
 
 #define COUNTING_MATCHES
 

@@ -27,8 +27,8 @@ namespace iProlog {
 			vector<Clause>& clauses,
 			sym_tab& sym)
 				: Engine(heap, clauses, sym) {
-				if (indexing)
-					Ip = new index(this->clauses);
+					if (indexing)
+						Ip = new index(this);
 		};
 
         string showTermCell(cell x) const;

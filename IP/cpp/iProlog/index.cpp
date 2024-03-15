@@ -26,12 +26,13 @@ MAXIND is that maximum.
 #include "index.h"
 #include "IntMap.h"
 #include "IMap.h"
+#include "Engine.h"
 
 namespace iProlog {
 
 // "Indexing extensions - ony active if [there are] START_INDEX clauses or more."
 
-    index::index(const vector<Clause> &clauses) {
+    index::index(Engine *e) {
 
 	  // was vcreate in Java version:
 		var_maps = vector<clause_no_to_int>(MAXIND);
@@ -40,15 +41,15 @@ namespace iProlog {
 			var_maps[arg_pos] = clause_no_to_int();
 	  // end vcreate inlined
 
-		if (clauses.size() < START_INDEX) {
+		if (e->clauses.size() < START_INDEX) {
 			imaps = vector<IMap*>();
 			return;
 		}
 
 		imaps = IMap::create(MAXIND);
 
-		for (int i = 0; i < clauses.size(); i++)
-			put(clauses[i].index_vector, to_clause_no(i));
+		for (int i = 0; i < e->clauses.size(); i++)
+			put(e->clauses[i].index_vector, to_clause_no(i));
     }
 
     inline cell cell2index(const CellStack &heap, cell c) {
