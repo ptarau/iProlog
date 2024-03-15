@@ -996,7 +996,7 @@ s += "]";
 
     if (null == Ip.imaps)
       return;
-    final int[] cs = IMap.get(Ip.imaps, Ip.vmaps, index_vector);
+    final int[] cs = IMap.get(Ip, index_vector);
     G.unifiables = cs;
   }
 

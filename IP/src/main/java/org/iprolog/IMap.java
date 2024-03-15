@@ -86,8 +86,8 @@ final class IMap<K> implements java.io.Serializable {
     return imaps[pos].put(new Integer(key), val);
   }
 
-  final static int[] get(final IMap<Integer>[] iMaps, final IntMap[] vmaps, final int[] keys) {
-    final int l = iMaps.length;
+  final static int[] get(index Ip, final int[] keys) {
+    final int l = Ip.imaps.length;
     final ArrayList<IntMap> ms = new ArrayList<IntMap>();
     final ArrayList<IntMap> vms = new ArrayList<IntMap>();
 
@@ -97,10 +97,10 @@ final class IMap<K> implements java.io.Serializable {
         continue;
       }
       //Main.pp("i=" + i + " ,key=" + key);
-      final IntMap m = iMaps[i].get(new Integer(key));
+      final IntMap m = Ip.imaps[i].get(new Integer(key));
       //Main.pp("m=" + m);
       ms.add(m);
-      vms.add(vmaps[i]);
+      vms.add(Ip.vmaps[i]);
     }
     final IntMap[] ims = new IntMap[ms.size()];
     final IntMap[] vims = new IntMap[vms.size()];
