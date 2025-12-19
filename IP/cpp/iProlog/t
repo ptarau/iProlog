@@ -1,0 +1,350 @@
+diff --git a/IP/cpp/iProlog/Engine.h b/IP/cpp/iProlog/Engine.h
+index bb289ea..02c11eb 100644
+--- a/IP/cpp/iProlog/Engine.h
++++ b/IP/cpp/iProlog/Engine.h
+@@ -35,8 +35,8 @@ public:
+     vector<Clause> clauses;     // "Trimmed-down clauses ready to be quickly relocated
+                                 //  to the heap" [Engine.java]
+                                 // [Not clear what "trimmed-down" means.]
+-    vector<ClauseIndex> clause_list; // if no indexing, contains [0..clauses.length-1]
+-
++    // vector<ClauseIndex> clause_list; // if no indexing, contains [0..clauses.length-1]
++    Spine::Unifiables clause_list;
+     // "Symbol table - made of map (syms) + reverse map from
+     //  ints to syms (slist)" [Engine.java]
+     sym_tab symTab;
+@@ -62,10 +62,21 @@ public:
+ 	    if (clauses.size() == 0) {
+ 		    throw logic_error(cstr("clauses: none"));
+ 	    }
+-
++        
+ 	    trail.clear();
+-	    clause_list = toNums(clauses); // initially an array  [0..clauses.length-1]
+-	    query = init(); /* initial spine built from query from which execution starts */
++        query = init(); /* initial spine built from query from which execution starts */
++
++        // clause_list = toNums(clauses); // initially an array  [0..clauses.length-1
++        
++            int l = (int)clauses.size();
++            Spine::Unifiables cls = query->get_space(l);
++            for (int i = 0; i < l; i++) {
++                ClauseIndex x(i);
++                cls[i] = x;
++            }
++        
++        clause_list = cls;
++
+ 	    base = heap_size();          // should be just after any code on heap
+ 	};
+ 
+@@ -157,7 +168,7 @@ protected:
+ 
+     Spine* unfold(Spine *G);
+ 
+-    vector<ClauseIndex> toNums(vector<Clause> clauses);
++    // Spine::Unifiables toNums(vector<Clause> clauses);
+ 
+     Clause getQuery();
+     Spine* init();
+diff --git a/IP/cpp/iProlog/config.h b/IP/cpp/iProlog/config.h
+index c380726..3a8a0ce 100644
+--- a/IP/cpp/iProlog/config.h
++++ b/IP/cpp/iProlog/config.h
+@@ -72,4 +72,6 @@ namespace iProlog {
+ 
+ #define RAW_SKEL
+ 
++// #define RAW_UNIFIABLES
++
+ }
+\ No newline at end of file
+diff --git a/IP/cpp/iProlog/engine.cpp b/IP/cpp/iProlog/engine.cpp
+index c181878..ee8dc1f 100644
+--- a/IP/cpp/iProlog/engine.cpp
++++ b/IP/cpp/iProlog/engine.cpp
+@@ -71,10 +71,10 @@ Spine* Engine::unfold(Spine *G) {
+ 
+     Ip->makeIndexArgs(heap, G, this_goal); // this goal is head(G->the_goals)
+ 
+-    if (G->unifiables.size() > 0)
++    if (G->unifiables_size() > 0)
+         TR cout << "unfold: after makeIndexArgs with current G->unifiables[0]=" << G->unifiables[0].as_int() << endl;
+ 
+-    size_t last = G->unifiables.size();
++    size_t last = G->unifiables_size();
+     TR cout << "unfold: last=" << to_string(last) << endl;
+ 
+     TR cout << "G->last_clause_tried=" << G->last_clause_tried << endl;
+@@ -205,18 +205,18 @@ bool Engine::unify_args(int w1, int w2) { // w1 & w1 already detagged in unify()
+ void Engine::clear() {
+     heap.setTop(-1);
+ }
+-
++#if 0
+     //    was iota(clause_list.begin(), clause_list.end(), 0);
+-    vector<ClauseIndex> Engine::toNums(vector<Clause> clauses) {
++    Spine::Unifiables Engine::toNums(vector<Clause> clauses) {
+         int l = (int) clauses.size();
+-        vector<ClauseIndex> cls = vector<ClauseIndex>(l);
++        Spine::Unifiables cls = Spine::get_space(l);
+         for (int i = 0; i < l; i++) {
+             ClauseIndex x(i);
+             cls[i] = x;
+         }
+         return cls;
+     }
+-
++#endif
+  /**
+   * Extracts a query - by convention of the form
+   * goal(Vars):-body to be executed by the engine
+@@ -251,7 +251,7 @@ Spine* Engine::answer(int trail_top) {
+  * top goal of this spine."
+  */
+ bool Engine::hasClauses(const Spine* S) const {
+-    return S->last_clause_tried < S->unifiables.size();
++    return S->last_clause_tried < S->unifiables_size();
+ }
+ 
+ Object Engine::exportTerm(cell x) const {
+@@ -313,7 +313,7 @@ Object Engine::exportTerm(cell x) const {
+  * an external representation of symbols, numbers and variables." [HHG doc]
+  */
+ Object Engine::ask() {
+-#define TR if(0)
++#define TR if(1)
+ #if 0
+     set_engine(this);   // for static checkit, usable in other scopes(?)
+     checkit();
+@@ -374,25 +374,32 @@ void Engine::popSpine() {
+  * returns null." [Engine.java]
+  */
+ Spine* Engine::yield() {
++#define TR if(1)
+     while (!spines.empty()) {
++        TR cout << "!spines.empty()" << endl;
+         Spine* G = spines.back(); // was "peek()" in Java
+ 
+         if (!hasClauses(G)) {
+             popSpine();
++            TR cout << "no clauses -- popSpine called" << endl;
+             continue;
+         }
+         Spine *C = unfold(G);
+         if (nullptr == C) {
++            TR cout << "no unfold result -- popSpine called" << endl;
+             popSpine(); // no matches
+             continue;
+         }
+         if (C->hasGoals()) {
++            TR cout << "C still has goals -- pushing C" << endl;
+             spines.push_back(C);
+             continue;
+         }
++        TR cout << "returning C" << endl;
+         return C; // answer
+     }
+     return nullptr;
++#undef TR
+ }
+ 
+ string Engine::showCell(cell w) const {
+diff --git a/IP/cpp/iProlog/index.cpp b/IP/cpp/iProlog/index.cpp
+index e00bd6d..b7aa28f 100644
+--- a/IP/cpp/iProlog/index.cpp
++++ b/IP/cpp/iProlog/index.cpp
+@@ -218,7 +218,7 @@ namespace iProlog {
+ 			return;
+ 
+ 		getIndexables(G->index_vector, heap, goal);
+-		G->unifiables = matching_clauses_(G->index_vector);
++		matching_clauses_(G);
+ #undef TR
+     }
+ 	
+@@ -356,8 +356,9 @@ namespace iProlog {
+  // If this is true, the mystery is why there's no loop break
+  // on zero.
+ 
+-	vector<ClauseIndex> index::matching_clauses_(t_index_vector& iv) {
++	void index::matching_clauses_(Spine *G) {
+ #define TR if(0)
++		t_index_vector iv = G->index_vector;
+ 		TR cout << "Entering matching_clauses, IV_LEN=" << to_string(IV_LEN) << endl;
+ 
+ 		cls_no_set_vec msp;
+@@ -406,7 +407,7 @@ namespace iProlog {
+ 
+ 		TR cout << "  vms[0].m_size=" << to_string(vmsp[0]->size()) << endl;
+ 		new_end = intersect0_p(vmsp[0], msp, vmsp, new_end, push_count);
+-		long cs_size = new_end - csp;
++		size_t cs_size = new_end - csp;
+ 
+ 		if (cs_size > n_to_alloc)
+ 			abort();
+@@ -417,18 +418,18 @@ namespace iProlog {
+ 		// cout << "  after intersect0_p new_end - csp=" << cs_size << endl;
+ 
+ 		// is: clause numbers converted to indices
+-		vector<ClauseIndex> is;	  /*= cs.toArray() in Java, emulated here but
+-									* with conversion to indices. Could
+-									* probably be done on-the-fly in intersect0. */
+-		is.reserve(cs_size);
++			/*= cs.toArray() in Java, emulated here but
++			* with conversion to indices. Could
++			* probably be done on-the-fly in intersect0. */
++		G->unifiables = G->get_space(cs_size);
+ 
+-		TR cout << "  (1) is.size()=" << is.size() << endl;
+-		TR cout << "  (1) is.capacity()=" << is.capacity() << endl;
++		TR cout << "  (1) is.size()=" << G->unifiables_size() << endl;
++		TR cout << "  (1) is.capacity()=" << G->unifiables_capacity() << endl;
+ 
+ 		for (int i = 0; i < cs_size; ++i)
+-			is.emplace_back(to_clause_idx(csp[i]));
++			G->unifiables_pushback(to_clause_idx(csp[i]));
+ 
+-		TR cout << "  is.size()=" << to_string(is.size()) << endl;
++		TR cout << "  G->unifiables_size()=" << to_string(G->unifiables_size()) << endl;
+ 
+ 		/* "Finally we sort the resulting set of clause numbers and
+ 			* hand it over to the main Prolog engine for unification
+@@ -436,21 +437,19 @@ namespace iProlog {
+ 			*
+ 			* I.e., respect standard Prolog clause ordering.
+ 			*/
+-		TR cout << "  (2) is.size()=" << is.size() << endl;
+-		TR cout << "  (2) is.capacity()=" << is.capacity() << endl;
++		TR cout << "  (2) is.size()=" << G->unifiables_size() << endl;
++		TR cout << "  (2) is.capacity()=" << G->unifiables_capacity() << endl;
+ #ifndef RAW_QUICKSORT
+-		if (is.size() > 1)
+-			std::sort(is.begin(), is.end());
++		if (G->unifiables.size() > 1)
++			std::sort(G->unifiables.begin(), G->unifiables.end());
+ #endif
+ 		TR for (int i = 0; i < cs_size; ++i) {
+-			cout << "   is[" << i << "]=" << is[i].as_int() << endl;
++			cout << "   is[" << i << "]=" << G->unifiables[i].as_int() << endl;
+ 		}
+ 
+ 		TR cout << " ==== matching_clauses: exiting" << endl << endl;
+ 
+ 		_freea((void*)csp);
+-
+-		return is;
+ #undef TR
+ 	}
+ 
+diff --git a/IP/cpp/iProlog/index.h b/IP/cpp/iProlog/index.h
+index 7e8d953..55cd039 100644
+--- a/IP/cpp/iProlog/index.h
++++ b/IP/cpp/iProlog/index.h
+@@ -65,7 +65,8 @@ public:
+ 
+     void makeIndexArgs(CellStack &heap, Spine *G, cell goal);
+ 
+-    vector<ClauseIndex> matching_clauses_(t_index_vector& iv);
++    // vector<ClauseIndex> matching_clauses_(t_index_vector& iv);
++    void matching_clauses_(Spine *G);
+ 
+     static inline ClauseNumber to_clause_no(ClauseIndex i) { ClauseNumber x(i.as_int()+1); return x; }
+ 
+diff --git a/IP/cpp/iProlog/prog.cpp b/IP/cpp/iProlog/prog.cpp
+index 90b778b..20da8e2 100644
+--- a/IP/cpp/iProlog/prog.cpp
++++ b/IP/cpp/iProlog/prog.cpp
+@@ -98,7 +98,7 @@ namespace iProlog {
+  * an external representation of symbols, numbers and variables." [HHG doc]
+  */
+     void Prog::run(bool print_ans) {
+-#define TR if(0)
++#define TR if(1)
+         const int MAX_OUTPUT_LINES = 5;
+         TR cout << "Prog::run(print_ans=" << print_ans << ")" << endl;
+ #if 0
+diff --git a/IP/cpp/iProlog/spine.cpp b/IP/cpp/iProlog/spine.cpp
+index ae961ca..56b755c 100644
+--- a/IP/cpp/iProlog/spine.cpp
++++ b/IP/cpp/iProlog/spine.cpp
+@@ -25,7 +25,7 @@ namespace iProlog {
+         int base_0,                 // base
+         CL_p goals_0,               // was gs[Java]; tail of G->goals in unfold()
+         int trail_top_0,
+-        vector<ClauseNumber> &unifiables_0)
++        Unifiables &unifiables_0)
+     {
+ #define TR if(0)
+         Spine* sp = Spine::alloc();
+@@ -76,7 +76,7 @@ namespace iProlog {
+             s += "\n  goals=<stub>" /* + goals.show()*/;
+         s += "\n  trail_top=" + to_string(trail_top);
+         s += "\n  last_clause_tried=" + to_string(last_clause_tried);
+-        if (unifiables.empty())
++        if (unifiables_empty())
+             s += "\n  unifiables=<null>";
+         else
+             s += "\n  unifiables=<stub>" /* + unifiables.show()*/;
+diff --git a/IP/cpp/iProlog/spine.h b/IP/cpp/iProlog/spine.h
+index 8e1a56d..12370a7 100644
+--- a/IP/cpp/iProlog/spine.h
++++ b/IP/cpp/iProlog/spine.h
+@@ -52,12 +52,38 @@ namespace iProlog {
+             // [Comments in Engine.java suggest that this is regs]
+             // A note in Engine.java on makeIndexArgs(), which is called
+             // only in unfold(), says "xs contains dereferenced cells"
+-
++#ifndef RAW_UNIFIABLES
+         vector<ClauseIndex> unifiables; // "array of clauses known to be unifiable
+                 //  with top goal in goal stack" ("cs" in Spine.java)
+                 // [This is not listed in the HHG description of Spine.]
+                 // Initialized from unifiables, in Engine. If indexing
+                 // is not activated, unifiables[i] == i.]
++        typedef vector<ClauseIndex> Unifiables;
++        inline void unifiables_init() { } // rely on vector ctor
++        inline size_t unifiables_size() const { return unifiables.size(); }
++        inline bool unifiables_empty() const { return unifiables.empty(); }
++        inline Unifiables get_space(size_t n) {
++            vector<ClauseIndex> is;
++            is.reserve(n);
++            return is;
++        }
++        inline void unifiables_pushback(ClauseIndex ci) { unifiables.push_back(ci); }
++        inline size_t unifiables_capacity() { return unifiables.capacity(); }
++#else
++        typedef ClauseIndex* Unifiables;
++        Unifiables unifiables;
++        size_t unifs_size = 0;
++        size_t unifs_cap = 0;
++        inline void unifiables_init() { abort(); /*stub*/ }
++        inline size_t unifiables_size() const { return unifs_size; }
++        inline bool unifiables_empty() const { return unifs_size == 0; }
++        inline Unifiables get_space(size_t n) {
++            unifs_cap = n;
++            return (ClauseIndex*) malloc(sizeof(ClauseIndex)*n);
++        }
++        inline void unifiables_pushback(ClauseIndex ci) { unifiables[unifs_size++] = ci; }
++        inline size_t unifiables_capacity() { return unifs_cap; }
++#endif
+ 
+         Spine() {
+             next_free = nullptr;
+@@ -76,7 +102,7 @@ namespace iProlog {
+ 					 // index elements ("based on regs" [HHG] but no regs)
+                      // "int[] regs: dereferenced goal registers" [HHG doc]
+                      // Comments in Engine.java suggest that xs is regs
+-            unifiables = vector<ClauseIndex>(0);
++            unifiables = Spine::get_space(0);
+         }
+ 
+         /**
+@@ -88,7 +114,7 @@ namespace iProlog {
+             int base_0,               // base
+             CL_p goals_0,        // was gs/goal_stack [Java]
+             int trail_top_0,
+-            vector<ClauseNumber> &unifiables_0); // was cs [Java]
++            Unifiables &unifiables_0); // was cs [Java]
+ 
+         /**
+          * "Creates a specialized spine returning an answer 

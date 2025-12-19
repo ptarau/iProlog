@@ -1,0 +1,13 @@
+big.pl
+  ucrtbase.dll -- huge, but malloc & free, etc. small?
+  5.5% unfold
+  1.7% matching clauses 
+  0.6% operator new
+  2.3% allocate vector of cells
+  1.7% new Spine
+  6.9% unify
+  2.7% concat
+  2.1% intersect0
+  0.7% push_cells
+  2.3% CellStack pop
+  1.8% cp_cells

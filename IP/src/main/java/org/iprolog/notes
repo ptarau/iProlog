@@ -1,0 +1,33 @@
+In Tarau's original
+
+called from Engine constructor
+
+IMap<Integer>[] index(final Clause[] clauses, final IntMap[] vmaps)
+  makes initial imaps
+  for cl_idx = 0...clauses.length
+   c = clauses[cl_idx]
+   void put( IMap<Integer>[] imaps,
+             IntMap[] vss,
+	     keys = int[] c.index_vec = clauses[cl_idx].index_vec
+	     int val=cl_idx+1 is a ClauseNumber)
+    steps idx 0.. through keys = clauses[cl_idx].index_vec (cell)
+      where keys[idx] != 0  (=tag(V,0)???)
+        calls:
+	  IMap.put( imaps,
+		    idx (index_vec pos), 
+		    keys[idx] = clauses[cl_idx].index_vec[idx] (cell)
+		    val = cl_idx+1 is a ClauseNumber)
+	    calls
+	      imaps[idx].put( key_idx=new Integer(key==keys[idx] (cell)),
+	                      val = cl_idx+1 (ClauseNumber);
+		calls:
+		  put( key=ip.key_idx (Integer, from cell val),
+		       val = cl_idx+1 (ClauseNumber)
+		  which calls
+		     "vals": map.get(key==ip.key_idx) -- hashed 
+		       makes new IntMap vals if nothing found
+		       map.put(key, vals)
+		     puts val = cl_idx+1 (ClauseNumber)
+		       into intmap vals under key (converted to int
+		          by automagic Java boxing?)
+
